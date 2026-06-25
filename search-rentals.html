@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="apple-touch-icon" href="favicon.png"/>
+  <meta name="theme-color" content="#f5f5f7"/>
+  <title>Find Your Ottawa Rental — Ottawa Rental Plug</title>
+  <meta name="description" content="Ottawa's rental marketplace helping you pinpoint exactly what you want across Rentals.ca, Kijiji & off-market inventory. One search. Real results."/>
+  <link rel="canonical" href="https://ottawarentalplug.com/search-rentals"/>
+  <meta property="og:type"        content="website"/>
+  <meta property="og:url"         content="https://ottawarentalplug.com/search-rentals"/>
+  <meta property="og:title"       content="Find Your Ottawa Rental — Ottawa Rental Plug"/>
+  <meta property="og:description" content="Ottawa's rental marketplace helping you pinpoint exactly what you want across Rentals.ca, Kijiji & off-market inventory. One search. Real results."/>
+  <meta property="og:image"       content="https://ottawarentalplug.com/cyril.jpg"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,300;1,14..32,400&display=swap" rel="stylesheet"/>
+  <script src="analytics.js" defer></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:      #ffffff;
+      --bg:         #f5f5f7;
+      --surface:    #ffffff;
+      --border:     #d2d2d7;
+      --border-lt:  #e8e8ed;
+      --text-1:     #1d1d1f;
+      --text-2:     #6e6e73;
+      --text-3:     #86868b;
+      --blue:       #0071e3;
+      --blue-hover: #0077ed;
+      --blue-lt:    #e8f0fd;
+      --green:      #1d8348;
+      --green-lt:   #d5f0e2;
+      --amber:      #b45309;
+      --amber-lt:   #fef3c7;
+      --amber-border:#fcd34d;
+      --purple:     #6d28d9;
+      --purple-lt:  #ede9fe;
+      --r-sm:       10px;
+      --r-md:       14px;
+      --r-lg:       18px;
+      --r-xl:       22px;
+      --shadow-sm:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:  0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg:  0 12px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+    }
+
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      letter-spacing: -0.005em;
+    }
+    h1, h2, h3, .hero-title { letter-spacing: -.03em; }
+    ::selection { background: rgba(0,113,227,.18); color: var(--text-1); }
+
+    /* ── Nav ─────────────────────────────────────────────────────── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.85);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--border-lt);
+    }
+    .nav-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-1);
+      text-decoration: none;
+      letter-spacing: -.01em;
+    }
+    .nav-back {
+      font-size: 13px;
+      color: var(--blue);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: opacity .15s;
+    }
+    .nav-back:hover { opacity: .7; }
+    .nav-back svg { width: 14px; height: 14px; }
+
+    /* ── Page wrapper ────────────────────────────────────────────── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── Hero ────────────────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 56px 0 40px;
+    }
+    .hero-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--blue);
+      border: 1px solid rgba(0,113,227,.3);
+      border-radius: 999px;
+      padding: 5px 14px;
+      margin-bottom: 20px;
+    }
+    .hero-title {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      letter-spacing: -.03em;
+      line-height: 1.08;
+      color: var(--text-1);
+      margin-bottom: 14px;
+    }
+    .hero-title em {
+      font-style: normal;
+      color: var(--blue);
+    }
+    .hero-sub {
+      font-size: 17px;
+      font-weight: 400;
+      color: var(--text-2);
+      max-width: 520px;
+      margin: 0 auto 36px;
+      line-height: 1.55;
+    }
+
+    /* ── Stats row ───────────────────────────────────────────────── */
+    .stats-row {
+      display: inline-flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border-lt);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 20px 32px;
+      gap: 32px;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      color: var(--text-1);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-top: 4px;
+    }
+    .stat-divider {
+      width: 1px;
+      height: 36px;
+      background: var(--border);
+    }
+
+    /* ── Capacity pill ───────────────────────────────────────────── */
+    .cap-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--amber-lt);
+      border: 1px solid var(--amber-border);
+      border-radius: var(--r-md);
+      padding: 12px 16px;
+      margin-bottom: 24px;
+    }
+    .cap-icon { font-size: 16px; flex-shrink: 0; }
+    .cap-text { flex: 1; }
+    .cap-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--amber);
+    }
+    .cap-sub {
+      font-size: 12px;
+      color: #92400e;
+      margin-top: 1px;
+    }
+    .cap-counter {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--amber);
+      white-space: nowrap;
+    }
+    .cap-bar-wrap { margin-top: 8px; }
+    .cap-bar-track {
+      height: 4px;
+      background: #fde68a;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .cap-bar-fill {
+      height: 100%;
+      background: var(--amber);
+      border-radius: 999px;
+      transition: width .8s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── Card ────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      border: 1px solid var(--border-lt);
+      box-shadow: var(--shadow-md);
+      padding: 32px;
+    }
+    @media (max-width: 600px) {
+      .card { padding: 24px 20px; border-radius: var(--r-lg); }
+    }
+
+    /* ── Form ────────────────────────────────────────────────────── */
+    .form-section { margin-bottom: 22px; }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 7px;
+    }
+    .form-row {
+      display: grid;
+      gap: 14px;
+    }
+    .form-row-2 { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 480px) { .form-row-2 { grid-template-columns: 1fr; } }
+
+    .field {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 0 14px;
+      height: 44px;
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--text-1);
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .field:focus {
+      outline: none;
+      background: var(--white);
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(0,113,227,.14);
+    }
+    textarea.field {
+      height: auto;
+      padding-top: 12px;
+      padding-bottom: 12px;
+      resize: none;
+      line-height: 1.5;
+    }
+    select.field {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236e6e73' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    /* ── Amenity pills ───────────────────────────────────────────── */
+    .amenities-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .amenity {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      user-select: none;
+      transition: all .15s;
+    }
+    .amenity:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: var(--blue-lt);
+    }
+    .amenity.on {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+    .amenity .check {
+      display: none;
+      width: 14px;
+      height: 14px;
+    }
+    .amenity.on .check { display: block; }
+
+    /* ── Divider ─────────────────────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border-lt);
+      margin: 24px 0;
+    }
+
+    /* ── Off-market opt-in ───────────────────────────────────────── */
+    .offmarket-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .toggle-wrap { padding-top: 2px; flex-shrink: 0; }
+    .toggle {
+      width: 44px;
+      height: 26px;
+      background: var(--border);
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      transition: background .2s;
+      border: none;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+      transition: transform .2s;
+    }
+    .toggle.on { background: var(--blue); }
+    .toggle.on::after { transform: translateX(18px); }
+    .offmarket-label { flex: 1; }
+    .offmarket-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-1);
+    }
+    .offmarket-sub {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-top: 2px;
+    }
+    .contact-field-wrap {
+      margin-top: 12px;
+      display: none;
+    }
+    .contact-field-wrap.show { display: block; }
+
+    /* ── Submit ──────────────────────────────────────────────────── */
+    .btn-submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      height: 52px;
+      background: linear-gradient(135deg, var(--blue), #0a84ff);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-md);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -.01em;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0,113,227,.28), inset 0 1px 0 rgba(255,255,255,.15);
+      transition: background .25s, transform .25s cubic-bezier(.4,0,.2,1), box-shadow .25s, opacity .15s;
+    }
+    .btn-submit:hover { background: linear-gradient(135deg, var(--blue-hover), #1a93ff); transform: translateY(-1px); box-shadow: 0 10px 28px rgba(0,113,227,.36), inset 0 1px 0 rgba(255,255,255,.18); }
+    .btn-submit:active { transform: none; }
+    .btn-submit:disabled { opacity: .55; cursor: default; transform: none; }
+    .btn-submit .arrow { transition: transform .2s; }
+    .btn-submit:hover .arrow { transform: translateX(3px); }
+
+    .form-footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 12px;
+    }
+    .form-footer strong { color: var(--blue); font-weight: 600; }
+
+    /* ── Results ─────────────────────────────────────────────────── */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .results-count {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+    .results-count strong { color: var(--text-1); }
+
+    .platform-links {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .platform-link {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--blue);
+      background: var(--blue-lt);
+      border: 1px solid rgba(0,113,227,.2);
+      border-radius: 6px;
+      padding: 4px 10px;
+      text-decoration: none;
+      transition: opacity .15s;
+    }
+    .platform-link:hover { opacity: .75; }
+
+    /* ── Platform result card ───────────────────────────────────── */
+    .platform-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border-lt);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 20px;
+      text-decoration: none;
+      color: inherit;
+      transition: box-shadow .2s, transform .2s, border-color .2s;
+    }
+    .platform-card + .platform-card { margin-top: 10px; }
+    .platform-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+      border-color: rgba(0,113,227,.3);
+    }
+    .platform-card-icon {
+      font-size: 26px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .platform-card-body { flex: 1; min-width: 0; }
+    .platform-card-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 3px;
+      flex-wrap: wrap;
+    }
+    .platform-card-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-1);
+    }
+    .platform-card-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--blue);
+      background: var(--blue-lt);
+      border-radius: 6px;
+      padding: 2px 7px;
+    }
+    .platform-card-tagline {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 4px;
+    }
+    .platform-card-filter {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-3);
+    }
+    .platform-card-arrow {
+      font-size: 22px;
+      color: var(--blue);
+      flex-shrink: 0;
+      transition: transform .2s;
+    }
+    .platform-card:hover .platform-card-arrow { transform: translateX(4px); }
+
+    /* ── Search-ready intro ─────────────────────────────────────── */
+    .search-ready {
+      text-align: center;
+      padding: 20px 16px 24px;
+    }
+    .search-ready-icon { font-size: 32px; margin-bottom: 8px; }
+    .search-ready-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 6px;
+    }
+    .search-ready-sub {
+      font-size: 13px;
+      color: var(--text-2);
+      max-width: 460px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    /* ── Listing card ────────────────────────────────────────────── */
+    .listing {
+      background: var(--surface);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border-lt);
+      box-shadow: var(--shadow-sm);
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px 16px;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .listing:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .listing + .listing { margin-top: 10px; }
+
+    .listing-band {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+    }
+    .band-platinum { background: var(--purple-lt); color: var(--purple); }
+    .band-gold     { background: #fef9c3;           color: #854d0e; }
+    .band-silver   { background: #f1f5f9;           color: #475569; }
+    .band-bronze   { background: #fff7ed;           color: #9a3412; }
+
+    .listing-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-1);
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+    .listing-address {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 6px;
+    }
+    .listing-meta {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .listing-signals {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+    .signal-tag {
+      font-size: 11px;
+      font-weight: 500;
+      background: var(--bg);
+      color: var(--text-2);
+      border: 1px solid var(--border-lt);
+      border-radius: 6px;
+      padding: 2px 8px;
+    }
+
+    .listing-score-col { text-align: right; min-width: 80px; }
+    .score-num {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.04em;
+      line-height: 1;
+    }
+    .score-denom {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-3);
+    }
+    .score-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+    .listing-price {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-top: 8px;
+    }
+
+    .listing-cta {
+      grid-column: 1 / -1;
+    }
+    .btn-view {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      height: 38px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-view:hover {
+      background: var(--blue-lt);
+      border-color: rgba(0,113,227,.3);
+    }
+
+    /* ── Off-market teaser ───────────────────────────────────────── */
+    .offmarket-card {
+      background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      border: 1.5px dashed var(--amber-border);
+      border-radius: var(--r-lg);
+      padding: 24px;
+      margin-top: 10px;
+    }
+    .offmarket-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .offmarket-badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--amber);
+      background: #fde68a;
+      border-radius: 6px;
+      padding: 3px 10px;
+    }
+    .offmarket-score {
+      margin-left: auto;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--amber);
+      letter-spacing: -.03em;
+    }
+    .offmarket-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin-bottom: 4px;
+    }
+    .offmarket-teaser {
+      font-size: 13px;
+      color: var(--amber);
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .unlock-row {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-unlock {
+      height: 40px;
+      padding: 0 18px;
+      background: var(--amber);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-sm);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity .15s;
+    }
+    .btn-unlock:hover { opacity: .85; }
+
+    /* ── Help CTA card ───────────────────────────────────────────── */
+    .help-cta {
+      background: var(--surface);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border-lt);
+      box-shadow: var(--shadow-sm);
+      padding: 28px 24px;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .help-cta-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 6px;
+    }
+    .help-cta-sub {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 18px;
+    }
+    .btn-help {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 44px;
+      padding: 0 24px;
+      background: var(--text-1);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-help:hover { opacity: .8; }
+
+    /* ── Empty / loading / error states ─────────────────────────── */
+    .state-block {
+      text-align: center;
+      padding: 52px 20px;
+    }
+    .state-icon { font-size: 40px; margin-bottom: 14px; }
+    .state-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin-bottom: 5px;
+    }
+    .state-sub {
+      font-size: 14px;
+      color: var(--text-2);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin-bottom: 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-block {
+      background: #fff5f5;
+      border: 1px solid #fecaca;
+      border-radius: var(--r-md);
+      padding: 18px 20px;
+      text-align: center;
+    }
+    .error-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #b91c1c;
+      margin-bottom: 4px;
+    }
+    .error-sub {
+      font-size: 13px;
+      color: #dc2626;
+    }
+    .error-sub a { color: #b91c1c; font-weight: 600; }
+
+    /* ── Modal ───────────────────────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0,0,0,.35);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-lg);
+      padding: 28px;
+      width: 100%;
+      max-width: 380px;
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 4px;
+    }
+    .modal-sub {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 18px;
+    }
+    .modal-field {
+      margin-bottom: 10px;
+    }
+    .btn-modal-submit {
+      width: 100%;
+      height: 46px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-md);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background .15s, opacity .15s;
+    }
+    .btn-modal-submit:hover { background: var(--blue-hover); }
+    .btn-modal-submit:disabled { opacity: .55; cursor: default; }
+    .btn-modal-cancel {
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text-3);
+      cursor: pointer;
+      padding: 6px;
+      transition: color .15s;
+    }
+    .btn-modal-cancel:hover { color: var(--text-2); }
+    .modal-success {
+      display: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green);
+      text-align: center;
+      margin-top: 10px;
+      padding: 8px;
+      background: var(--green-lt);
+      border-radius: 8px;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────────── */
+    @media (max-width: 520px) {
+      .stats-row {
+        gap: 20px;
+        padding: 16px 20px;
+      }
+      .stat-num { font-size: 24px; }
+      .hero { padding: 36px 0 28px; }
+      .hero-sub { font-size: 15px; }
+      .page { padding-inline: 16px; }
+      .btn-submit { height: 54px; }
+      .platform-card { padding: 16px; }
+      .platform-card-name { font-size: 14px; }
+    }
+    @media (max-width: 380px) {
+      .stats-row {
+        gap: 14px;
+        padding: 14px 16px;
+      }
+      .stat-divider { display: none; }
+    }
+    @media (hover: none) {
+      .btn-submit:hover, .platform-card:hover, .listing:hover { transform: none; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">Ottawa Rental Plug</a>
+      <a href="index.html" class="nav-back">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        Back
+      </a>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- HERO -->
+    <header class="hero">
+      <h1 class="hero-title">Find Your<br/><em>Ottawa Rental.</em></h1>
+      <p class="hero-sub">Ottawa's rental marketplace — helping you pinpoint exactly what you want across Rentals.ca, Kijiji &amp; more.</p>
+    </header>
+
+    <!-- SEARCH CARD -->
+    <div class="card">
+
+      <form id="searchForm" name="rentalSearch" method="POST" action="/thank-you-report.html" netlify netlify-honeypot="bot-field" novalidate>
+
+        <!-- Neighborhood -->
+        <div class="form-section">
+          <label class="form-label" for="neighborhood">Neighborhood</label>
+          <select id="neighborhood" class="field">
+            <option value="any">Any Ottawa neighborhood</option>
+            <option value="Kanata">Kanata</option>
+            <option value="Stittsville">Stittsville</option>
+            <option value="Hazeldean">Hazeldean</option>
+            <option value="Barrhaven">Barrhaven</option>
+            <option value="Orleans">Orleans</option>
+            <option value="Nepean">Nepean</option>
+            <option value="Downtown">Downtown</option>
+            <option value="Centretown">Centretown</option>
+            <option value="Glebe">Glebe</option>
+            <option value="Westboro">Westboro</option>
+          </select>
+        </div>
+
+        <!-- Beds + Baths -->
+        <div class="form-section">
+          <div class="form-row form-row-2">
+            <div>
+              <label class="form-label" for="bedrooms">Bedrooms</label>
+              <select id="bedrooms" class="field">
+                <option value="Any">Any</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4+</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" for="bathrooms">Bathrooms</label>
+              <select id="bathrooms" class="field">
+                <option value="Any">Any</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3+</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Budget -->
+        <div class="form-section">
+          <div class="form-row form-row-2">
+            <div>
+              <label class="form-label" for="minBudget">Min $/mo</label>
+              <input id="minBudget" type="number" min="0" placeholder="1,200" class="field"/>
+            </div>
+            <div>
+              <label class="form-label" for="budget">Max $/mo</label>
+              <input id="budget" type="number" min="0" placeholder="2,500" class="field"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Move-in -->
+        <div class="form-section">
+          <label class="form-label" for="moveInDate">Move-in Date</label>
+          <input id="moveInDate" type="date" class="field"/>
+        </div>
+
+        <!-- Must have -->
+        <div class="form-section">
+          <label class="form-label">Must Have</label>
+          <div class="amenities-wrap" id="amenitiesGroup">
+            <button type="button" class="amenity" data-value="parking">
+              <svg class="check" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Parking
+            </button>
+            <button type="button" class="amenity" data-value="laundry">
+              <svg class="check" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              In-unit Laundry
+            </button>
+            <button type="button" class="amenity" data-value="backyard">
+              <svg class="check" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Fenced Yard
+            </button>
+            <button type="button" class="amenity" data-value="basement">
+              <svg class="check" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Finished Basement
+            </button>
+            <button type="button" class="amenity" data-value="petFriendly">
+              <svg class="check" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Pet Friendly
+            </button>
+            <button type="button" class="amenity" data-value="furnished">
+              <svg class="check" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Furnished
+            </button>
+            <button type="button" class="amenity" data-value="ac">
+              <svg class="check" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              A/C
+            </button>
+            <button type="button" class="amenity" data-value="balcony">
+              <svg class="check" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Balcony
+            </button>
+          </div>
+        </div>
+
+        <!-- Keywords -->
+        <div class="form-section">
+          <label class="form-label" for="specialRequests">Anything else?</label>
+          <textarea id="specialRequests" class="field" rows="3"
+                    placeholder="e.g., near LRT, hardwood floors, end-unit townhome"></textarea>
+        </div>
+
+        <!-- Divider -->
+        <hr class="divider"/>
+
+        <!-- Name & Email (Required) -->
+        <div class="form-section">
+          <p style="font-size: 13px; color: var(--text-2); margin-bottom: 14px;">
+            <strong style="color: var(--text-1);">Get your free rental market report sent to your email.</strong> We'll analyze market trends, rental rates, and opportunities in your target neighborhood.
+          </p>
+        </div>
+
+        <div class="form-section">
+          <div class="form-row form-row-2">
+            <div>
+              <label class="form-label" for="searchName">Your Name</label>
+              <input id="searchName" type="text" placeholder="John Doe" class="field" required/>
+            </div>
+            <div>
+              <label class="form-label" for="searchEmail">Email Address</label>
+              <input id="searchEmail" type="email" placeholder="you@example.com" class="field" required/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" id="submitBtn" class="btn-submit">
+          Find My Rental
+          <span class="arrow">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </button>
+        <p class="form-footer" style="color:#0284c7;"><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg><strong>24-hour response guarantee</strong> &nbsp;·&nbsp; No spam, ever</span></p>
+
+      </form>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="resultsArea" style="margin-top:20px">
+
+      <div id="emptyState" class="state-block">
+        <div class="state-icon" style="font-size:0;"><svg width="40" height="40" fill="none" stroke="#6e6e73" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>
+        <p class="state-title">Ready to find your rental.</p>
+        <p class="state-sub">Tell us what you need and we'll surface the best matches across Ottawa.</p>
+      </div>
+
+      <div id="loadingState" style="display:none" class="state-block">
+        <div class="spinner"></div>
+        <p class="state-title">Scanning listings…</p>
+        <p class="state-sub">Checking Rentals.ca, Kijiji &amp; more</p>
+      </div>
+
+      <div id="errorState" style="display:none" class="error-block">
+        <p class="error-title" id="errorMsg">Search temporarily unavailable.</p>
+        <p class="error-sub">Or <a href="tel:+16136013005">call Cyril directly</a> at (613)&nbsp;601-3005.</p>
+      </div>
+
+      <div id="resultsContent" style="display:none">
+        <div class="results-header">
+          <p class="results-count"><strong id="resultCount">0</strong> listings found</p>
+          <div class="platform-links" id="platformLinks"></div>
+        </div>
+        <div id="listingsGrid"></div>
+        <div class="help-cta">
+          <p class="help-cta-title">Don't see what you're looking for?</p>
+          <p class="help-cta-sub">Get a personalised rental match — Cyril reviews your criteria and finds options that never hit the public listings.</p>
+          <a href="tenant-placement.html" class="btn-help" style="text-decoration:none;">Get a Personalised Rental Match</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HELP MODAL -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal">
+      <h2 class="modal-title">Request Personal Help</h2>
+      <p class="modal-sub">Cyril will reach out within 24 hours.</p>
+      <div class="modal-field">
+        <input id="helpName" type="text" placeholder="Your name" class="field"/>
+      </div>
+      <div class="modal-field">
+        <input id="helpContact" type="text" placeholder="Email or phone" class="field"/>
+      </div>
+      <button class="btn-modal-submit" id="helpSubmitBtn">Send Request</button>
+      <button class="btn-modal-cancel" id="helpCloseBtn">Cancel</button>
+      <div class="modal-success" id="helpSuccess"></div>
+    </div>
+  </div>
+
+<script>
+  // ── Client-side data layer ───────────────────────────────────
+  // Note: Form submits to Netlify Forms (no external service needed)
+
+  const NEIGHBORHOODS = {
+    Kanata:      { keywords:['kanata'],      rentalsSlug:'kanata-on',      fbQuery:'Kanata Ottawa',      bounds:{latMin:45.27,latMax:45.36,lngMin:-76.05,lngMax:-75.87} },
+    Stittsville: { keywords:['stittsville'], rentalsSlug:'stittsville-on', fbQuery:'Stittsville Ottawa', bounds:{latMin:45.24,latMax:45.30,lngMin:-75.97,lngMax:-75.89} },
+    Hazeldean:   { keywords:['hazeldean'],   rentalsSlug:'kanata-on',      fbQuery:'Hazeldean Kanata',   bounds:{latMin:45.29,latMax:45.34,lngMin:-75.95,lngMax:-75.88} },
+    Barrhaven:   { keywords:['barrhaven'],   rentalsSlug:'nepean-on',      fbQuery:'Barrhaven Ottawa',   bounds:{latMin:45.24,latMax:45.32,lngMin:-75.79,lngMax:-75.68} },
+    Orleans:     { keywords:['orleans'],     rentalsSlug:'orleans-on',     fbQuery:'Orleans Ottawa',     bounds:{latMin:45.44,latMax:45.52,lngMin:-75.58,lngMax:-75.44} },
+    Nepean:      { keywords:['nepean'],      rentalsSlug:'nepean-on',      fbQuery:'Nepean Ottawa',      bounds:{latMin:45.31,latMax:45.40,lngMin:-75.79,lngMax:-75.67} },
+    Downtown:    { keywords:['downtown'],    rentalsSlug:'ottawa-on',      fbQuery:'Downtown Ottawa',    bounds:{latMin:45.40,latMax:45.44,lngMin:-75.72,lngMax:-75.66} },
+    Centretown:  { keywords:['centretown'],  rentalsSlug:'ottawa-on',      fbQuery:'Centretown Ottawa',  bounds:{latMin:45.40,latMax:45.44,lngMin:-75.72,lngMax:-75.66} },
+    Glebe:       { keywords:['glebe'],       rentalsSlug:'ottawa-on',      fbQuery:'Glebe Ottawa',       bounds:{latMin:45.39,latMax:45.43,lngMin:-75.70,lngMax:-75.66} },
+    Westboro:    { keywords:['westboro'],    rentalsSlug:'ottawa-on',      fbQuery:'Westboro Ottawa',    bounds:{latMin:45.39,latMax:45.43,lngMin:-75.77,lngMax:-75.71} },
+    any:         { keywords:[],              rentalsSlug:'ottawa-on',      fbQuery:'Ottawa',             bounds:{latMin:44.96,latMax:45.55,lngMin:-76.36,lngMax:-75.25} },
+  };
+
+  function buildPlatformLinks(c) {
+    const beds = c.bedrooms !== 'Any' ? c.bedrooms : '';
+    const max  = c.budget    || '';
+    const min  = c.minBudget || '';
+    const hood = NEIGHBORHOODS[c.neighborhood] || NEIGHBORHOODS.any;
+    const kw   = hood.keywords[0] || 'ottawa';
+    const b    = hood.bounds;
+
+    const realtor = new URLSearchParams({
+      ZoomLevel:'12', Center:`${(b.latMin+b.latMax)/2},${(b.lngMin+b.lngMax)/2}`,
+      LatitudeMax:b.latMax, LongitudeMax:b.lngMax, LatitudeMin:b.latMin, LongitudeMin:b.lngMin,
+      TransactionTypeId:'3', PropertySearchTypeId:'1',
+    });
+    if (max)  realtor.set('PriceMax', max);
+    if (min)  realtor.set('PriceMin', min);
+    if (beds) realtor.set('BedRange', `${beds}-0`);
+
+    const rentals = new URLSearchParams();
+    if (beds) rentals.set('beds', beds);
+    if (max)  rentals.set('max_price', max);
+    if (min)  rentals.set('min_price', min);
+    if (c.amenities.includes('petFriendly')) rentals.set('pet_friendly', 'true');
+    if (c.amenities.includes('furnished'))   rentals.set('furnished',    'true');
+
+    const kijiji = new URLSearchParams();
+    if (beds) kijiji.set('numberbedrooms', beds);
+    if (max && min) kijiji.set('price', `${min}__${max}`);
+    else if (max)   kijiji.set('price', `0__${max}`);
+    if (kw && kw !== 'ottawa') kijiji.set('keywords', kw);
+
+    const fbParts = [beds ? `${beds} bedroom` : '', 'rental', hood.fbQuery].filter(Boolean);
+    const fb = new URLSearchParams({ query: fbParts.join(' ') });
+    if (max) fb.set('maxPrice', max);
+    if (min) fb.set('minPrice', min);
+
+    const filterParts = [];
+    if (beds) filterParts.push(`${beds} BR`);
+    if (c.bathrooms !== 'Any') filterParts.push(`${c.bathrooms} BA`);
+    if (min && max) filterParts.push(`$${min}–$${max}`);
+    else if (max)   filterParts.push(`Under $${max}`);
+    else if (min)   filterParts.push(`Over $${min}`);
+    if (c.neighborhood !== 'any') filterParts.push(c.neighborhood);
+    const filterSummary = filterParts.length ? filterParts.join(' · ') : 'All Ottawa rentals';
+
+    // Inline SVG platform icons — brand rule: no emojis, no plain letters
+    const psvg = (path) =>
+      `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+    const P_ICONS = {
+      mls:    psvg('<path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"/>'),
+      search: psvg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>'),
+      list:   psvg('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'),
+      people: psvg('<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/><circle cx="9" cy="7" r="4"/>'),
+    };
+
+    return [
+      { name:'Realtor.ca',           tag:'MLS',           tagline:'Real MLS data — licensed listings only',     filterSummary, icon:P_ICONS.mls,    searchUrl:`https://www.realtor.ca/map#${realtor.toString()}` },
+      { name:'Rentals.ca',           tag:'Most filtered', tagline:'Apartments & condos with detailed filters',  filterSummary, icon:P_ICONS.search, searchUrl:`https://rentals.ca/${hood.rentalsSlug}${rentals.toString() ? '?' + rentals.toString() : ''}` },
+      { name:'Kijiji',               tag:'Independent',   tagline:'Private landlords — often best deals',       filterSummary, icon:P_ICONS.list,   searchUrl:`https://www.kijiji.ca/b-apartments-condos/ottawa/c37l1700185${kijiji.toString() ? '?' + kijiji.toString() : ''}` },
+      { name:'Facebook Marketplace', tag:'Off-MLS',       tagline:'Renters & sublets posting directly',         filterSummary, icon:P_ICONS.people, searchUrl:`https://www.facebook.com/marketplace/ottawa/propertyrentals/?${fb.toString()}` },
+    ];
+  }
+
+
+  // Fire-and-forget lead capture to Formspree (CORS-enabled)
+  async function captureLead(criteria, type = 'search') {
+    const isHelp   = type === 'help';
+    const isUnlock = type === 'unlock';
+    const hasContact = criteria.contact || criteria.name;
+    const hasMeaningful = criteria.budget || criteria.neighborhood !== 'any' || criteria.bedrooms !== 'Any';
+    if (!isHelp && !isUnlock && !hasContact && !hasMeaningful) return;
+
+    const icon = isHelp ? '[HELP]' : isUnlock ? '[UNLOCK]' : hasContact ? '[LEAD]' : '[SEARCH]';
+    const kind = isHelp ? 'HELP REQUEST' : isUnlock ? 'OFF-MARKET UNLOCK' : hasContact ? 'EMAIL CAPTURE' : 'Anon Search';
+
+    try {
+      await fetch(FORMSPREE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          _subject:        `ORP ${icon} ${kind} — ${criteria.neighborhood !== 'any' ? criteria.neighborhood : 'Ottawa'}`,
+          type, timestamp: new Date().toISOString(),
+          neighborhood:    criteria.neighborhood,
+          bedrooms:        criteria.bedrooms,
+          bathrooms:       criteria.bathrooms,
+          budget:          criteria.budget    ? `$${criteria.budget}/mo`    : '',
+          minBudget:       criteria.minBudget ? `$${criteria.minBudget}/mo` : '',
+          moveInDate:      criteria.moveInDate || '',
+          amenities:       (criteria.amenities || []).join(', '),
+          specialRequests: criteria.specialRequests || '',
+          name:            criteria.name    || '',
+          contact:         criteria.contact || '',
+        }),
+      });
+    } catch (_) { /* silent */ }
+  }
+
+
+  // ── Amenity pills ────────────────────────────────────────────────
+  const selectedAmenities = new Set();
+  document.getElementById('amenitiesGroup').addEventListener('click', e => {
+    const pill = e.target.closest('.amenity');
+    if (!pill) return;
+    const val = pill.dataset.value;
+    if (selectedAmenities.has(val)) { selectedAmenities.delete(val); pill.classList.remove('on'); }
+    else                            { selectedAmenities.add(val);    pill.classList.add('on'); }
+  });
+
+
+  // ── Band styles ──────────────────────────────────────────────────
+  const BANDS = {
+    platinum: { cls: 'band-platinum', scoreColor: '#6d28d9' },
+    gold:     { cls: 'band-gold',     scoreColor: '#854d0e' },
+    silver:   { cls: 'band-silver',   scoreColor: '#475569' },
+    bronze:   { cls: 'band-bronze',   scoreColor: '#9a3412' },
+  };
+
+  function renderListing(l) {
+    const band  = BANDS[l.plugBand] || BANDS.silver;
+    const price = l.price ? `$${l.price.toLocaleString()}/mo` : '';
+    const meta  = [l.bedrooms ? `${l.bedrooms} BR` : '', l.bathrooms ? `${l.bathrooms} BA` : ''].filter(Boolean).join(' · ');
+    const sigs  = (l.plugSignals || []).slice(0, 3).map(s => `<span class="signal-tag">${s.label}</span>`).join('');
+    return `
+      <div class="listing">
+        <div>
+          <span class="listing-band ${band.cls}">${l.plugBandLabel || l.plugBand}</span>
+          <p class="listing-title">${l.title || 'Ottawa Rental'}</p>
+          ${l.address ? `<p class="listing-address">${l.address}</p>` : ''}
+          ${meta     ? `<p class="listing-meta">${meta}</p>` : ''}
+          ${sigs     ? `<div class="listing-signals">${sigs}</div>` : ''}
+        </div>
+        <div class="listing-score-col">
+          ${price ? `<div class="listing-price">${price}</div>` : ''}
+        </div>
+        ${l.url ? `<div class="listing-cta"><a href="${l.url}" target="_blank" rel="noopener noreferrer" class="btn-view">View listing <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>` : ''}
+      </div>`;
+  }
+
+  function renderPlatformCard(p) {
+    return `
+      <a href="${p.searchUrl}" target="_blank" rel="noopener noreferrer" class="platform-card">
+        <span class="platform-card-icon" style="font-size:15px;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;background:var(--blue-lt);border-radius:10px;font-weight:700;color:var(--blue);">${p.icon || '?'}</span>
+        <div class="platform-card-body">
+          <div class="platform-card-head">
+            <span class="platform-card-name">${p.name}</span>
+            ${p.tag ? `<span class="platform-card-tag">${p.tag}</span>` : ''}
+          </div>
+          ${p.tagline       ? `<div class="platform-card-tagline">${p.tagline}</div>` : ''}
+          ${p.filterSummary ? `<div class="platform-card-filter">Pre-filtered: ${p.filterSummary}</div>` : ''}
+        </div>
+        <span class="platform-card-arrow">→</span>
+      </a>`;
+  }
+
+
+  // ── Form submit (entirely client-side) ──────────────────────────
+  document.getElementById('searchForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0"></div>';
+
+    document.getElementById('emptyState').style.display     = 'none';
+    document.getElementById('resultsContent').style.display = 'none';
+    document.getElementById('errorState').style.display     = 'none';
+    document.getElementById('loadingState').style.display   = 'block';
+
+    const criteria = {
+      neighborhood:    document.getElementById('neighborhood').value || 'any',
+      bedrooms:        document.getElementById('bedrooms').value || 'Any',
+      bathrooms:       document.getElementById('bathrooms').value || 'Any',
+      budget:          parseFloat(document.getElementById('budget').value)    || null,
+      minBudget:       parseFloat(document.getElementById('minBudget').value) || null,
+      moveInDate:      document.getElementById('moveInDate').value || null,
+      amenities:       [...selectedAmenities],
+      specialRequests: document.getElementById('specialRequests').value || '',
+      name:            document.getElementById('searchName').value.trim() || '',
+      contact:         document.getElementById('searchEmail').value.trim() || '',
+    };
+
+    // Brief loading flourish so it feels intentional
+    await new Promise(r => setTimeout(r, 600));
+
+    const platforms = buildPlatformLinks(criteria);
+
+    document.getElementById('loadingState').style.display = 'none';
+
+    document.getElementById('resultCount').textContent = platforms.length;
+    document.querySelector('.results-count').innerHTML =
+      `<strong>${platforms.length}</strong> platforms searched · pre-filtered with your criteria`;
+    document.getElementById('platformLinks').innerHTML = '';
+
+    document.getElementById('listingsGrid').innerHTML = `
+      <div class="search-ready">
+        <div class="search-ready-icon" style="font-size:0;"><svg width="32" height="32" fill="none" stroke="var(--blue)" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        <p class="search-ready-title">Your Ottawa search is ready.</p>
+        <p class="search-ready-sub">We've pre-filtered every major rental platform with your exact criteria. Click any platform below to view live results.</p>
+      </div>
+      ${platforms.map(renderPlatformCard).join('')}
+    `;
+
+    document.getElementById('resultsContent').style.display = 'block';
+
+    // Submit form data to Netlify
+    const formData = new FormData(document.getElementById('searchForm'));
+    try {
+      await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(formData).toString(),
+      });
+    } catch (e) {
+      console.error('Form submission error:', e);
+    }
+
+    // Redirect to thank-you page after brief delay
+    setTimeout(() => {
+      window.location.href = '/thank-you-report.html';
+    }, 1500);
+
+    btn.disabled = false;
+    btn.innerHTML = 'Find My Rental <span class="arrow"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>';
+  });
+
+  // ── Help modal ───────────────────────────────────────────────────
+  const helpModal = document.getElementById('helpModal');
+  const requestHelpBtn = document.getElementById('requestHelpBtn');
+  if (requestHelpBtn) requestHelpBtn.addEventListener('click', () => helpModal.classList.add('open'));
+  document.getElementById('helpCloseBtn').addEventListener('click',   () => helpModal.classList.remove('open'));
+  helpModal.addEventListener('click', e => { if (e.target === helpModal) helpModal.classList.remove('open'); });
+
+  document.getElementById('helpSubmitBtn').addEventListener('click', async () => {
+    const name    = document.getElementById('helpName').value.trim();
+    const contact = document.getElementById('helpContact').value.trim();
+    if (!name && !contact) return;
+    const btn = document.getElementById('helpSubmitBtn');
+    btn.textContent = 'Sending…'; btn.disabled = true;
+    await captureLead({ neighborhood:'any', bedrooms:'Any', bathrooms:'Any', amenities:[], name, contact }, 'help');
+    const s = document.getElementById('helpSuccess');
+    s.textContent = `Got it — Cyril will reach out within 24 hours.`;
+    s.style.display = 'block';
+    btn.textContent = 'Sent';
+  });
+</script>
+</body>
+</html>
