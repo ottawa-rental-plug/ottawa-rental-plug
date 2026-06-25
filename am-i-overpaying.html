@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="apple-touch-icon" href="favicon.png"/>
+  <meta name="theme-color" content="#2e3d4e"/>
+
+  <!-- ══ SEO ══ -->
+  <title>Am I Overpaying for My Ottawa Rental? | Free 60-Second Check — Ottawa Rental Plug</title>
+  <meta name="description" content="Find out in 60 seconds if you're overpaying for your Ottawa rental. Free comparison against neighbourhood medians. By licensed agent Cyril Babalola."/>
+  <meta name="keywords" content="Ottawa rent calculator, am I overpaying Ottawa, Ottawa average rent, Ottawa rent comparison, Ottawa rental prices, fair rent Ottawa"/>
+  <link rel="canonical" href="https://ottawarentalplug.com/am-i-overpaying"/>
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website"/>
+  <meta property="og:url"         content="https://ottawarentalplug.com/am-i-overpaying"/>
+  <meta property="og:title"       content="Am I Overpaying for My Ottawa Rental?"/>
+  <meta property="og:description" content="60-second free check. Ottawa rent benchmark by neighbourhood. Free, no email required to see your number."/>
+  <meta property="og:image"       content="https://ottawarentalplug.com/cyril.jpg"/>
+
+  <meta name="twitter:card"        content="summary_large_image"/>
+  <meta name="twitter:title"       content="Am I Overpaying for My Ottawa Rental?"/>
+  <meta name="twitter:description" content="Free 60-second check vs. Ottawa neighbourhood medians."/>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="tw-tools.css"/>
+  <script src="analytics.js" defer></script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      background:
+        radial-gradient(ellipse 1400px 700px at 50% -100px, rgba(186,230,253,.13), transparent 60%),
+        radial-gradient(ellipse 900px 500px at 85% 25%, rgba(56,189,248,.07), transparent 55%),
+        radial-gradient(ellipse 1000px 600px at 15% 75%, rgba(201,168,76,.05), transparent 60%),
+        #283242;
+      background-attachment: fixed;
+      overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+    body::before {
+      content:'';
+      position:fixed;
+      top:0; left:0; right:0;
+      height:380px;
+      background:
+        radial-gradient(ellipse 900px 260px at 50% 0%, rgba(125,211,252,.20), transparent 70%),
+        radial-gradient(ellipse 500px 200px at 25% 0%, rgba(186,230,253,.16), transparent 70%),
+        radial-gradient(ellipse 600px 220px at 80% 0%, rgba(201,168,76,.10), transparent 70%);
+      pointer-events:none;
+      z-index:-1;
+    }
+    h1, h2, h3 { letter-spacing: -0.022em; }
+    .font-serif { letter-spacing: -0.025em; }
+    ::selection { background: rgba(2,132,199,.35); color: #fff; }
+
+    .gradient-text {
+      background: linear-gradient(135deg,#38bdf8 0%,#c9a84c 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .gradient-text-red {
+      background: linear-gradient(135deg,#ef4444 0%,#f59e0b 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .gradient-text-green {
+      background: linear-gradient(135deg,#10b981 0%,#34d399 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+
+    .glass {
+      background:
+        linear-gradient(180deg, rgba(186,230,253,.05) 0%, transparent 40%),
+        rgba(38,50,66,0.65);
+      border:1px solid rgba(125,211,252,0.18);
+      backdrop-filter:blur(18px) saturate(160%);
+      -webkit-backdrop-filter:blur(18px) saturate(160%);
+      box-shadow:
+        inset 0 1px 0 rgba(186,230,253,0.10),
+        0 24px 60px -24px rgba(125,211,252,.15),
+        0 24px 48px -24px rgba(0,0,0,.4);
+    }
+
+    .btn-blue {
+      background:linear-gradient(135deg,#0284c7,#38bdf8);
+      box-shadow:0 4px 20px rgba(2,132,199,.35), inset 0 1px 0 rgba(255,255,255,.18);
+      transition:transform .35s cubic-bezier(.4,0,.2,1), box-shadow .35s cubic-bezier(.4,0,.2,1);
+      min-height:48px; letter-spacing:-.005em;
+    }
+    .btn-blue:hover { box-shadow:0 8px 36px rgba(2,132,199,.55), inset 0 1px 0 rgba(255,255,255,.22); transform:translateY(-2px); }
+    .btn-gold {
+      background:linear-gradient(135deg,#b8922a,#e0be72);
+      box-shadow:0 4px 20px rgba(201,168,76,.3), inset 0 1px 0 rgba(255,255,255,.18);
+      transition:transform .35s cubic-bezier(.4,0,.2,1), box-shadow .35s cubic-bezier(.4,0,.2,1);
+      min-height:48px; letter-spacing:-.005em;
+    }
+    .btn-gold:hover { box-shadow:0 8px 36px rgba(201,168,76,.5), inset 0 1px 0 rgba(255,255,255,.22); transform:translateY(-2px); }
+    .btn-outline { border:1.5px solid rgba(56,189,248,.5); transition:all .3s ease; min-height:48px; }
+    .btn-outline:hover { background:rgba(2,132,199,.15); border-color:#38bdf8; }
+    .btn-glass {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 28px rgba(0,0,0,.25);
+      transition: all .3s ease; min-height:48px;
+    }
+    .btn-glass:hover {
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(56,189,248,.45);
+      transform: translateY(-2px);
+    }
+
+    /* Mobile fixes */
+    @media (max-width: 768px) {
+      input, select, textarea { font-size: 16px !important; }
+    }
+    @media (max-width: 480px) {
+      .btn-blue, .btn-gold, .btn-outline, .btn-glass { min-height: 52px; }
+      .glass { padding: 1.25rem !important; }
+    }
+    @media (hover: none) {
+      .btn-blue:hover, .btn-gold:hover, .btn-outline:hover, .btn-glass:hover { transform: none; }
+    }
+
+    input:focus, select:focus { outline:none; border-color:#0284c7 !important; box-shadow:0 0 0 3px rgba(2,132,199,.15); }
+
+    /* Hide native number spinners — they collide with our suffix */
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+    .reveal { animation: reveal .6s cubic-bezier(.4,0,.2,1) both; }
+    @keyframes reveal { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+
+    .pop { animation: pop .5s cubic-bezier(.34,1.56,.64,1) both; }
+    @keyframes pop { from { opacity:0; transform:scale(.85); } to { opacity:1; transform:scale(1); } }
+
+    .bar-fill { transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+
+    .step { display:none; }
+    .step.active { display:block; }
+
+    .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+
+    /* Number counter pulse */
+    .pulse-num { animation: pulse-num 2s ease-in-out infinite; }
+    @keyframes pulse-num { 0%,100% { transform:scale(1); } 50% { transform:scale(1.03); } }
+
+    * { scrollbar-width: thin; scrollbar-color: #7dd3fc transparent; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #7dd3fc; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #40d8f0; }
+
+    /* ══ PREMIUM LAYER ══ */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      opacity: 0.028;
+      pointer-events: none;
+      z-index: 9998;
+    }
+    .btn-blue, .btn-gold { position: relative; overflow: hidden; }
+    .btn-blue::after, .btn-gold::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.22) 50%, transparent 65%);
+      transform: translateX(-110%);
+      transition: transform .65s cubic-bezier(.4,0,.2,1);
+      pointer-events: none;
+    }
+    .btn-blue:hover::after, .btn-gold:hover::after { transform: translateX(110%); }
+    .btn-blue {
+      box-shadow: 0 4px 22px rgba(14,165,233,.38),
+                  inset 0 1px 0 rgba(255,255,255,.28),
+                  inset 0 -1px 0 rgba(0,0,0,.18);
+    }
+    .btn-blue:hover {
+      box-shadow: 0 10px 44px rgba(14,165,233,.62),
+                  inset 0 1px 0 rgba(255,255,255,.32),
+                  inset 0 -1px 0 rgba(0,0,0,.18);
+    }
+    .btn-gold {
+      box-shadow: 0 4px 22px rgba(201,168,76,.36),
+                  inset 0 1px 0 rgba(255,255,255,.28),
+                  inset 0 -1px 0 rgba(0,0,0,.18);
+    }
+    .btn-gold:hover {
+      box-shadow: 0 10px 44px rgba(201,168,76,.58),
+                  inset 0 1px 0 rgba(255,255,255,.32),
+                  inset 0 -1px 0 rgba(0,0,0,.18);
+    }
+    .btn-glass {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.13),
+                  inset 0 -1px 0 rgba(0,0,0,.12),
+                  0 8px 32px rgba(0,0,0,.28);
+    }
+    .btn-glass:hover {
+      background: rgba(255,255,255,.11);
+      border-color: rgba(125,211,252,.5);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.18),
+                  inset 0 -1px 0 rgba(0,0,0,.12),
+                  0 14px 42px rgba(14,165,233,.22);
+      transform: translateY(-2px);
+    }
+    .glass {
+      background:
+        linear-gradient(180deg, rgba(186,230,253,.09) 0%, transparent 42%),
+        rgba(38,50,66,0.60);
+      border: 1px solid rgba(125,211,252,0.22);
+      box-shadow:
+        inset 0 1px 0 rgba(186,230,253,.17),
+        0 24px 60px -24px rgba(125,211,252,.20),
+        0 32px 56px -24px rgba(0,0,0,.36);
+    }
+    #navbar {
+      background: rgba(12,18,32,0.85) !important;
+      backdrop-filter: blur(24px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+      border-bottom: 1px solid rgba(125,211,252,0.13) !important;
+      box-shadow: 0 1px 0 rgba(0,0,0,.18);
+    }
+    #navbar::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(125,211,252,.55) 35%, rgba(201,168,76,.28) 65%, transparent);
+      pointer-events: none; z-index: 1;
+    }
+    #navbar .btn-blue, #navbar .btn-gold, #navbar .btn-glass, #navbar .btn-outline { border-radius: 9999px !important; }
+    .nav-link { letter-spacing: 0.01em; font-size: 0.8125rem; }
+    .lift:hover { box-shadow: 0 24px 64px rgba(14,165,233,.20), 0 8px 24px rgba(0,0,0,.22); }
+    .review-card {
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+    }
+
+    /* ══ LIGHT SECTION THEME ══ */
+    .section-light {
+      background:
+        linear-gradient(180deg, #edf2f8 0%, #f4f7fb 40%, #f0f4fa 100%);
+      position: relative;
+    }
+    .section-light::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(14,165,233,0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+    }
+    .section-light .text-white          { color: #1a3248 !important; }
+    .section-light h2, .section-light h3 { color: #1a3248 !important; }
+    .section-light .text-gray-300       { color: #3d5870 !important; }
+    .section-light .text-gray-400       { color: #4a6a82 !important; }
+    .section-light .text-gray-500       { color: #6b8499 !important; }
+    .section-light .text-gray-600       { color: #7a96ac !important; }
+    .section-light .text-plug-muted     { color: #5a7a90 !important; }
+    .section-light .text-plug-blueLight { color: #0369a1 !important; }
+    .section-light .text-plug-sky       { color: #0369a1 !important; }
+    .section-light .border-plug-border  { border-color: rgba(14,165,233,0.12) !important; }
+    .card-light {
+      background: #ffffff;
+      border: 1px solid rgba(14,165,233,0.12);
+      box-shadow: 0 2px 16px rgba(14,165,233,0.05), 0 1px 3px rgba(0,0,0,0.04);
+      transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+    }
+    .card-light:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 40px rgba(14,165,233,0.12), 0 4px 12px rgba(0,0,0,0.06);
+      border-color: rgba(14,165,233,0.28);
+    }
+    .accent-bar {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, rgba(14,165,233,0.45) 35%, rgba(201,168,76,0.3) 65%, transparent);
+    }
+    .accent-bar::before {
+      content: '';
+      position: absolute; bottom: 100%; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(180deg, transparent, rgba(14,165,233,0.03));
+      pointer-events: none;
+    }
+    .accent-bar::after {
+      content: '';
+      position: absolute; top: 100%; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(180deg, rgba(14,165,233,0.03), transparent);
+      pointer-events: none;
+    }
+    .accent-bar { position: relative; }
+
+    .section-light .gradient-text,
+    .gradient-text-dark {
+      background: linear-gradient(135deg, #0369a1 0%, #b8922a 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-clip: text !important;
+      filter: none !important;
+    }
+
+    .section-light p { font-weight: 420; }
+    .section-light .text-sm { font-weight: 450; }
+
+    .card-light {
+      position: relative;
+      overflow: hidden;
+    }
+    .card-light::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(14,165,233,0.3), transparent);
+      pointer-events: none;
+    }
+
+    .divider { display: none; }
+
+    footer { position: relative; }
+    footer::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 0; right: 0;
+      height: 80px;
+      background: linear-gradient(180deg, rgba(14,165,233,0.06), transparent);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="font-sans text-white antialiased">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 left-0 right-0 z-50" style="background:rgba(12,18,32,0.85);backdrop-filter:blur(18px);border-bottom:1px solid rgba(2,132,199,0.15);">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between py-3">
+        <a href="index.html" class="flex items-center">
+          <img src="logo-nav.png" alt="Ottawa Rental Plug" class="h-9 sm:h-10 w-auto object-contain"/>
+        </a>
+        <a href="index.html" class="text-sm text-plug-blueLight hover:text-white transition flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          Back to Home
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═════════════ HERO ═════════════ -->
+  <section class="pt-24 pb-8 px-4 sm:px-6">
+    <div class="max-w-3xl mx-auto text-center">
+      <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-5" style="background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3);">
+        <span class="w-2 h-2 rounded-full bg-red-400 animate-pulse"></span>
+        <span class="text-xs font-bold tracking-widest uppercase text-red-300">Free · 60-Second Check · No Email Required</span>
+      </span>
+      <h1 class="font-serif font-bold leading-tight mb-5" style="font-size:clamp(2rem,5.5vw,3.75rem);">
+        Am I Overpaying for My<br/>
+        <span class="gradient-text">Ottawa Rental?</span>
+      </h1>
+      <p class="text-base sm:text-lg text-gray-300 leading-relaxed font-light max-w-xl mx-auto mb-3">
+        Most Ottawa renters have <strong class="text-white">no idea</strong> if they're paying market rate. Take 60 seconds and find out.
+      </p>
+      <p class="text-xs text-gray-500">Compared against current Ottawa neighbourhood medians · Built by licensed agent Cyril Babalola</p>
+    </div>
+  </section>
+
+  <!-- ═════════════ CALCULATOR ═════════════ -->
+  <section class="pb-20 px-4 sm:px-6">
+    <div class="max-w-2xl mx-auto">
+
+      <!-- ── STEP 1: FORM ── -->
+      <div id="stepForm" class="step active">
+        <div class="glass rounded-3xl p-6 sm:p-8">
+          <form id="calcForm" class="space-y-6">
+
+            <!-- Rent -->
+            <div>
+              <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">What do you currently pay per month?</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg font-semibold">$</span>
+                <input id="rent" type="number" min="0" step="50" placeholder="2,200" required
+                       class="w-full border border-plug-border rounded-xl pl-9 pr-4 py-4 text-white text-lg font-semibold transition-all"
+                       style="background:rgba(46,61,76,.8);"/>
+              </div>
+            </div>
+
+            <!-- Bedrooms -->
+            <div>
+              <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Bedrooms</label>
+              <div class="grid grid-cols-5 gap-2" id="bedsGroup">
+                <button type="button" data-beds="0" class="bed-btn py-3 rounded-xl border border-plug-border text-sm font-semibold transition-all hover:border-plug-blueLight" style="background:rgba(46,61,76,.6);">Studio</button>
+                <button type="button" data-beds="1" class="bed-btn py-3 rounded-xl border border-plug-border text-sm font-semibold transition-all hover:border-plug-blueLight" style="background:rgba(46,61,76,.6);">1 BR</button>
+                <button type="button" data-beds="2" class="bed-btn py-3 rounded-xl border border-plug-border text-sm font-semibold transition-all hover:border-plug-blueLight" style="background:rgba(46,61,76,.6);">2 BR</button>
+                <button type="button" data-beds="3" class="bed-btn py-3 rounded-xl border border-plug-border text-sm font-semibold transition-all hover:border-plug-blueLight" style="background:rgba(46,61,76,.6);">3 BR</button>
+                <button type="button" data-beds="4" class="bed-btn py-3 rounded-xl border border-plug-border text-sm font-semibold transition-all hover:border-plug-blueLight" style="background:rgba(46,61,76,.6);">4+ BR</button>
+              </div>
+            </div>
+
+            <!-- Neighbourhood -->
+            <div>
+              <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Neighbourhood</label>
+              <select id="neighborhood" required
+                      class="w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base font-medium transition-all"
+                      style="background:rgba(46,61,76,.8);">
+                <option value="">Select your neighbourhood...</option>
+                <option value="Glebe">Glebe</option>
+                <option value="Westboro">Westboro</option>
+                <option value="Downtown">Downtown</option>
+                <option value="Centretown">Centretown</option>
+                <option value="Kanata">Kanata</option>
+                <option value="Hazeldean">Hazeldean</option>
+                <option value="Stittsville">Stittsville</option>
+                <option value="Nepean">Nepean</option>
+                <option value="Barrhaven">Barrhaven</option>
+                <option value="Orleans">Orleans</option>
+                <option value="Other">Other Ottawa</option>
+              </select>
+            </div>
+
+            <!-- Sqft (optional) -->
+            <div>
+              <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Square footage <span class="text-gray-500 normal-case font-normal">(optional — improves accuracy)</span></label>
+              <div class="relative">
+                <input id="sqft" type="number" inputmode="numeric" min="0" step="50" placeholder="e.g. 850"
+                       class="sqft-input w-full border border-plug-border rounded-xl pl-4 pr-16 py-4 text-white text-base transition-all"
+                       style="background:rgba(46,61,76,.8);"/>
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">sqft</span>
+              </div>
+            </div>
+
+            <button type="submit" id="checkBtn"
+                    class="btn-blue w-full py-4 rounded-xl font-bold text-white text-base tracking-wide flex items-center justify-center gap-2">
+              Check My Rent →
+            </button>
+            <p class="text-xs text-plug-sky text-center">No email required to see your result · We never spam</p>
+          </form>
+        </div>
+
+        <!-- Trust strip -->
+        <div class="text-center mt-6 text-xs flex items-center justify-center gap-2 text-plug-sky">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Your answers stay private · Built by a licensed Ottawa mortgage agent &amp; property manager</span>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: RESULT ── -->
+      <div id="stepResult" class="step">
+        <!-- Result Card -->
+        <div id="resultCard" class="glass rounded-3xl p-6 sm:p-10 text-center reveal" style="border-width:2px;">
+          <div id="resultBadge" class="inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-4"></div>
+          <p class="text-sm text-gray-400 uppercase tracking-widest mb-2" id="resultLead">You are overpaying by</p>
+          <div class="font-serif font-extrabold leading-none mb-2 pulse-num" id="resultBig" style="font-size:clamp(3.5rem,12vw,7rem);">$0</div>
+          <p class="text-base text-gray-300 mb-6" id="resultSub">/month</p>
+
+          <!-- Bar comparison -->
+          <div class="space-y-4 max-w-md mx-auto text-left mb-8">
+            <div>
+              <div class="flex justify-between text-xs text-gray-400 mb-1.5">
+                <span>What you pay</span>
+                <span class="text-white font-semibold" id="youPayLabel">$0</span>
+              </div>
+              <div class="h-3 rounded-full overflow-hidden" style="background:rgba(255,255,255,.05);">
+                <div id="youPayBar" class="bar-fill h-full" style="width:0%; background:linear-gradient(90deg,#ef4444,#f59e0b);"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs text-gray-400 mb-1.5">
+                <span id="marketLabel">Ottawa market median</span>
+                <span class="text-white font-semibold" id="marketValue">$0</span>
+              </div>
+              <div class="h-3 rounded-full overflow-hidden" style="background:rgba(255,255,255,.05);">
+                <div id="marketBar" class="bar-fill h-full" style="width:0%; background:linear-gradient(90deg,#0284c7,#38bdf8);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Annual cost -->
+          <div class="rounded-2xl p-5 inline-block max-w-md" id="annualBox" style="background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.25);">
+            <p class="text-xs uppercase tracking-widest mb-1" id="annualLabel" style="color:#fca5a5;">Annual impact</p>
+            <p class="text-2xl font-bold text-white" id="annualValue">$0/yr</p>
+            <p class="text-xs text-gray-400 mt-1" id="annualNote">extra rent vs. market over 12 months</p>
+          </div>
+
+          <!-- Methodology -->
+          <details class="mt-8 text-xs text-gray-500 max-w-md mx-auto text-left">
+            <summary class="cursor-pointer hover:text-gray-300 transition">How we calculated this</summary>
+            <p class="mt-3 leading-relaxed">We compared your rent against the median for <span id="methodHood" class="text-white font-medium">Ottawa</span> <span id="methodBeds" class="text-white font-medium">2 BR</span> rentals based on current Ottawa market data and CMHC benchmarks. Your sqft was used to refine the median by ±15% when provided. This is an estimate — your actual fair rent depends on building age, amenities, and parking. For a precise read, request a free consultation with Cyril.</p>
+          </details>
+        </div>
+
+        <!-- CTA below result -->
+        <div class="glass rounded-3xl p-6 sm:p-8 mt-6 reveal" style="animation-delay:.3s;">
+          <div class="text-center mb-5">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-3" style="background:rgba(201,168,76,.12); border:1px solid rgba(201,168,76,.3);">
+              <span class="w-2 h-2 rounded-full bg-plug-gold animate-pulse"></span>
+              <span class="text-xs font-bold uppercase tracking-widest text-plug-gold">Cyril's Free Follow-up</span>
+            </div>
+            <h3 class="font-serif font-bold text-xl sm:text-2xl text-white mb-2">Want <span class="gradient-text">5 better options</span> in your area?</h3>
+            <p class="text-sm text-gray-400">Cyril will personally hand-pick 5 listings under your current rent — including off-market units only he sees. Free. No obligation.</p>
+          </div>
+
+          <form id="emailForm" class="space-y-3 max-w-md mx-auto">
+            <input id="leadName" type="text" placeholder="Your name"
+                   class="w-full border border-plug-border rounded-xl px-4 py-3.5 text-white text-sm placeholder-gray-600 transition-all"
+                   style="background:rgba(46,61,76,.8);"/>
+            <input id="leadContact" type="text" placeholder="Email or phone" required
+                   class="w-full border border-plug-border rounded-xl px-4 py-3.5 text-white text-sm placeholder-gray-600 transition-all"
+                   style="background:rgba(46,61,76,.8);"/>
+            <button type="submit" id="leadBtn"
+                    class="btn-gold w-full py-4 rounded-xl font-bold text-white text-sm tracking-wide">
+              Send Me 5 Better Options →
+            </button>
+            <p class="text-xs text-plug-sky text-center">Within 24 hours · Off-market units included · No spam</p>
+          </form>
+
+          <div id="leadSuccess" class="hidden rounded-xl p-4 text-center mt-4" style="background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.3);">
+            <p class="text-green-400 font-semibold">Got it! Cyril will email you 5 hand-picked options within 24 hours.</p>
+          </div>
+        </div>
+
+        <!-- Share + restart -->
+        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+          <button id="shareBtn" class="btn-glass flex-1 py-3.5 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-2">
+            Share My Result
+          </button>
+          <button id="restartBtn" class="btn-glass flex-1 py-3.5 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-2">
+            Check Another Place
+          </button>
+        </div>
+        <p id="shareConfirm" class="hidden text-center text-xs text-plug-blueLight mt-3"></p>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Why Cyril -->
+  <section class="py-16 px-4 sm:px-6" style="background:linear-gradient(135deg,#2c3747 0%,#26394f 50%,#2c3747 100%);border-top:1px solid rgba(2,132,199,.2);">
+    <div class="max-w-4xl mx-auto text-center">
+      <span class="text-xs text-plug-blueLight font-semibold tracking-widest uppercase">Why this matters</span>
+      <h2 class="font-serif text-2xl sm:text-3xl font-bold text-white mt-2 mb-4">
+        Most Ottawa renters overpay by <span class="gradient-text">$200–$400/mo</span>
+      </h2>
+      <p class="text-gray-400 max-w-2xl mx-auto leading-relaxed">
+        That's $2,400 – $4,800 a year. Wasted. Cyril Babalola has placed 47+ Ottawa tenants in homes <strong class="text-white">at or below market rate</strong>.
+      </p>
+      <a href="search-rentals.html" class="btn-blue inline-flex items-center justify-center gap-2 mt-7 px-7 py-3.5 rounded-xl font-semibold text-white text-sm">
+        Find a Better Rental →
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="background:#080c11;border-top:1px solid rgba(2,132,199,0.15);">
+    <div class="max-w-5xl mx-auto px-4 py-8 text-center">
+      <p class="text-gray-500 text-xs">© 2026 Ottawa Rental Plug · Cyril Babalola · Licensed Mortgage Agent & Property Manager</p>
+      <p class="text-gray-600 text-xs mt-2">
+        <a href="tel:+16136013005" class="hover:text-plug-blueLight">(613) 601-3005</a> ·
+        <a href="mailto:cyrilrentsottawa@gmail.com" class="hover:text-plug-blueLight">cyrilrentsottawa@gmail.com</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Mobile floating bar -->
+  <div class="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-safe"
+       style="background:rgba(8,12,17,0.97);border-top:1px solid rgba(2,132,199,0.2);backdrop-filter:blur(12px);">
+    <div class="flex gap-3 px-4 py-3 justify-center">
+      <a href="tel:+16136013005" class="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-white text-sm btn-blue">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.18 21 3 13.82 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z"/></svg>
+        Call Cyril
+      </a>
+      <a href="search-rentals.html" class="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-white text-sm btn-gold">Search</a>
+    </div>
+  </div>
+  <div class="h-20 md:hidden"></div>
+
+  <script>
+    // ─── DATA: Ottawa rent benchmarks (2025-2026 estimates) ──────────────
+    // Base monthly rent for Ottawa overall, by bedroom count
+    const BASE_RENT = {
+      '0': 1500,  // Studio
+      '1': 1800,  // 1 BR
+      '2': 2300,  // 2 BR
+      '3': 2800,  // 3 BR
+      '4': 3400,  // 4+ BR
+    };
+
+    // Premium/discount multipliers per neighbourhood vs. Ottawa overall
+    const HOOD_MULT = {
+      'Glebe':       1.20,
+      'Westboro':    1.18,
+      'Downtown':    1.10,
+      'Centretown':  1.10,
+      'Kanata':      1.00,
+      'Hazeldean':   0.98,
+      'Stittsville': 0.95,
+      'Nepean':      0.92,
+      'Barrhaven':   0.90,
+      'Orleans':     0.88,
+      'Other':       1.00,
+    };
+
+    // Expected sqft per bedroom count (used for sqft adjustment)
+    const EXPECTED_SQFT = { '0': 500, '1': 650, '2': 900, '3': 1300, '4': 1700 };
+
+    const BED_LABELS = { '0': 'Studio', '1': '1 BR', '2': '2 BR', '3': '3 BR', '4': '4+ BR' };
+
+    function calcMarketRent(beds, neighborhood, sqft) {
+      const base = BASE_RENT[beds] || 2000;
+      const mult = HOOD_MULT[neighborhood] || 1.0;
+      let market = base * mult;
+      if (sqft && EXPECTED_SQFT[beds]) {
+        const ratio = sqft / EXPECTED_SQFT[beds];
+        const cap   = Math.max(0.85, Math.min(1.15, ratio));
+        market *= cap;
+      }
+      return Math.round(market / 25) * 25; // round to nearest $25
+    }
+
+    // ─── BEDROOM PILL SELECTOR ───────────────────────────────────────────
+    let selectedBeds = null;
+    document.getElementById('bedsGroup').addEventListener('click', (e) => {
+      const btn = e.target.closest('.bed-btn');
+      if (!btn) return;
+      document.querySelectorAll('.bed-btn').forEach(b => {
+        b.classList.remove('text-white');
+        b.style.background = 'rgba(46,61,76,.6)';
+        b.style.borderColor = '';
+      });
+      btn.classList.add('text-white');
+      btn.style.background = 'linear-gradient(135deg,#0284c7,#38bdf8)';
+      btn.style.borderColor = '#38bdf8';
+      selectedBeds = btn.dataset.beds;
+    });
+
+    // ─── ANIMATE COUNTER ─────────────────────────────────────────────────
+    function animateNum(el, from, to, duration = 1200, prefix = '$', suffix = '') {
+      const start = performance.now();
+      const diff  = to - from;
+      function tick(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const ease = 1 - Math.pow(1 - t, 3);
+        const val = Math.round(from + diff * ease);
+        el.textContent = prefix + val.toLocaleString() + suffix;
+        if (t < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // ─── FORM HANDLER ────────────────────────────────────────────────────
+    let resultData = null;
+
+    document.getElementById('calcForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const rent         = parseFloat(document.getElementById('rent').value);
+      const neighborhood = document.getElementById('neighborhood').value;
+      const sqft         = parseFloat(document.getElementById('sqft').value) || null;
+
+      if (!rent || !neighborhood || selectedBeds === null) {
+        alert('Please fill in your rent, bedrooms, and neighbourhood.');
+        return;
+      }
+
+      const market = calcMarketRent(selectedBeds, neighborhood, sqft);
+      const diff   = rent - market;
+      const pct    = (diff / market) * 100;
+
+      let verdict;
+      if (pct > 8)        verdict = 'overpaying';
+      else if (pct < -8)  verdict = 'great-deal';
+      else                verdict = 'at-market';
+
+      resultData = { rent, market, diff, pct, verdict, beds: selectedBeds, neighborhood, sqft };
+      renderResult(resultData);
+
+      document.getElementById('stepForm').classList.remove('active');
+      document.getElementById('stepResult').classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ─── RENDER RESULT ───────────────────────────────────────────────────
+    function renderResult(d) {
+      const card    = document.getElementById('resultCard');
+      const badge   = document.getElementById('resultBadge');
+      const lead    = document.getElementById('resultLead');
+      const big     = document.getElementById('resultBig');
+      const sub     = document.getElementById('resultSub');
+      const youBar  = document.getElementById('youPayBar');
+      const mktBar  = document.getElementById('marketBar');
+      const youLab  = document.getElementById('youPayLabel');
+      const mktLab  = document.getElementById('marketLabel');
+      const mktVal  = document.getElementById('marketValue');
+      const annBox  = document.getElementById('annualBox');
+      const annLab  = document.getElementById('annualLabel');
+      const annVal  = document.getElementById('annualValue');
+      const annNote = document.getElementById('annualNote');
+
+      const hoodLabel = d.neighborhood === 'Other' ? 'Ottawa' : d.neighborhood;
+      const bedLabel  = BED_LABELS[d.beds];
+
+      document.getElementById('methodHood').textContent = hoodLabel;
+      document.getElementById('methodBeds').textContent = bedLabel;
+      mktLab.textContent = `${hoodLabel} ${bedLabel} median`;
+
+      const max = Math.max(d.rent, d.market);
+
+      youLab.textContent = '$' + d.rent.toLocaleString();
+      mktVal.textContent = '$' + d.market.toLocaleString();
+
+      setTimeout(() => {
+        youBar.style.width = ((d.rent / max) * 100) + '%';
+        mktBar.style.width = ((d.market / max) * 100) + '%';
+      }, 100);
+
+      if (d.verdict === 'overpaying') {
+        card.style.borderColor   = 'rgba(239,68,68,.45)';
+        badge.textContent        = 'Overpaying';
+        badge.style.background   = 'rgba(239,68,68,.15)';
+        badge.style.color        = '#fca5a5';
+        lead.textContent         = 'You are overpaying by';
+        big.className            = 'font-serif font-extrabold leading-none mb-2 pulse-num gradient-text-red';
+        sub.textContent          = `per month · ${Math.abs(Math.round(d.pct))}% above ${hoodLabel} ${bedLabel} median`;
+        annBox.style.background  = 'rgba(239,68,68,.08)';
+        annBox.style.borderColor = 'rgba(239,68,68,.25)';
+        annLab.textContent       = 'Annual cost of overpaying';
+        annLab.style.color       = '#fca5a5';
+        annNote.textContent      = 'extra rent vs. market over 12 months';
+        animateNum(big, 0, Math.abs(Math.round(d.diff)), 1400, '$', '');
+        animateNum(annVal, 0, Math.abs(Math.round(d.diff * 12)), 1400, '$', '/yr');
+      } else if (d.verdict === 'great-deal') {
+        card.style.borderColor   = 'rgba(16,185,129,.45)';
+        badge.textContent        = 'Great Deal';
+        badge.style.background   = 'rgba(16,185,129,.15)';
+        badge.style.color        = '#6ee7b7';
+        lead.textContent         = 'You are saving';
+        big.className            = 'font-serif font-extrabold leading-none mb-2 pulse-num gradient-text-green';
+        sub.textContent          = `per month · ${Math.abs(Math.round(d.pct))}% below ${hoodLabel} ${bedLabel} median`;
+        annBox.style.background  = 'rgba(16,185,129,.08)';
+        annBox.style.borderColor = 'rgba(16,185,129,.25)';
+        annLab.textContent       = 'Annual savings vs. market';
+        annLab.style.color       = '#6ee7b7';
+        annNote.textContent      = 'Lock that lease in. Renew it. Tell no one.';
+        animateNum(big, 0, Math.abs(Math.round(d.diff)), 1400, '$', '');
+        animateNum(annVal, 0, Math.abs(Math.round(d.diff * 12)), 1400, '$', '/yr');
+      } else {
+        card.style.borderColor   = 'rgba(56,189,248,.45)';
+        badge.textContent        = 'At Market';
+        badge.style.background   = 'rgba(56,189,248,.15)';
+        badge.style.color        = '#7dd3fc';
+        lead.textContent         = 'You are paying';
+        big.className            = 'font-serif font-extrabold leading-none mb-2 pulse-num gradient-text';
+        sub.textContent          = `near ${hoodLabel} ${bedLabel} median (within 8%)`;
+        annBox.style.background  = 'rgba(56,189,248,.08)';
+        annBox.style.borderColor = 'rgba(56,189,248,.25)';
+        annLab.textContent       = 'Your rent vs. market';
+        annLab.style.color       = '#7dd3fc';
+        annNote.textContent      = 'You are paying a fair Ottawa price — Cyril can still find you better.';
+        animateNum(big, 0, d.rent, 1400, '$', '');
+        annVal.textContent       = '$' + d.market.toLocaleString() + ' median';
+      }
+    }
+
+    // ─── EMAIL CAPTURE ───────────────────────────────────────────────────
+    document.getElementById('emailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name    = document.getElementById('leadName').value.trim();
+      const contact = document.getElementById('leadContact').value.trim();
+      if (!contact) return;
+
+      const btn = document.getElementById('leadBtn');
+      btn.textContent = 'Sending…';
+      btn.disabled = true;
+
+      const verdictText = resultData.verdict === 'overpaying'
+        ? `Overpaying by $${Math.abs(Math.round(resultData.diff))}/mo`
+        : resultData.verdict === 'great-deal'
+        ? `Saving $${Math.abs(Math.round(resultData.diff))}/mo`
+        : 'At market';
+
+      try {
+        await fetch('https://formspree.io/f/mdabgrqy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            _subject:     `ORP RENT CHECK — ${resultData.neighborhood} (${verdictText})`,
+            type:         'rent-check',
+            timestamp:    new Date().toISOString(),
+            name,
+            contact,
+            currentRent:  `$${resultData.rent}/mo`,
+            marketRent:   `$${resultData.market}/mo`,
+            difference:   `$${Math.round(resultData.diff)}/mo (${Math.round(resultData.pct)}%)`,
+            verdict:      verdictText,
+            neighborhood: resultData.neighborhood,
+            bedrooms:     BED_LABELS[resultData.beds],
+            sqft:         resultData.sqft || '',
+            requesting:   '5 better options in their area',
+          }),
+        });
+        document.getElementById('emailForm').classList.add('hidden');
+        document.getElementById('leadSuccess').classList.remove('hidden');
+      } catch (_) {
+        btn.textContent = 'Try Again';
+        btn.disabled = false;
+      }
+    });
+
+    // ─── SHARE ───────────────────────────────────────────────────────────
+    document.getElementById('shareBtn').addEventListener('click', async () => {
+      if (!resultData) return;
+      const text = resultData.verdict === 'overpaying'
+        ? `I just found out I'm overpaying $${Math.abs(Math.round(resultData.diff))}/mo for my ${BED_LABELS[resultData.beds]} in ${resultData.neighborhood}. That's $${Math.abs(Math.round(resultData.diff*12)).toLocaleString()}/year wasted! Check yours →`
+        : resultData.verdict === 'great-deal'
+        ? `I'm saving $${Math.abs(Math.round(resultData.diff))}/mo on my ${BED_LABELS[resultData.beds]} in ${resultData.neighborhood} vs. market! Check what you should be paying →`
+        : `My ${BED_LABELS[resultData.beds]} in ${resultData.neighborhood} is right at market rate. Find out what you should be paying →`;
+      const url = 'https://ottawarentalplug.com/am-i-overpaying';
+
+      if (navigator.share) {
+        try { await navigator.share({ title: 'Am I Overpaying for My Ottawa Rental?', text, url }); } catch (_) {}
+      } else {
+        try {
+          await navigator.clipboard.writeText(`${text} ${url}`);
+          const c = document.getElementById('shareConfirm');
+          c.textContent = 'Result copied — paste anywhere';
+          c.classList.remove('hidden');
+          setTimeout(() => c.classList.add('hidden'), 4000);
+        } catch (_) {
+          alert(text + '\n\n' + url);
+        }
+      }
+    });
+
+    // ─── RESTART ─────────────────────────────────────────────────────────
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      document.getElementById('calcForm').reset();
+      document.querySelectorAll('.bed-btn').forEach(b => {
+        b.classList.remove('text-white');
+        b.style.background = 'rgba(46,61,76,.6)';
+        b.style.borderColor = '';
+      });
+      selectedBeds = null;
+      resultData = null;
+      document.getElementById('emailForm').classList.remove('hidden');
+      document.getElementById('leadSuccess').classList.add('hidden');
+      document.getElementById('leadBtn').textContent = 'Send Me 5 Better Options →';
+      document.getElementById('leadBtn').disabled = false;
+      document.getElementById('stepResult').classList.remove('active');
+      document.getElementById('stepForm').classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+
+</body>
+</html>

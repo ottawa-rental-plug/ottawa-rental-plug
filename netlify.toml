@@ -1,0 +1,19 @@
+# Ottawa Rental Plug — Netlify config
+[build]
+  publish = "."
+
+# Long-cache static assets (filenames change when content changes)
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/*.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/*.mp4"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

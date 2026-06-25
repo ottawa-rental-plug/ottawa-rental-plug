@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ottawa Rental Market Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #1d1d1f;
+            background: #f5f5f7;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 48px 32px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #e8e8ed;
+            padding-bottom: 16px;
+        }
+
+        .header-brand {
+            font-weight: 700;
+            font-size: 14px;
+            color: #003a8c;
+        }
+
+        .header-date {
+            font-size: 11px;
+            color: #6e6e73;
+            text-align: right;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #003a8c;
+            margin-top: 24px;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #6e6e73;
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #0071e3;
+            margin-top: 32px;
+            margin-bottom: 16px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 32px;
+            background: #e8f0fd;
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #003a8c;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: #0071e3;
+            font-weight: 600;
+        }
+
+        .neighborhood {
+            margin-bottom: 16px;
+            border: 1px solid #e8e8ed;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .neighborhood-header {
+            background: #fafafa;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e8e8ed;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .neighborhood-name {
+            font-weight: 700;
+            font-size: 12px;
+            color: #003a8c;
+        }
+
+        .neighborhood-stat {
+            font-weight: 700;
+            font-size: 11px;
+            color: #0071e3;
+            text-align: center;
+        }
+
+        .neighborhood-demand {
+            font-weight: 700;
+            font-size: 11px;
+            color: #b45309;
+            text-align: center;
+        }
+
+        .neighborhood-body {
+            padding: 12px 16px;
+            font-size: 12px;
+            color: #6e6e73;
+            line-height: 1.5;
+        }
+
+        .section-text {
+            font-size: 12px;
+            line-height: 1.6;
+            color: #1d1d1f;
+            margin-bottom: 16px;
+        }
+
+        .section-text b {
+            color: #003a8c;
+        }
+
+        .next-steps {
+            background: #f9f9fb;
+            padding: 24px;
+            border-radius: 8px;
+            margin-top: 24px;
+            margin-bottom: 24px;
+        }
+
+        .next-step-item {
+            margin-bottom: 16px;
+        }
+
+        .next-step-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .next-step-title {
+            font-weight: 700;
+            color: #003a8c;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .next-step-text {
+            font-size: 11px;
+            color: #6e6e73;
+            line-height: 1.5;
+        }
+
+        .cta-box {
+            background: #0071e3;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .cta-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .cta-subtitle {
+            font-size: 12px;
+            opacity: 0.95;
+        }
+
+        .footer {
+            border-top: 1px solid #e8e8ed;
+            margin-top: 24px;
+            padding-top: 16px;
+            text-align: center;
+            font-size: 10px;
+            color: #6e6e73;
+        }
+
+        .footer-brand {
+            font-weight: 700;
+            color: #003a8c;
+            margin-bottom: 6px;
+        }
+
+        .footer-contact {
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e8e8ed;
+            margin: 24px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 24px 16px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .neighborhood-header {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-brand">Ottawa Rental Plug</div>
+            <div class="header-date">June 2026 Market Report</div>
+        </div>
+
+        <!-- Title -->
+        <h1>Ottawa Rental Market Intelligence</h1>
+        <p class="subtitle">Your personalized market analysis prepared June 25, 2026</p>
+
+        <!-- Key Metrics -->
+        <h2>Key Market Metrics</h2>
+        <div class="metrics-grid">
+            <div class="metric">
+                <div class="metric-value">$1,450</div>
+                <div class="metric-label">Avg 1BR Rent</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">+3.2%</div>
+                <div class="metric-label">YoY Trend</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">847</div>
+                <div class="metric-label">Active Listings</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">18 days</div>
+                <div class="metric-label">Avg Time Rented</div>
+            </div>
+        </div>
+
+        <!-- Neighborhoods -->
+        <h2>Neighborhood Profiles</h2>
+
+        <div class="neighborhood">
+            <div class="neighborhood-header">
+                <div class="neighborhood-name">Downtown / Centretown</div>
+                <div class="neighborhood-stat">$1,650 • ↑ 4.1%</div>
+                <div class="neighborhood-demand">High Demand</div>
+            </div>
+            <div class="neighborhood-body">
+                Premium walkable core with strong young professional presence. Highest rental premiums in the market. Competitive listings move quickly (avg 12 days).
+            </div>
+        </div>
+
+        <div class="neighborhood">
+            <div class="neighborhood-header">
+                <div class="neighborhood-name">Glebe / Westboro</div>
+                <div class="neighborhood-stat">$1,520 • ↑ 2.8%</div>
+                <div class="neighborhood-demand">High Demand</div>
+            </div>
+            <div class="neighborhood-body">
+                Established, walkable communities attracting families and professionals. Steady rental demand. Good balance of affordability and amenity access.
+            </div>
+        </div>
+
+        <div class="neighborhood">
+            <div class="neighborhood-header">
+                <div class="neighborhood-name">Kanata / Stittsville</div>
+                <div class="neighborhood-stat">$1,380 • ↑ 1.9%</div>
+                <div class="neighborhood-demand">Moderate Demand</div>
+            </div>
+            <div class="neighborhood-body">
+                Suburban growth area with emerging tech corridor appeal. Growing amenity base. Attractive for families and remote workers seeking space.
+            </div>
+        </div>
+
+        <div class="neighborhood">
+            <div class="neighborhood-header">
+                <div class="neighborhood-name">Nepean / Barrhaven</div>
+                <div class="neighborhood-stat">$1,290 • ↑ 2.2%</div>
+                <div class="neighborhood-demand">Moderate Demand</div>
+            </div>
+            <div class="neighborhood-body">
+                Most affordable suburban option with improving accessibility. Growing retail and dining. Strong value proposition for budget-conscious renters.
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Market Dynamics -->
+        <h2>Market Dynamics</h2>
+        <p class="section-text">
+            <b>Supply Trends:</b> 847 active listings across all major platforms (Rentals.ca, Kijiji, Realtor.ca, Facebook Marketplace). Inventory stable quarter-over-quarter with seasonal uptick expected June–August. Off-market opportunities represent 12–15% of total supply—these properties never reach public listings.
+        </p>
+        <p class="section-text">
+            <b>Demand Patterns:</b> Young professionals (age 25–35) dominate Downtown and Glebe searches. Families increasingly exploring Kanata suburban options. Remote work flexibility is extending average search radius 15–20% beyond the city core as commute becomes optional.
+        </p>
+        <p class="section-text">
+            <b>Rental Duration Trends:</b> Average lease length remains 12 months. Early summer is peak move season—expect competitive bidding on popular listings through August. Off-market rentals often negotiate flexible terms for the right tenant.
+        </p>
+
+        <!-- CTA Box -->
+        <div class="cta-box">
+            <div class="cta-title">Ready to Find Your Rental?</div>
+            <div class="cta-subtitle">Cyril will contact you within 24 hours with personalized options</div>
+        </div>
+
+        <!-- Next Steps -->
+        <h2>Your Next Steps</h2>
+        <div class="next-steps">
+            <div class="next-step-item">
+                <div class="next-step-title">1. Schedule Your Search Consultation</div>
+                <div class="next-step-text">Cyril will call within 24 hours to discuss your specific criteria, budget, neighborhood preferences, and move timeline. This conversation informs everything that follows.</div>
+            </div>
+            <div class="next-step-item">
+                <div class="next-step-title">2. Receive Personalized Analysis</div>
+                <div class="next-step-text">You'll get detailed neighborhood guides for your target area(s), complete with rental trends, comparable properties, and timing recommendations to optimize your rental hunt.</div>
+            </div>
+            <div class="next-step-item">
+                <div class="next-step-title">3. Access Exclusive Inventory</div>
+                <div class="next-step-text">Beyond public listings, you'll see off-market properties that never reach Rentals.ca or Kijiji. These often represent the best value and flexibility—properties listed directly with landlords or property managers.</div>
+            </div>
+            <div class="next-step-item">
+                <div class="next-step-title">4. Guided Site Visits</div>
+                <div class="next-step-text">Once promising properties are identified, Cyril coordinates viewings and provides expert insights on each option's value, lease terms, and long-term rental outlook.</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-brand">Ottawa Rental Plug</div>
+            <div class="footer-contact">
+                <b>Phone:</b> (613) 601–3005  |  <b>Email:</b> cbabs23@gmail.com<br/>
+                <b>Web:</b> ottawarentalplug.com
+            </div>
+            <p style="margin-top: 12px; font-size: 9px; opacity: 0.8;">
+                This report contains market data accurate as of June 2026. Market conditions evolve rapidly; recommendations remain valid for 60 days. Properties listed are subject to availability and current market conditions.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

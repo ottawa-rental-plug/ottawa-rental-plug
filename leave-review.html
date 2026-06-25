@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="apple-touch-icon" href="favicon.png"/>
+  <meta name="theme-color" content="#2e3d4e"/>
+  <title>Leave a Review | Ottawa Rental Plug</title>
+  <meta name="description" content="Share your experience working with Cyril Babalola at Ottawa Rental Plug."/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <link rel="canonical" href="https://ottawarentalplug.com/leave-review"/>
+  <meta property="og:type"        content="website"/>
+  <meta property="og:url"         content="https://ottawarentalplug.com/leave-review"/>
+  <meta property="og:title"       content="Leave a Review | Ottawa Rental Plug"/>
+  <meta property="og:description" content="Share your experience working with Cyril Babalola at Ottawa Rental Plug."/>
+  <meta property="og:image"       content="https://ottawarentalplug.com/cyril.jpg"/>
+
+  <link rel="stylesheet" href="tw-main.css"/>
+  <script src="analytics.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      background:
+        radial-gradient(ellipse 1400px 700px at 50% -100px, rgba(186,230,253,.12), transparent 60%),
+        radial-gradient(ellipse 900px 500px at 90% 30%, rgba(125,211,252,.07), transparent 55%),
+        radial-gradient(ellipse 1100px 600px at 10% 75%, rgba(201,168,76,.05), transparent 60%),
+        #283242;
+      background-attachment: fixed;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      font-feature-settings: 'cv11','ss01','ss03';
+    }
+    body::before {
+      content:'';
+      position:fixed;
+      top:0; left:0; right:0;
+      height:420px;
+      background:
+        radial-gradient(ellipse 1000px 280px at 50% 0%, rgba(125,211,252,.20), transparent 70%),
+        radial-gradient(ellipse 600px 220px at 20% 0%, rgba(186,230,253,.16), transparent 70%),
+        radial-gradient(ellipse 700px 240px at 85% 0%, rgba(201,168,76,.10), transparent 70%);
+      pointer-events:none;
+      z-index:-1;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #7dd3fc 0%, #c9a84c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .star-btn {
+      cursor: pointer;
+      font-size: 2rem;
+      color: #4a6275;
+      transition: color 0.15s, transform 0.1s;
+      line-height: 1;
+      user-select: none;
+    }
+    .star-btn:hover,
+    .star-btn.active {
+      color: #c9a84c;
+      transform: scale(1.15);
+    }
+    .google-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.625rem;
+      background: #fff;
+      color: #1a1a1a;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      text-decoration: none;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+      transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .google-btn:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.28);
+      transform: translateY(-1px);
+    }
+    .card {
+      background: rgba(48,64,82,0.70);
+      border: 1px solid rgba(44,69,90,0.7);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 1.25rem;
+    }
+    .step-number {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #0ea5e9, #0369a1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    /* ══ LIGHT SECTION THEME ══ */
+    .section-light {
+      background:
+        linear-gradient(180deg, #edf2f8 0%, #f4f7fb 40%, #f0f4fa 100%);
+      position: relative;
+    }
+    .section-light::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(14,165,233,0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+    }
+    .section-light .text-white          { color: #1a3248 !important; }
+    .section-light h2, .section-light h3 { color: #1a3248 !important; }
+    .section-light .text-gray-300       { color: #3d5870 !important; }
+    .section-light .text-gray-400       { color: #4a6a82 !important; }
+    .section-light .text-gray-500       { color: #6b8499 !important; }
+    .section-light .text-gray-600       { color: #7a96ac !important; }
+    .section-light .text-plug-muted     { color: #5a7a90 !important; }
+    .section-light .text-plug-blueLight { color: #0369a1 !important; }
+    .section-light .text-plug-sky       { color: #0369a1 !important; }
+    .section-light .border-plug-border  { border-color: rgba(14,165,233,0.12) !important; }
+    .card-light {
+      background: #ffffff;
+      border: 1px solid rgba(14,165,233,0.12);
+      box-shadow: 0 2px 16px rgba(14,165,233,0.05), 0 1px 3px rgba(0,0,0,0.04);
+      transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+    }
+    .card-light:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 40px rgba(14,165,233,0.12), 0 4px 12px rgba(0,0,0,0.06);
+      border-color: rgba(14,165,233,0.28);
+    }
+    .accent-bar {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, rgba(14,165,233,0.45) 35%, rgba(201,168,76,0.3) 65%, transparent);
+    }
+    .accent-bar::before {
+      content: '';
+      position: absolute; bottom: 100%; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(180deg, transparent, rgba(14,165,233,0.03));
+      pointer-events: none;
+    }
+    .accent-bar::after {
+      content: '';
+      position: absolute; top: 100%; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(180deg, rgba(14,165,233,0.03), transparent);
+      pointer-events: none;
+    }
+    .accent-bar { position: relative; }
+
+    .section-light .gradient-text,
+    .gradient-text-dark {
+      background: linear-gradient(135deg, #0369a1 0%, #b8922a 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-clip: text !important;
+      filter: none !important;
+    }
+
+    .section-light p { font-weight: 420; }
+    .section-light .text-sm { font-weight: 450; }
+
+    .card-light {
+      position: relative;
+      overflow: hidden;
+    }
+    .card-light::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(14,165,233,0.3), transparent);
+      pointer-events: none;
+    }
+
+    .divider { display: none; }
+
+    footer { position: relative; }
+    footer::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 0; right: 0;
+      height: 80px;
+      background: linear-gradient(180deg, rgba(14,165,233,0.06), transparent);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="font-sans text-white">
+
+  <!-- Nav -->
+  <nav class="w-full px-6 py-4 flex items-center justify-between max-w-4xl mx-auto">
+    <a href="/" class="flex items-center gap-2 text-white no-underline">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="#0ea5e9"/>
+        <path d="M8 22 L16 10 L24 22" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="16" cy="10" r="2.5" fill="white"/>
+      </svg>
+      <span class="font-semibold text-sm tracking-wide">Ottawa Rental Plug</span>
+    </a>
+    <a href="/" class="text-xs text-plug-muted hover:text-white transition-colors">
+      ← Back to site
+    </a>
+  </nav>
+
+  <div class="accent-bar"></div>
+  <!-- Hero -->
+  <main class="section-light min-h-screen">
+  <div class="max-w-2xl mx-auto px-6 pb-20 pt-10">
+
+    <div class="text-center mb-10">
+      <p class="text-xs font-semibold tracking-widest uppercase mb-3" style="color:#0369a1;">Client Feedback</p>
+      <h1 class="font-serif text-4xl md:text-5xl font-bold leading-tight mb-4" style="color:#1a3248;">
+        How Was Your<br/><span class="gradient-text">Experience?</span>
+      </h1>
+      <p class="text-base max-w-sm mx-auto" style="color:#4a6a82;">
+        Your feedback helps other Ottawa renters find trusted help. It means a lot.
+      </p>
+    </div>
+
+    <!-- Google Review Card -->
+    <div class="card-light rounded-[1.25rem] p-8 mb-6 text-center">
+
+      <div class="mb-6">
+        <div class="flex justify-center gap-1 mb-3">
+          <span style="color:#c9a84c;font-size:1.5rem;">★★★★★</span>
+        </div>
+        <p class="font-semibold text-lg mb-1" style="color:#1a3248;">Leave a Google Review</p>
+        <p class="text-sm" style="color:#4a6a82;">
+          Google reviews help renters in Ottawa discover Ottawa Rental Plug and build trust before reaching out.
+        </p>
+      </div>
+
+      <a
+        href="https://g.page/r/CWPqljCmNdcGEBM/review"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="google-btn mx-auto"
+        id="googleBtn"
+      >
+        <!-- Google G logo -->
+        <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#EA4335" d="M24 9.5c3.17 0 5.99 1.09 8.22 2.88l6.15-6.15C34.46 3.09 29.5 1 24 1 14.82 1 7.02 6.48 3.53 14.27l7.15 5.55C12.46 13.63 17.77 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.52 24.5c0-1.64-.15-3.22-.42-4.74H24v8.98h12.67c-.55 2.94-2.2 5.43-4.68 7.1l7.18 5.57C43.44 37.62 46.52 31.53 46.52 24.5z"/>
+          <path fill="#FBBC05" d="M10.68 28.18A14.6 14.6 0 0 1 9.5 24c0-1.45.25-2.85.68-4.18l-7.15-5.55A23.94 23.94 0 0 0 0 24c0 3.87.93 7.52 2.57 10.73l8.11-6.55z"/>
+          <path fill="#34A853" d="M24 47c5.5 0 10.12-1.82 13.49-4.95l-7.18-5.57c-1.82 1.22-4.15 1.94-6.31 1.94-6.23 0-11.54-4.13-13.32-9.74l-8.11 6.55C7.02 41.52 14.82 47 24 47z"/>
+          <path fill="none" d="M0 0h48v48H0z"/>
+        </svg>
+        Write a Google Review
+      </a>
+
+      <p class="text-xs mt-4" style="color:#6b8499;">Opens Google in a new tab · Takes about 1 minute</p>
+    </div>
+
+    <!-- Instructions -->
+    <div class="card-light rounded-[1.25rem] p-6 mb-6">
+      <p class="text-xs font-semibold tracking-widest uppercase mb-4" style="color:#0369a1;">Quick Guide</p>
+      <div class="space-y-4">
+        <div class="flex items-start gap-3">
+          <div class="step-number">1</div>
+          <p class="text-sm pt-0.5" style="color:#3d5870;">Click the button above — Google opens in a new tab.</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="step-number">2</div>
+          <p class="text-sm pt-0.5" style="color:#3d5870;">Sign in to your Google account if prompted (any Gmail works).</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="step-number">3</div>
+          <p class="text-sm pt-0.5" style="color:#3d5870;">Click <strong style="color:#1a3248;">"Write a review"</strong>, choose your star rating, and share your experience in a few words.</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="step-number">4</div>
+          <p class="text-sm pt-0.5" style="color:#3d5870;">Hit <strong style="color:#1a3248;">Post</strong> — done! It shows up publicly within minutes.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thank you note -->
+    <div class="text-center">
+      <p class="text-sm" style="color:#6b8499;">
+        Questions? Reach Cyril at
+        <a href="tel:+16136013005" class="hover:underline transition-colors" style="color:#0369a1;">(613) 601-3005</a>
+        or
+        <a href="mailto:cyrilrentsottawa@gmail.com" class="hover:underline transition-colors" style="color:#0369a1;">cyrilrentsottawa@gmail.com</a>
+      </p>
+    </div>
+
+  </div>
+  </main>
+
+</body>
+</html>
