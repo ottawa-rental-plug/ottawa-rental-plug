@@ -1248,6 +1248,8 @@ async function loadLandlordLeads() {
       const when = new Date(l.added).toLocaleDateString('en-CA',{month:'short',day:'numeric'});
       const firstName = encodeURIComponent((l.name||'').split(' ')[0]);
       const subj = encodeURIComponent('Your Ottawa rental valuation — Ottawa Rental Plug');
+      const propEnc = encodeURIComponent(prop);
+      const areaEnc = encodeURIComponent(l.neighbourhood||'');
       return `<tr>
         <td><div style="font-weight:600;color:var(--navy)">${escapeHtml(l.name||'—')}</div>
             <div style="font-size:11px;color:var(--gray)">${escapeHtml(l.email||'')}</div>
@@ -1257,7 +1259,7 @@ async function loadLandlordLeads() {
         <td>${rent}</td>
         <td>${when}</td>
         <td style="white-space:nowrap">
-          ${l.email?`<a href="mailto:${encodeURIComponent(l.email)}?subject=${subj}&body=Hi ${firstName},%0A%0AThanks for requesting a rent analysis. Based on current Ottawa comparables for your ${escapeHtml(prop)} in ${escapeHtml(l.neighbourhood||'')}, here's what I'm seeing...%0A%0A— Cyril%0AOttawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>`:'—'}
+          ${l.email?`<a href="mailto:${encodeURIComponent(l.email)}?subject=${subj}&body=Hi ${firstName},%0A%0AThanks for requesting a rent analysis. Based on current Ottawa comparables for your ${propEnc} in ${areaEnc}, here's what I'm seeing...%0A%0A— Cyril%0AOttawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>`:'—'}
           ${l.phone?`<a href="tel:${encodeURIComponent(l.phone)}" class="contact-btn" style="margin-left:4px">Call</a>`:''}
         </td>
       </tr>`;
