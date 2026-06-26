@@ -30,29 +30,58 @@ exports.handler = async (event) => {
     return json(405, { error: 'Method not allowed' });
   }
 
-  const TOKEN   = process.env.NETLIFY_API_TOKEN;
-  const FORM_ID = process.env.NETLIFY_FORM_ID;
-  const PASS    = process.env.DASHBOARD_PASSWORD;
+  const TOKEN     = process.env.NETLIFY_API_TOKEN;
+  const FORM_ID   = process.env.NETLIFY_FORM_ID;            // tenant search form
+  const LL_FORM   = process.env.NETLIFY_LANDLORD_FORM_ID;   // landlord valuation form
+  const PASS      = process.env.DASHBOARD_PASSWORD;
 
   if (!TOKEN || !FORM_ID || !PASS) {
     return json(500, { error: 'Server not configured. Missing NETLIFY_API_TOKEN, NETLIFY_FORM_ID, or DASHBOARD_PASSWORD.' });
   }
 
-  let supplied = '';
-  try {
-    supplied = (JSON.parse(event.body || '{}').password) || '';
-  } catch (e) {
-    return json(400, { error: 'Bad request body' });
-  }
+  let body = {};
+  try { body = JSON.parse(event.body || '{}'); }
+  catch (e) { return json(400, { error: 'Bad request body' }); }
 
-  if (!passwordMatches(supplied, PASS)) {
+  if (!passwordMatches(body.password || '', PASS)) {
     return json(401, { error: 'Incorrect password' });
   }
 
-  // Authenticated — fetch submissions server-side with the token.
+  // Which form to read: 'tenant' (default) or 'landlord'.
+  const formType = body.form === 'landlord' ? 'landlord' : 'tenant';
+  const formId   = formType === 'landlord' ? LL_FORM : FORM_ID;
+  if (!formId) {
+    return json(500, { error: `No form id configured for ${formType} leads.` });
+  }
+
+  // Map a Netlify submission into the dashboard's lead shape, per form type.
+  const mapTenant = (sub) => {
+    const d = sub.data || {};
+    return {
+      netlifyId: sub.id,
+      name:  d.searchName || d.name || '', email: d.searchEmail || d.email || '',
+      phone: d.phone || d.searchPhone || '', beds: d.bedrooms || 'Any',
+      budget: d.budget || '', moveIn: d.moveInDate || '',
+      neighbourhood: d.neighborhood || 'Any', amenities: d.amenities || '',
+      notes: d.specialRequests || '', source: 'orp',
+      added: sub.created_at || new Date().toISOString(),
+    };
+  };
+  const mapLandlord = (sub) => {
+    const d = sub.data || {};
+    return {
+      netlifyId: sub.id,
+      name: d.landlordName || '', email: d.landlordEmail || '', phone: d.landlordPhone || '',
+      propertyType: d.propertyType || '', beds: d.bedrooms || '', baths: d.bathrooms || '',
+      neighbourhood: d.neighborhood || '', address: d.propertyAddress || '',
+      currentRent: d.currentRent || '', source: 'landlord',
+      added: sub.created_at || new Date().toISOString(),
+    };
+  };
+
   try {
     const res = await fetch(
-      `https://api.netlify.com/api/v1/forms/${FORM_ID}/submissions?per_page=100`,
+      `https://api.netlify.com/api/v1/forms/${formId}/submissions?per_page=100`,
       { headers: { Authorization: `Bearer ${TOKEN}` } }
     );
     if (!res.ok) {
@@ -63,26 +92,7 @@ exports.handler = async (event) => {
     if (!Array.isArray(data)) {
       return json(502, { error: 'Unexpected Netlify API response' });
     }
-
-    // Return only the fields the dashboard needs — no raw API payload.
-    const leads = data.map((sub) => {
-      const d = sub.data || {};
-      return {
-        netlifyId:     sub.id,
-        name:          d.searchName  || d.name  || '',
-        email:         d.searchEmail || d.email || '',
-        phone:         d.phone       || d.searchPhone || '',
-        beds:          d.bedrooms    || 'Any',
-        budget:        d.budget      || '',
-        moveIn:        d.moveInDate  || '',
-        neighbourhood: d.neighborhood || 'Any',
-        amenities:     d.amenities   || '',
-        notes:         d.specialRequests || '',
-        source:        'orp',
-        added:         sub.created_at || new Date().toISOString(),
-      };
-    });
-
+    const leads = data.map(formType === 'landlord' ? mapLandlord : mapTenant);
     return json(200, { leads });
   } catch (e) {
     return json(500, { error: 'Failed to fetch submissions', detail: String(e) });

@@ -1,461 +1,665 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-CA">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Ottawa Rental Market Report</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Ottawa Rental Market Report | Ottawa Rental Plug</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f5f7;
-            color: #1d1d1f;
-        }
+    :root {
+      --navy: #003a8c;
+      --blue: #0071e3;
+      --blue-light: #e8f0fd;
+      --gold: #c9a84c;
+      --gray: #6e6e73;
+      --border: #e8e8ed;
+      --bg: #f5f5f7;
+      --white: #ffffff;
+      --green: #34c759;
+      --orange: #ff9500;
+      --red: #ff3b30;
+    }
 
-        .nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid #e8e8ed;
-        }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: #1d1d1f;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        .nav-inner {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 24px;
-            height: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+    /* NAV */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 860px; margin: 0 auto;
+      padding: 0 24px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      font-size: 15px; font-weight: 700; color: var(--navy);
+      text-decoration: none;
+    }
+    .nav-back {
+      font-size: 13px; color: var(--blue); text-decoration: none; font-weight: 500;
+      display: flex; align-items: center; gap: 4px;
+    }
 
-        .nav-brand {
-            font-size: 15px;
-            font-weight: 600;
-            color: #003a8c;
-        }
+    .page { max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
 
-        .page {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 24px 60px;
-        }
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 52px 0 36px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--blue);
+      border: 1px solid rgba(0,113,227,0.3);
+      border-radius: 999px; padding: 5px 14px; margin-bottom: 20px;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(26px, 5vw, 44px);
+      font-weight: 700; letter-spacing: -0.02em; line-height: 1.15;
+      color: var(--navy); margin-bottom: 12px;
+    }
+    .hero-sub {
+      font-size: 15px; color: var(--gray); max-width: 480px;
+      margin: 0 auto 28px; line-height: 1.6;
+    }
+    .hero-date {
+      font-size: 12px; color: var(--gray); font-weight: 500;
+    }
 
-        .hero {
-            text-align: center;
-            padding: 56px 0 40px;
-        }
+    /* CARDS */
+    .card {
+      background: var(--white); border-radius: 18px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      padding: 36px 32px; margin-bottom: 20px;
+    }
 
-        .hero-badge {
-            display: inline-block;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #0071e3;
-            border: 1px solid rgba(0, 113, 227, 0.3);
-            border-radius: 999px;
-            padding: 5px 14px;
-            margin-bottom: 20px;
-        }
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--blue);
+      margin-bottom: 16px;
+    }
 
-        .hero-title {
-            font-size: clamp(28px, 5vw, 48px);
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            line-height: 1.1;
-            color: #003a8c;
-            margin-bottom: 14px;
-        }
+    /* SUMMARY ROW */
+    .summary-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px; margin-bottom: 8px;
+    }
+    .summary-item {
+      background: var(--blue-light); border-radius: 12px;
+      padding: 16px; text-align: center;
+    }
+    .summary-value {
+      font-size: 22px; font-weight: 800; color: var(--navy); line-height: 1;
+    }
+    .summary-label {
+      font-size: 11px; color: var(--blue); font-weight: 600; margin-top: 6px;
+    }
 
-        .hero-sub {
-            font-size: 16px;
-            font-weight: 400;
-            color: #6e6e73;
-            max-width: 520px;
-            margin: 0 auto 32px;
-            line-height: 1.55;
-        }
+    /* BUDGET VERDICT */
+    .verdict {
+      border-radius: 14px; padding: 22px 24px; margin-bottom: 20px;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .verdict.good  { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .verdict.tight { background: #fffbeb; border: 1px solid #fde68a; }
+    .verdict.over  { background: #fff1f2; border: 1px solid #fecdd3; }
+    .verdict-icon { font-size: 0; flex-shrink: 0; margin-top: 2px; }
+    .verdict-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .verdict.good  .verdict-title { color: #166534; }
+    .verdict.tight .verdict-title { color: #92400e; }
+    .verdict.over  .verdict-title { color: #9f1239; }
+    .verdict-text  { font-size: 13px; line-height: 1.6; color: #374151; }
 
-        .card {
-            background: #ffffff;
-            border-radius: 18px;
-            border: 1px solid #e8e8ed;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-            padding: 40px 32px;
-            margin-bottom: 32px;
-        }
+    /* NEIGHBOURHOOD PROFILE */
+    .nh-profile { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
+    .nh-header {
+      background: var(--navy); padding: 18px 22px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .nh-name { font-size: 17px; font-weight: 700; color: #fff; }
+    .nh-demand-pill {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+      text-transform: uppercase; border-radius: 999px; padding: 4px 12px;
+    }
+    .demand-high   { background: #fef3c7; color: #92400e; }
+    .demand-mod    { background: #dbeafe; color: #1e40af; }
+    .demand-lower  { background: #f0fdf4; color: #166534; }
 
-        .container {
-            max-width: 100%;
-        }
+    .nh-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      border-bottom: 1px solid var(--border);
+    }
+    .nh-stat {
+      padding: 16px; text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .nh-stat:last-child { border-right: none; }
+    .nh-stat-value { font-size: 18px; font-weight: 700; color: var(--navy); }
+    .nh-stat-label { font-size: 11px; color: var(--gray); margin-top: 4px; font-weight: 500; }
 
-        h1 { font-size: 26px; color: #003a8c; margin: 20px 0 8px; font-weight: 700; }
-        h2 { font-size: 12px; color: #0071e3; text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; font-weight: 700; }
+    .nh-body { padding: 20px 22px; }
+    .nh-body p { font-size: 13px; line-height: 1.65; color: #374151; margin-bottom: 12px; }
+    .nh-body p:last-child { margin-bottom: 0; }
+    .nh-body strong { color: var(--navy); }
 
-        .metrics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            background: #e8f0fd;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-        }
+    /* AMENITY GRID */
+    .amenity-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;
+    }
+    .amenity-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border);
+      font-size: 13px; font-weight: 500;
+    }
+    .amenity-item.avail   { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+    .amenity-item.limited { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+    .amenity-item.scarce  { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
 
-        .metric {
-            text-align: center;
-        }
+    /* TIMING */
+    .timing-bar-wrap { margin-bottom: 8px; }
+    .timing-bar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
+    .timing-bar-label span:first-child { font-weight: 600; color: var(--navy); }
+    .timing-bar-label span:last-child  { color: var(--gray); }
+    .timing-bar { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .timing-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--blue), #0a84ff); }
 
-        .metric-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: #003a8c;
-            line-height: 1;
-        }
+    /* CTA */
+    .cta-card {
+      background: linear-gradient(135deg, var(--navy) 0%, #0055cc 100%);
+      border-radius: 18px; padding: 36px 32px; text-align: center; color: #fff;
+      box-shadow: 0 8px 24px rgba(0,58,140,0.28); margin-bottom: 20px;
+    }
+    .cta-title { font-family: 'Playfair Display', Georgia, serif; font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+    .cta-sub   { font-size: 14px; opacity: 0.85; line-height: 1.6; max-width: 420px; margin: 0 auto 22px; }
+    .cta-phone { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .cta-email { font-size: 13px; opacity: 0.75; }
+    .btn-white {
+      display: inline-block; padding: 13px 28px;
+      background: #fff; color: var(--navy);
+      border-radius: 10px; font-size: 14px; font-weight: 700;
+      text-decoration: none; margin-top: 18px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
 
-        .metric-label {
-            font-size: 11px;
-            color: #0071e3;
-            margin-top: 6px;
-            font-weight: 600;
-        }
+    /* NEXT STEPS */
+    .steps { display: flex; flex-direction: column; gap: 16px; }
+    .step  { display: flex; gap: 16px; }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--blue-light); color: var(--blue);
+      font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .step-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+    .step-text  { font-size: 13px; color: var(--gray); line-height: 1.55; }
 
-        .neighborhood {
-            border: 1px solid #e8e8ed;
-            border-radius: 10px;
-            margin-bottom: 14px;
-            overflow: hidden;
-            background: #ffffff;
-        }
+    /* FOOTER */
+    .footer {
+      text-align: center; padding-top: 32px;
+      border-top: 1px solid var(--border); margin-top: 12px;
+    }
+    .footer-brand { font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+    .footer-text  { font-size: 12px; color: var(--gray); line-height: 1.6; }
 
-        .nh-header {
-            background: #fafafa;
-            padding: 14px 16px;
-            border-bottom: 1px solid #e8e8ed;
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 12px;
-            align-items: center;
-        }
+    /* PRINT BUTTON */
+    .print-row { text-align: center; margin-top: 4px; }
+    .btn-print {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 600; color: var(--blue);
+      background: var(--blue-light); border: none; border-radius: 8px;
+      padding: 10px 18px; cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn-print:hover { opacity: 0.75; }
 
-        .nh-name {
-            font-weight: 700;
-            font-size: 13px;
-            color: #003a8c;
-        }
-
-        .nh-stat {
-            font-size: 12px;
-            font-weight: 700;
-            color: #0071e3;
-            text-align: center;
-        }
-
-        .nh-demand {
-            font-size: 12px;
-            font-weight: 700;
-            color: #b45309;
-            text-align: center;
-        }
-
-        .nh-body {
-            padding: 14px 16px;
-            font-size: 13px;
-            color: #6e6e73;
-            line-height: 1.5;
-        }
-
-        .section-text {
-            font-size: 13px;
-            line-height: 1.6;
-            color: #1d1d1f;
-            margin-bottom: 14px;
-        }
-
-        .section-text b {
-            color: #003a8c;
-            font-weight: 700;
-        }
-
-        .cta-box {
-            background: linear-gradient(135deg, #0071e3, #0a84ff);
-            color: white;
-            padding: 28px;
-            border-radius: 14px;
-            text-align: center;
-            margin: 28px 0;
-            box-shadow: 0 6px 20px rgba(0, 113, 227, 0.28);
-        }
-
-        .cta-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .cta-subtitle {
-            font-size: 14px;
-            opacity: 0.95;
-        }
-
-        .cta-phone {
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 12px;
-            opacity: 1;
-        }
-
-        .next-steps {
-            background: #f9f9fb;
-            padding: 24px;
-            border-radius: 12px;
-            margin: 24px 0;
-        }
-
-        .step {
-            margin-bottom: 18px;
-        }
-
-        .step:last-child {
-            margin-bottom: 0;
-        }
-
-        .step-title {
-            font-weight: 700;
-            color: #003a8c;
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-
-        .step-text {
-            font-size: 12px;
-            color: #6e6e73;
-            line-height: 1.5;
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 14px 28px;
-            background: linear-gradient(135deg, #0071e3, #0a84ff);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-family: inherit;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            margin-top: 12px;
-            transition: all 0.25s;
-            box-shadow: 0 6px 20px rgba(0, 113, 227, 0.28);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 28px rgba(0, 113, 227, 0.36);
-        }
-
-        .footer {
-            border-top: 1px solid #e8e8ed;
-            margin-top: 32px;
-            padding-top: 20px;
-            text-align: center;
-            font-size: 11px;
-            color: #6e6e73;
-        }
-
-        .footer-brand {
-            font-weight: 700;
-            color: #003a8c;
-            margin-bottom: 8px;
-        }
-
-        .footer-contact {
-            margin-bottom: 8px;
-            font-size: 12px;
-        }
-
-        .download-section {
-            background: #e8f0fd;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .download-section p {
-            font-size: 12px;
-            color: #0071e3;
-            margin-bottom: 12px;
-        }
-
-        @media (max-width: 600px) {
-            .card { padding: 24px 20px; border-radius: 14px; }
-            .hero { padding: 40px 0 28px; }
-            .nh-header { grid-template-columns: 1fr; gap: 6px; }
-            .metrics { grid-template-columns: 1fr 1fr; }
-            .cta-box { padding: 20px; }
-        }
-    </style>
+    @media (max-width: 600px) {
+      .card { padding: 24px 18px; }
+      .cta-card { padding: 28px 20px; }
+      .nh-stats { grid-template-columns: repeat(3,1fr); }
+      .summary-value { font-size: 18px; }
+    }
+  </style>
 </head>
 <body>
 
-    <!-- NAV -->
-    <nav class="nav">
-        <div class="nav-inner">
-            <div class="nav-brand">Ottawa Rental Plug</div>
-        </div>
-    </nav>
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="/">Ottawa Rental Plug</a>
+    <a class="nav-back" href="/search-rentals.html">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      New Search
+    </a>
+  </div>
+</nav>
 
-    <div class="page">
-
-        <!-- HERO -->
-        <header class="hero">
-            <div class="hero-badge">Report Ready</div>
-            <h1 class="hero-title">Your Ottawa Rental Market Report</h1>
-            <p class="hero-sub">Complete market intelligence to guide your rental search. Personalized insights prepared just for you.</p>
-        </header>
-
-        <!-- REPORT CARD -->
-        <div class="card">
-            <div class="container">
-
-                <h1 style="margin-top: 0;">Ottawa Rental Market Intelligence</h1>
-                <p style="color: #6e6e73; font-size: 13px; margin-bottom: 24px;">June 2026 Market Analysis</p>
-
-                <!-- Key Metrics -->
-                <h2>Key Market Metrics</h2>
-                <div class="metrics">
-                    <div class="metric">
-                        <div class="metric-value">$1,450</div>
-                        <div class="metric-label">Avg 1BR Rent</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value">+3.2%</div>
-                        <div class="metric-label">YoY Trend</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value">847</div>
-                        <div class="metric-label">Active Listings</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value">18 days</div>
-                        <div class="metric-label">Avg Time Rented</div>
-                    </div>
-                </div>
-
-                <!-- Neighborhoods -->
-                <h2>Neighborhood Profiles</h2>
-
-                <div class="neighborhood">
-                    <div class="nh-header">
-                        <div class="nh-name">Downtown / Centretown</div>
-                        <div class="nh-stat">$1,650 • ↑ 4.1%</div>
-                        <div class="nh-demand">High Demand</div>
-                    </div>
-                    <div class="nh-body">Premium walkable core with strong young professional presence. Highest rental premiums. Competitive—moves quickly (12 days avg).</div>
-                </div>
-
-                <div class="neighborhood">
-                    <div class="nh-header">
-                        <div class="nh-name">Glebe / Westboro</div>
-                        <div class="nh-stat">$1,520 • ↑ 2.8%</div>
-                        <div class="nh-demand">High Demand</div>
-                    </div>
-                    <div class="nh-body">Established, walkable communities. Steady rental demand from families and professionals. Excellent balance of amenities and affordability.</div>
-                </div>
-
-                <div class="neighborhood">
-                    <div class="nh-header">
-                        <div class="nh-name">Kanata / Stittsville</div>
-                        <div class="nh-stat">$1,380 • ↑ 1.9%</div>
-                        <div class="nh-demand">Moderate Demand</div>
-                    </div>
-                    <div class="nh-body">Suburban growth area with emerging tech corridor appeal. Growing amenities and accessibility. Great for space seekers and remote workers.</div>
-                </div>
-
-                <div class="neighborhood">
-                    <div class="nh-header">
-                        <div class="nh-name">Nepean / Barrhaven</div>
-                        <div class="nh-stat">$1,290 • ↑ 2.2%</div>
-                        <div class="nh-demand">Moderate Demand</div>
-                    </div>
-                    <div class="nh-body">Most affordable suburban option with improving accessibility and amenities. Strong value proposition for budget-conscious renters.</div>
-                </div>
-
-                <!-- Market Dynamics -->
-                <h2>Market Dynamics</h2>
-                <p class="section-text">
-                    <b>Supply Trends:</b> 847 active listings across major platforms (Rentals.ca, Kijiji, Realtor.ca, Facebook). Inventory stable quarter-over-quarter. Off-market opportunities represent 12–15% of total supply—these never reach public listings.
-                </p>
-                <p class="section-text">
-                    <b>Demand Patterns:</b> Young professionals (25–35) dominate Downtown/Glebe searches. Families exploring Kanata suburbs. Remote work flexibility extends average search radius 15–20% beyond city core.
-                </p>
-                <p class="section-text">
-                    <b>Seasonal Trends:</b> Peak move season: June–August. Early summer is competitive—expect bidding wars on popular listings. Off-market rentals often negotiate flexible terms.
-                </p>
-
-                <!-- Next Steps CTA -->
-                <div class="cta-box">
-                    <div class="cta-title">Ready to Find Your Perfect Rental?</div>
-                    <div class="cta-subtitle">Cyril will contact you within 24 hours with personalized options</div>
-                    <div class="cta-phone">📞 (613) 601–3005</div>
-                </div>
-
-                <!-- Next Steps -->
-                <h2>Your Next Steps</h2>
-                <div class="next-steps">
-                    <div class="step">
-                        <div class="step-title">1. Consultation Call (24 hours)</div>
-                        <div class="step-text">Cyril calls to discuss your specific criteria, budget, neighborhood preferences, and move timeline. This conversation informs everything that follows.</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-title">2. Personalized Market Analysis</div>
-                        <div class="step-text">You'll receive detailed neighborhood guides for your target areas with rental trends, comparable properties, and strategic timing recommendations.</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-title">3. Exclusive Off-Market Inventory</div>
-                        <div class="step-text">Access properties that never reach Rentals.ca or Kijiji. Direct listings with landlords—often better value, flexible terms, and less competition.</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-title">4. Guided Property Viewings</div>
-                        <div class="step-text">Cyril coordinates viewings and provides expert insights on each property's value, lease terms, neighborhood walkability, and long-term rental outlook.</div>
-                    </div>
-                </div>
-
-                <!-- Save Report -->
-                <div class="download-section">
-                    <p>💾 Save this report for reference</p>
-                    <button class="btn-primary" onclick="window.print()">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2m0 0v-8m0 8H3m6-8h6m0 0V5m0 0a6 6 0 116 6h-6m0 0H9"/>
-                        </svg>
-                        Save as PDF
-                    </button>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-brand">Ottawa Rental Plug</div>
-            <div class="footer-contact">
-                <strong>Phone:</strong> (613) 601–3005 | <strong>Email:</strong> cbabs23@gmail.com
-            </div>
-            <p style="margin-top: 12px; font-size: 10px;">
-                Market data accurate June 2026. Recommendations valid for 60 days from receipt.
-            </p>
-        </div>
-
+<div class="page">
+  <header class="hero">
+    <div class="hero-badge">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="var(--blue)"><circle cx="5" cy="5" r="5"/></svg>
+      Report Ready
     </div>
+    <h1 class="hero-title" id="heroTitle">Your Ottawa Rental Market Report</h1>
+    <p class="hero-sub" id="heroSub">Personalized market intelligence for your search.</p>
+    <p class="hero-date">June 2026 — Prepared by Cyril Babalola, Licensed Agent</p>
+  </header>
 
+  <!-- SEARCH SUMMARY -->
+  <div class="card">
+    <div class="section-label">Your Search Criteria</div>
+    <div class="summary-row" id="summaryRow"></div>
+  </div>
+
+  <!-- BUDGET VERDICT -->
+  <div id="budgetVerdict"></div>
+
+  <!-- NEIGHBOURHOOD PROFILE -->
+  <div class="card" id="nhCard">
+    <div class="section-label" id="nhLabel">Neighbourhood Profile</div>
+    <div id="nhContent"></div>
+  </div>
+
+  <!-- AMENITY AVAILABILITY -->
+  <div class="card" id="amenityCard" style="display:none">
+    <div class="section-label">Must-Have Availability in <span id="amenityHood"></span></div>
+    <div class="amenity-grid" id="amenityGrid"></div>
+  </div>
+
+  <!-- MARKET TIMING -->
+  <div class="card">
+    <div class="section-label">Market Timing — June 2026</div>
+    <div id="timingContent"></div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-card">
+    <div class="cta-title" id="ctaTitle">Ready to Find Your Rental?</div>
+    <div class="cta-sub" id="ctaSub">Cyril will contact you within 24 hours with matched listings — including off-market units that never reach Kijiji or Rentals.ca.</div>
+    <div class="cta-phone">(613) 601-3005</div>
+    <div class="cta-email">cyrilrentsottawa@gmail.com</div>
+    <a class="btn-white" href="tel:6136013005">Call Cyril Now</a>
+  </div>
+
+  <!-- NEXT STEPS -->
+  <div class="card">
+    <div class="section-label">What Happens Next</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Consultation Call — Within 24 Hours</div>
+          <div class="step-text">Cyril calls to confirm your criteria, answer questions, and align on timing. This shapes everything that follows.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Curated Listing Package</div>
+          <div class="step-text">You receive a hand-picked shortlist from public platforms plus exclusive off-market inventory — properties you won't find yourself.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Guided Viewings</div>
+          <div class="step-text">Cyril accompanies or coordinates viewings, flags red flags, and gives you an honest read on value and lease terms.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">Application Support</div>
+          <div class="step-text">Cyril helps you present a strong application — especially useful in competitive situations where landlords have multiple candidates.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="print-row">
+    <button class="btn-print" onclick="window.print()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+      Save as PDF
+    </button>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">Ottawa Rental Plug</div>
+    <div class="footer-text">
+      Cyril Babalola — Licensed Real Estate Agent<br>
+      (613) 601-3005 · cyrilrentsottawa@gmail.com<br><br>
+      Market data current as of June 2026. Report valid 60 days from generation.
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Neighbourhood data ──────────────────────────────────────────────
+const HOODS = {
+  Kanata: {
+    label: 'Kanata',
+    demand: 'Moderate',
+    demandClass: 'demand-mod',
+    rents: { '1': 1650, '2': 2100, '3': 2650, 'Any': 1950 },
+    trend: '+2.1%',
+    daysToRent: 22,
+    vacancy: '3.4%',
+    vibe: 'Ottawa\'s tech suburb — home to the Kanata North tech park and growing retail amenities. Strong demand from tech employees and families who value space.',
+    insight: 'Listings move moderately fast here. Having a pre-approval letter or strong references ready gives you an edge. New builds along Terry Fox Drive offer modern finishes at competitive prices.',
+    pockets: 'Beaverbrook and Bridlewood offer the most established streets with mature trees and good schools nearby. Morgan\'s Grant is popular with young professionals.',
+    amenities: { parking: 'avail', laundry: 'avail', backyard: 'avail', basement: 'avail', petFriendly: 'limited', furnished: 'scarce', ac: 'limited', balcony: 'limited' },
+  },
+  Stittsville: {
+    label: 'Stittsville',
+    demand: 'Moderate',
+    demandClass: 'demand-mod',
+    rents: { '1': 1550, '2': 2000, '3': 2500, 'Any': 1850 },
+    trend: '+1.8%',
+    daysToRent: 25,
+    vacancy: '4.1%',
+    vibe: 'Quiet suburban community on Ottawa\'s western edge. Ideal for families and those who prioritize space and affordability over urban proximity.',
+    insight: 'Less competition than Kanata proper. Most rentals are houses or townhomes — condo/apartment inventory is limited. Expect more private-landlord listings than corporate.',
+    pockets: 'Main Street corridor has the most walkable feel. Abbott Street East area is popular for newer builds.',
+    amenities: { parking: 'avail', laundry: 'avail', backyard: 'avail', basement: 'avail', petFriendly: 'avail', furnished: 'scarce', ac: 'limited', balcony: 'scarce' },
+  },
+  Hazeldean: {
+    label: 'Hazeldean',
+    demand: 'Moderate',
+    demandClass: 'demand-mod',
+    rents: { '1': 1600, '2': 2050, '3': 2550, 'Any': 1900 },
+    trend: '+1.9%',
+    daysToRent: 24,
+    vacancy: '3.8%',
+    vibe: 'A quieter pocket between Kanata and Stittsville with good highway access and family-oriented streets. Less well-known means slightly less competition.',
+    insight: 'Good value compared to Kanata proper. Most stock is townhomes and semis. Pet-friendly landlords are more common here than in the urban core.',
+    pockets: 'Hazeldean Road corridor and streets near Sobeys are well-connected. Closer to Kanata proper = slightly higher rents.',
+    amenities: { parking: 'avail', laundry: 'avail', backyard: 'avail', basement: 'avail', petFriendly: 'avail', furnished: 'scarce', ac: 'limited', balcony: 'scarce' },
+  },
+  Barrhaven: {
+    label: 'Barrhaven',
+    demand: 'Moderate',
+    demandClass: 'demand-mod',
+    rents: { '1': 1500, '2': 1950, '3': 2450, 'Any': 1800 },
+    trend: '+2.3%',
+    daysToRent: 26,
+    vacancy: '4.2%',
+    vibe: 'Ottawa\'s most affordable major suburb. Family-first community with strong schools, large properties, and a quieter lifestyle. LRT expansion is boosting demand.',
+    insight: 'Best value per square foot in the city. Many landlords here are individual investors — relationships matter, and direct negotiation is more common than in corporate buildings.',
+    pockets: 'Chapman Mills is the most desirable pocket — newer, walkable, near the Marketplace. Longfields is also strong for families.',
+    amenities: { parking: 'avail', laundry: 'avail', backyard: 'avail', basement: 'avail', petFriendly: 'avail', furnished: 'scarce', ac: 'limited', balcony: 'scarce' },
+  },
+  Orleans: {
+    label: 'Orleans',
+    demand: 'Moderate',
+    demandClass: 'demand-mod',
+    rents: { '1': 1550, '2': 2000, '3': 2500, 'Any': 1850 },
+    trend: '+2.5%',
+    daysToRent: 23,
+    vacancy: '3.6%',
+    vibe: 'Ottawa\'s fastest-growing east-end suburb. Bilingual community with excellent schools, parks, and improving transit links to downtown.',
+    insight: 'Demand is accelerating as the LRT Stage 2 extension brings downtown within 30 minutes. Units in newer developments along Innes Road move quickly.',
+    pockets: 'Avalon and Chaperal are the most desirable pockets. Chapel Hill South offers newer builds and good amenities.',
+    amenities: { parking: 'avail', laundry: 'avail', backyard: 'avail', basement: 'avail', petFriendly: 'avail', furnished: 'scarce', ac: 'limited', balcony: 'limited' },
+  },
+  Nepean: {
+    label: 'Nepean',
+    demand: 'Moderate',
+    demandClass: 'demand-mod',
+    rents: { '1': 1550, '2': 1980, '3': 2480, 'Any': 1850 },
+    trend: '+2.0%',
+    daysToRent: 22,
+    vacancy: '3.5%',
+    vibe: 'Centrally located suburban area with excellent highway access and a wide range of housing stock. Popular with government employees and families alike.',
+    insight: 'Good balance between affordability and access. Merivale Road corridor has strong rental inventory. Close enough to downtown without the premium pricing.',
+    pockets: 'Meadowlands and Craig Henry are the most sought-after pockets. Bayshore area offers good transit access.',
+    amenities: { parking: 'avail', laundry: 'avail', backyard: 'avail', basement: 'avail', petFriendly: 'limited', furnished: 'limited', ac: 'limited', balcony: 'limited' },
+  },
+  Downtown: {
+    label: 'Downtown',
+    demand: 'High',
+    demandClass: 'demand-high',
+    rents: { '1': 1900, '2': 2600, '3': 3400, 'Any': 2300 },
+    trend: '+4.3%',
+    daysToRent: 11,
+    vacancy: '1.8%',
+    vibe: 'Ottawa\'s urban core — walkable, transit-rich, and expensive. Highest demand in the city. Ideal for professionals who want to walk or bike to work.',
+    insight: 'Listings disappear in under 2 weeks. You need to be ready to move fast: have your documents (ID, pay stubs, references, credit score) ready before you find something. Bidding above asking is common on premium units.',
+    pockets: 'The Market and Byward area attract nightlife seekers. Lowertown offers slightly better value. West of Bank Street is quieter and very walkable.',
+    amenities: { parking: 'scarce', laundry: 'limited', backyard: 'scarce', basement: 'scarce', petFriendly: 'limited', furnished: 'avail', ac: 'avail', balcony: 'avail' },
+  },
+  Centretown: {
+    label: 'Centretown',
+    demand: 'High',
+    demandClass: 'demand-high',
+    rents: { '1': 1850, '2': 2500, '3': 3200, 'Any': 2200 },
+    trend: '+3.9%',
+    daysToRent: 13,
+    vacancy: '2.1%',
+    vibe: 'Ottawa\'s most walkable neighbourhood outside the Market. Tree-lined streets, independent restaurants, and a mix of historic rowhouses and modern condos.',
+    insight: 'Strong demand from government workers and young professionals. Landlords receive multiple applications — a well-prepared, responsive tenant stands out. Off-market units here are particularly valuable.',
+    pockets: 'The Bank Street corridor between Gladstone and Somerset is the sweet spot. Somerset Village is vibrant and walkable.',
+    amenities: { parking: 'scarce', laundry: 'limited', backyard: 'scarce', basement: 'scarce', petFriendly: 'limited', furnished: 'avail', ac: 'avail', balcony: 'avail' },
+  },
+  Glebe: {
+    label: 'Glebe',
+    demand: 'High',
+    demandClass: 'demand-high',
+    rents: { '1': 1950, '2': 2650, '3': 3500, 'Any': 2350 },
+    trend: '+3.5%',
+    daysToRent: 14,
+    vacancy: '2.3%',
+    vibe: 'Ottawa\'s most prestigious rental neighbourhood. Leafy streets, Lansdowne Park, great dining, and Canal access. Strong family and professional presence.',
+    insight: 'The most sought-after neighbourhood for a reason — expect competition. Landlords here are often selective. A strong application letter and professional references help significantly.',
+    pockets: 'Bank Street between Glebe Ave and the Canal. Fifth Ave east of Bank has beautiful homes with good turnover.',
+    amenities: { parking: 'limited', laundry: 'limited', backyard: 'limited', basement: 'limited', petFriendly: 'limited', furnished: 'limited', ac: 'avail', balcony: 'limited' },
+  },
+  Westboro: {
+    label: 'Westboro',
+    demand: 'High',
+    demandClass: 'demand-high',
+    rents: { '1': 1900, '2': 2550, '3': 3350, 'Any': 2250 },
+    trend: '+3.7%',
+    daysToRent: 13,
+    vacancy: '2.0%',
+    vibe: 'Ottawa\'s trendiest village — independent boutiques, top restaurants, and a vibrant outdoor culture along the Ottawa River. Extremely popular with professionals 28–40.',
+    insight: 'Competitive like downtown but with more character. Units come and go fast. Being first to respond to a new listing is often more important than the application itself.',
+    pockets: 'Richmond Road between Island Park and Elmdale is prime. Streets north toward the river (like Whitby Ave) command premiums.',
+    amenities: { parking: 'limited', laundry: 'limited', backyard: 'scarce', basement: 'scarce', petFriendly: 'limited', furnished: 'limited', ac: 'avail', balcony: 'avail' },
+  },
+  any: {
+    label: 'Ottawa (All Areas)',
+    demand: 'Moderate',
+    demandClass: 'demand-mod',
+    rents: { '1': 1700, '2': 2200, '3': 2800, 'Any': 2000 },
+    trend: '+2.9%',
+    daysToRent: 18,
+    vacancy: '3.1%',
+    vibe: 'You\'re open to any Ottawa neighbourhood — this gives you the widest selection and the most negotiating flexibility.',
+    insight: 'With an open-city search, the best strategy is to identify 2–3 priority neighbourhoods and move quickly when something fits. Cyril can flag listings across all areas simultaneously.',
+    pockets: 'Depends on your priorities — transit access, space, walkability, or budget. Cyril will align your search based on your consultation call.',
+    amenities: { parking: 'avail', laundry: 'avail', backyard: 'avail', basement: 'avail', petFriendly: 'avail', furnished: 'limited', ac: 'limited', balcony: 'limited' },
+  },
+};
+
+const AMENITY_LABELS = {
+  parking:    'Parking',
+  laundry:    'In-unit Laundry',
+  backyard:   'Fenced Yard',
+  basement:   'Finished Basement',
+  petFriendly:'Pet Friendly',
+  furnished:  'Furnished',
+  ac:         'A/C',
+  balcony:    'Balcony',
+};
+
+const AVAIL_TEXT  = { avail: 'Widely available', limited: 'Limited supply', scarce: 'Hard to find' };
+
+// ── Parse params: sessionStorage first, URL params as fallback ───────
+const _ss  = (() => { try { return JSON.parse(sessionStorage.getItem('orpReport') || '{}'); } catch(e) { return {}; } })();
+const _url = new URLSearchParams(window.location.search);
+const _get = (k) => _ss[k] || _url.get(k) || '';
+
+const name      = _get('name');
+const hoodKey   = _get('hood') || 'any';
+const beds      = _get('beds') || 'Any';
+const budget    = parseInt(_get('budget'))    || 0;
+const minBudget = parseInt(_get('minBudget')) || 0;
+const moveIn    = _get('moveIn');
+const amenities = _get('amenities') ? _get('amenities').split(',').filter(Boolean) : [];
+
+const hood = HOODS[hoodKey] || HOODS['any'];
+const medianRent = hood.rents[beds] || hood.rents['Any'];
+const firstName  = name.split(' ')[0] || 'there';
+
+// ── Hero ─────────────────────────────────────────────────────────────
+document.getElementById('heroTitle').textContent =
+  hood.label === 'Ottawa (All Areas)'
+    ? `Your Ottawa Rental Market Report`
+    : `Your ${hood.label} Rental Market Report`;
+
+document.getElementById('heroSub').textContent =
+  beds === 'Any'
+    ? `Personalized market intelligence for your search in ${hood.label}, prepared by Cyril Babalola.`
+    : `Personalized market intelligence for ${beds}-bedroom rentals in ${hood.label}, prepared by Cyril Babalola.`;
+
+// ── Summary row ──────────────────────────────────────────────────────
+const summaryItems = [
+  { value: hood.label, label: 'Neighbourhood' },
+  { value: beds === 'Any' ? 'Any' : beds + ' BR', label: 'Bedrooms' },
+];
+if (budget) summaryItems.push({ value: '$' + budget.toLocaleString(), label: 'Max Budget' });
+if (moveIn)  summaryItems.push({ value: new Date(moveIn + 'T00:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }), label: 'Move-in' });
+
+document.getElementById('summaryRow').innerHTML = summaryItems.map(i => `
+  <div class="summary-item">
+    <div class="summary-value">${i.value}</div>
+    <div class="summary-label">${i.label}</div>
+  </div>`).join('');
+
+// ── Budget verdict ───────────────────────────────────────────────────
+if (budget) {
+  const diff = budget - medianRent;
+  const pct  = Math.round((diff / medianRent) * 100);
+  let cls, icon, title, text;
+  if (diff >= 150) {
+    cls = 'good';
+    icon = `<svg width="22" height="22" fill="none" stroke="#166534" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+    title = `Strong budget for ${hood.label}`;
+    text  = `Your max of $${budget.toLocaleString()}/mo is $${diff} above the ${beds === 'Any' ? '' : beds + 'BR '}median in ${hood.label} ($${medianRent.toLocaleString()}). You have real options here — and room to be selective. Cyril can target listings below your ceiling to keep negotiating room.`;
+  } else if (diff >= -100) {
+    cls = 'tight';
+    icon = `<svg width="22" height="22" fill="none" stroke="#92400e" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+    title = `Tight but workable in ${hood.label}`;
+    text  = `Your max of $${budget.toLocaleString()}/mo is close to the ${beds === 'Any' ? '' : beds + 'BR '}median in ${hood.label} ($${medianRent.toLocaleString()}). You'll find options but won't have much room to be choosy. Timing matters — Cyril will prioritize speed when something fits your criteria.`;
+  } else {
+    cls = 'over';
+    icon = `<svg width="22" height="22" fill="none" stroke="#9f1239" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+    title = `Budget may be tight for ${hood.label}`;
+    text  = `Your max of $${budget.toLocaleString()}/mo is $${Math.abs(diff)} below the ${beds === 'Any' ? '' : beds + 'BR '}median in ${hood.label} ($${medianRent.toLocaleString()}). Options exist but will require patience. Cyril may recommend expanding to a neighbouring area for better value — or exploring off-market units where negotiation is more flexible.`;
+  }
+  document.getElementById('budgetVerdict').innerHTML = `
+    <div class="card">
+      <div class="section-label">Budget Assessment</div>
+      <div class="verdict ${cls}">
+        <div class="verdict-icon">${icon}</div>
+        <div>
+          <div class="verdict-title">${title}</div>
+          <div class="verdict-text">${text}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Neighbourhood profile ────────────────────────────────────────────
+document.getElementById('nhLabel').textContent = `${hood.label} — Neighbourhood Profile`;
+document.getElementById('nhContent').innerHTML = `
+  <div class="nh-profile">
+    <div class="nh-header">
+      <div class="nh-name">${hood.label}</div>
+      <span class="nh-demand-pill ${hood.demandClass}">${hood.demand} Demand</span>
+    </div>
+    <div class="nh-stats">
+      <div class="nh-stat">
+        <div class="nh-stat-value">$${medianRent.toLocaleString()}</div>
+        <div class="nh-stat-label">${beds === 'Any' ? 'Median Rent' : beds + 'BR Median'}</div>
+      </div>
+      <div class="nh-stat">
+        <div class="nh-stat-value">${hood.trend}</div>
+        <div class="nh-stat-label">YoY Trend</div>
+      </div>
+      <div class="nh-stat">
+        <div class="nh-stat-value">${hood.daysToRent}d</div>
+        <div class="nh-stat-label">Avg Days to Rent</div>
+      </div>
+    </div>
+    <div class="nh-body">
+      <p>${hood.vibe}</p>
+      <p><strong>Market intelligence:</strong> ${hood.insight}</p>
+      <p><strong>Best pockets:</strong> ${hood.pockets}</p>
+    </div>
+  </div>`;
+
+// ── Amenities ────────────────────────────────────────────────────────
+if (amenities.length > 0) {
+  document.getElementById('amenityCard').style.display = 'block';
+  document.getElementById('amenityHood').textContent = hood.label;
+  const icons = {
+    avail:   `<svg width="16" height="16" fill="none" stroke="#166534" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`,
+    limited: `<svg width="16" height="16" fill="none" stroke="#92400e" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01"/></svg>`,
+    scarce:  `<svg width="16" height="16" fill="none" stroke="#9f1239" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`,
+  };
+  document.getElementById('amenityGrid').innerHTML = amenities.map(a => {
+    const status = hood.amenities[a] || 'limited';
+    return `<div class="amenity-item ${status}">${icons[status]}<span>${AMENITY_LABELS[a] || a} — ${AVAIL_TEXT[status]}</span></div>`;
+  }).join('');
+}
+
+// ── Timing ───────────────────────────────────────────────────────────
+const urgency   = hood.daysToRent <= 14 ? 'high' : hood.daysToRent <= 22 ? 'moderate' : 'lower';
+const urgencyTxt = { high: 'Move fast — listings go in under 2 weeks', moderate: 'Steady market — you have time to be selective', lower: 'Buyer\'s market — negotiate confidently' };
+const fillPct = Math.max(15, Math.min(95, Math.round((1 - (hood.daysToRent / 40)) * 100)));
+
+let moveInNote = '';
+if (moveIn) {
+  const mi = new Date(moveIn + 'T00:00:00');
+  const now = new Date();
+  const daysOut = Math.round((mi - now) / (1000 * 60 * 60 * 24));
+  if (daysOut < 21)      moveInNote = `Your move-in is in ${daysOut} days — this is urgent. Cyril will prioritize immediately available listings.`;
+  else if (daysOut < 45) moveInNote = `Your move-in is in ${daysOut} days — good timing. Most landlords list 30–45 days out, so you\'re entering the sweet spot.`;
+  else                   moveInNote = `Your move-in is in ${daysOut} days — you\'re searching early. This is smart for competitive areas, but some listings won\'t appear yet.`;
+}
+
+document.getElementById('timingContent').innerHTML = `
+  <div style="margin-bottom:18px">
+    <div class="timing-bar-wrap">
+      <div class="timing-bar-label">
+        <span>Demand Level — ${hood.label}</span>
+        <span>${hood.daysToRent} days avg to rent</span>
+      </div>
+      <div class="timing-bar"><div class="timing-bar-fill" style="width:${fillPct}%"></div></div>
+    </div>
+  </div>
+  <p style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px">${urgencyTxt[urgency]}</p>
+  ${moveInNote ? `<p style="font-size:13px;color:#374151;line-height:1.6;margin-bottom:12px">${moveInNote}</p>` : ''}
+  <p style="font-size:13px;color:#374151;line-height:1.6">Peak rental season in Ottawa runs June–August. ${hood.demand === 'High' ? 'In ' + hood.label + ', competition is year-round — the summer peak makes it even more important to be prepared and move fast.' : 'Searching now puts you ahead of the late-summer rush.'}</p>`;
+
+// ── CTA personalization ──────────────────────────────────────────────
+document.getElementById('ctaTitle').textContent =
+  name ? `Ready, ${firstName}?` : 'Ready to Find Your Rental?';
+</script>
 </body>
 </html>

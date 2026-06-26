@@ -255,6 +255,11 @@
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
       Lead Scanner
     </button>
+    <button class="nav-item" onclick="showPanel('landlords')" id="nav-landlords">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>
+      Landlord Leads
+      <span class="nav-badge" id="landlordBadge" style="display:none">0</span>
+    </button>
     <div class="nav-section-label" style="margin-top:8px">Tools</div>
     <button class="nav-item" onclick="showPanel('templates')">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
@@ -394,6 +399,18 @@
             <p>No scan yet. Click "Scan Now" to search for matched tenants.</p>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- LANDLORD LEADS -->
+    <div id="panel-landlords" class="panel">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Landlord Leads — Rent Valuation Requests</div>
+          <button class="btn-top secondary" onclick="loadLandlordLeads()" style="padding:7px 12px">Refresh</button>
+        </div>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Landlords who requested a free rent analysis at <strong>ottawarentalplug.com/rental-estimate</strong>. Each one is a potential placement — or a managed door. Reply fast.</p>
+        <div class="card" id="landlordCard"><div class="scan-empty">Loading…</div></div>
       </div>
     </div>
 
@@ -1202,20 +1219,69 @@ function renderOverview() {
       }).join('');
 }
 
+// ── LANDLORD LEADS (supply side) ─────────────────────────────────────
+async function loadLandlordLeads() {
+  const card = document.getElementById('landlordCard');
+  card.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading landlord leads…</div>`;
+  try {
+    const res = await fetch(LEADS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: getPass(), form: 'landlord' }),
+    });
+    if (res.status === 401) throw new Error('Session expired — reload and log in again.');
+    if (!res.ok) { const d = await res.json().catch(()=>({})); throw new Error(d.error || `Error ${res.status}`); }
+    const { leads } = await res.json();
+    const sorted = (leads || []).sort((a,b) => new Date(b.added) - new Date(a.added));
+    const badge = document.getElementById('landlordBadge');
+    if (sorted.length) { badge.style.display=''; badge.textContent = sorted.length; } else badge.style.display='none';
+
+    if (!sorted.length) {
+      card.innerHTML = `<div class="scan-empty"><p>No landlord leads yet. Share <strong>ottawarentalplug.com/rental-estimate</strong> to start capturing them.</p></div>`;
+      return;
+    }
+    card.innerHTML = `<table class="leads-table"><thead><tr>
+      <th>Landlord</th><th>Property</th><th>Area</th><th>Current rent</th><th>Received</th><th>Action</th>
+    </tr></thead><tbody>` + sorted.map(l => {
+      const prop = [l.beds && l.beds+'BR', l.baths && l.baths+'ba', l.propertyType].filter(Boolean).join(' ') || '—';
+      const rent = l.currentRent ? '$'+parseInt(l.currentRent).toLocaleString()+'/mo' : '—';
+      const when = new Date(l.added).toLocaleDateString('en-CA',{month:'short',day:'numeric'});
+      const firstName = encodeURIComponent((l.name||'').split(' ')[0]);
+      const subj = encodeURIComponent('Your Ottawa rental valuation — Ottawa Rental Plug');
+      return `<tr>
+        <td><div style="font-weight:600;color:var(--navy)">${escapeHtml(l.name||'—')}</div>
+            <div style="font-size:11px;color:var(--gray)">${escapeHtml(l.email||'')}</div>
+            ${l.address?`<div style="font-size:11px;color:var(--gray)">${escapeHtml(l.address)}</div>`:''}</td>
+        <td>${escapeHtml(prop)}</td>
+        <td>${escapeHtml(l.neighbourhood||'—')}</td>
+        <td>${rent}</td>
+        <td>${when}</td>
+        <td style="white-space:nowrap">
+          ${l.email?`<a href="mailto:${encodeURIComponent(l.email)}?subject=${subj}&body=Hi ${firstName},%0A%0AThanks for requesting a rent analysis. Based on current Ottawa comparables for your ${escapeHtml(prop)} in ${escapeHtml(l.neighbourhood||'')}, here's what I'm seeing...%0A%0A— Cyril%0AOttawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>`:'—'}
+          ${l.phone?`<a href="tel:${encodeURIComponent(l.phone)}" class="contact-btn" style="margin-left:4px">Call</a>`:''}
+        </td>
+      </tr>`;
+    }).join('') + `</tbody></table>`;
+  } catch (e) {
+    card.innerHTML = `<div class="scan-empty"><p style="color:var(--red)">Couldn't load landlord leads: ${escapeHtml(e.message)}</p></div>`;
+  }
+}
+
 // ── PANEL NAV ─────────────────────────────────────────────────────────
-const PANELS = ['overview','vacancies','leads','scanner','templates','shortcuts','settings'];
-const TITLES  = { overview:'Overview', vacancies:'Vacancies', leads:'Inbound Leads', scanner:'Lead Scanner', templates:'Post Templates', shortcuts:'Quick Scan Links', settings:'Settings' };
+const PANELS = ['overview','vacancies','leads','scanner','landlords','templates','shortcuts','settings'];
+const TITLES  = { overview:'Overview', vacancies:'Vacancies', leads:'Inbound Leads', scanner:'Lead Scanner', landlords:'Landlord Leads', templates:'Post Templates', shortcuts:'Quick Scan Links', settings:'Settings' };
 function showPanel(name) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
-  const idx = ['overview','vacancies','leads','scanner','templates','shortcuts','settings'].indexOf(name);
+  const idx = PANELS.indexOf(name);
   if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
   document.getElementById('panelTitle').textContent = TITLES[name]||name;
   if (name==='leads')     renderLeads(currentFilter);
   if (name==='templates') buildTemplates();
   if (name==='shortcuts') buildShortcuts();
   if (name==='vacancies') { closeVacancyForm(); renderVacanciesPanel(); }
+  if (name==='landlords') loadLandlordLeads();
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────

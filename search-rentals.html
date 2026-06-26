@@ -18,6 +18,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,300;1,14..32,400&display=swap" rel="stylesheet"/>
   <script src="analytics.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init('3GmvwRm1V89tomTcS');</script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -937,6 +939,17 @@
     <div class="card">
 
       <form id="searchForm" name="rentalSearch" method="POST" action="/thank-you-report.html" netlify netlify-honeypot="bot-field">
+        <!-- Hidden fields so Netlify registers field names at build time -->
+        <input type="hidden" name="form-name"   value="rentalSearch">
+        <input type="hidden" name="searchName"  value="">
+        <input type="hidden" name="searchEmail" value="">
+        <input type="hidden" name="bedrooms"    value="">
+        <input type="hidden" name="bathrooms"   value="">
+        <input type="hidden" name="budget"      value="">
+        <input type="hidden" name="neighborhood" value="">
+        <input type="hidden" name="moveInDate"  value="">
+        <input type="hidden" name="amenities"   value="">
+        <input type="hidden" name="specialRequests" value="">
 
         <!-- Neighborhood -->
         <div class="form-section">
@@ -1344,33 +1357,95 @@
       `<strong>${platforms.length}</strong> platforms searched · pre-filtered with your criteria`;
     document.getElementById('platformLinks').innerHTML = '';
 
+    // Save report data to sessionStorage for the report page
+    const reportData = {
+      name:      criteria.name,
+      hood:      criteria.neighborhood,
+      beds:      criteria.bedrooms,
+      budget:    criteria.budget    || '',
+      minBudget: criteria.minBudget || '',
+      moveIn:    criteria.moveInDate || '',
+      amenities: criteria.amenities.join(','),
+    };
+    sessionStorage.setItem('orpReport', JSON.stringify(reportData));
+    const reportParams = new URLSearchParams(reportData);
+    const reportLink = '/thank-you-report.html?' + reportParams.toString();
+
     document.getElementById('listingsGrid').innerHTML = `
       <div class="search-ready">
         <div class="search-ready-icon" style="font-size:0;"><svg width="32" height="32" fill="none" stroke="var(--blue)" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
         <p class="search-ready-title">Your Ottawa search is ready.</p>
         <p class="search-ready-sub">We've pre-filtered every major rental platform with your exact criteria. Click any platform below to view live results.</p>
+        <a href="${reportLink}" style="display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:12px 22px;background:linear-gradient(135deg,#0071e3,#0a84ff);color:#fff;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          View Your Market Report
+        </a>
       </div>
       ${platforms.map(renderPlatformCard).join('')}
     `;
 
     document.getElementById('resultsContent').style.display = 'block';
 
-    // Submit form data to Netlify
-    const formData = new FormData(document.getElementById('searchForm'));
+    // Submit lead data to Netlify Forms
     try {
-      await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formData).toString(),
+      const netlifyBody = new URLSearchParams({
+        'form-name':  'rentalSearch',
+        'searchName': criteria.name        || '',
+        'searchEmail':criteria.contact     || '',
+        'bedrooms':   criteria.bedrooms    || 'Any',
+        'bathrooms':  criteria.bathrooms   || 'Any',
+        'budget':     criteria.budget      || '',
+        'neighborhood': criteria.neighborhood || 'any',
+        'moveInDate': criteria.moveInDate  || '',
+        'amenities':  (criteria.amenities||[]).join(','),
+        'specialRequests': criteria.specialRequests || '',
       });
-    } catch (e) {
-      console.error('Form submission error:', e);
+      await fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: netlifyBody.toString() });
+    } catch (e) { console.error('Netlify submit error:', e); }
+
+    // ── Vacancy match engine ──────────────────────────────────────────
+    const VACANCIES = [
+      { beds:2, baths:1, type:'Apartment', price:1650 },
+      { beds:2, baths:1, type:'Apartment', price:2500 },
+      { beds:3, baths:2.5, type:'Townhouse', price:2388 },
+      { beds:7, baths:3, type:'House', price:5600 },
+      { beds:6, baths:2, type:'Apartment', price:3900 },
+      { beds:6, baths:2, type:'House', price:4200 },
+      { beds:1, baths:1, type:'Apartment', price:1750 },
+    ];
+    const bedsNum = parseInt(criteria.bedrooms) || 0;
+    const budgetNum = parseFloat(criteria.budget) || 0;
+    const vacancyMatch = VACANCIES.find(v =>
+      (criteria.bedrooms === 'Any' || v.beds === bedsNum) &&
+      (!budgetNum || budgetNum >= v.price * 0.9)
+    );
+
+    // Send EmailJS — lead to Cyril + auto-reply to client
+    if (criteria.contact) {
+      const amenityLabels = { parking:'Parking', laundry:'In-unit Laundry', backyard:'Fenced Yard', basement:'Finished Basement', petFriendly:'Pet Friendly', furnished:'Furnished', ac:'A/C', balcony:'Balcony' };
+      const amenityList = criteria.amenities.map(a => amenityLabels[a] || a).join(', ') || 'None specified';
+      const budgetStr = [criteria.minBudget && '$' + criteria.minBudget, criteria.budget && '$' + criteria.budget].filter(Boolean).join(' – ') || 'Not specified';
+      const emailReportLink = 'https://ottawarentalplug.com/thank-you-report.html?' + reportParams.toString();
+      const matchAlert = vacancyMatch
+        ? `\n\n🔥 VACANCY MATCH: This lead matches your ${vacancyMatch.beds}BR ${vacancyMatch.type} at $${vacancyMatch.price.toLocaleString()}/mo — contact them first.`
+        : '';
+
+      try {
+        await emailjs.send('service_ij36816', 'template_gsfyfqf', {
+          title:         'New Rental Search Lead',
+          name:          criteria.name || 'Anonymous',
+          email:         criteria.contact,
+          message:       `Neighbourhood: ${criteria.neighborhood}\nBedrooms: ${criteria.bedrooms}\nBathrooms: ${criteria.bathrooms}\nBudget: ${budgetStr}/mo\nMove-in: ${criteria.moveInDate || 'Not specified'}\nMust-haves: ${amenityList}\nNotes: ${criteria.specialRequests || 'None'}${matchAlert}`,
+          client_name:   criteria.name || 'there',
+          client_email:  criteria.contact,
+          neighbourhood: criteria.neighborhood === 'any' ? 'Ottawa' : criteria.neighborhood,
+          report_link:   emailReportLink,
+        });
+      } catch (err) {
+        console.error('EmailJS error:', err);
+      }
     }
 
-    // Redirect to thank-you page after brief delay
-    setTimeout(() => {
-      window.location.href = '/thank-you-report.html';
-    }, 1500);
 
     btn.disabled = false;
     btn.innerHTML = 'Find My Rental <span class="arrow"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>';
