@@ -223,7 +223,8 @@
     <div class="login-logo">Ottawa Rental Plug</div>
     <div class="login-title">Landlord Dashboard</div>
     <div class="login-sub">Private — Cyril Babalola</div>
-    <input type="password" id="passInput" class="login-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPass()">
+    <input type="email" id="emailInput" class="login-input" placeholder="Email" autocomplete="username" onkeydown="if(event.key==='Enter')checkPass()">
+    <input type="password" id="passInput" class="login-input" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')checkPass()">
     <button class="login-btn" onclick="checkPass()">Enter Dashboard</button>
     <div class="login-error" id="passError">Incorrect password. Try again.</div>
   </div>
@@ -512,41 +513,37 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
 <script>
-// Password is verified server-side by the leads function — never stored in this file.
-// On success we keep it in sessionStorage for the tab session so syncs can re-auth.
+// Auth is handled by Supabase (js/supabase-client.js). The dashboard's data
+// lives in the Supabase `app_state` table, hydrated into STATE on login.
 const LEADS_ENDPOINT = '/.netlify/functions/leads';
-function getPass() { return sessionStorage.getItem('orpPass') || ''; }
+// The lead-sync function is still password-protected separately; prompt once when used.
+function getPass() {
+  let p = sessionStorage.getItem('orpPass');
+  if (!p) {
+    p = prompt('Enter your lead-sync (dashboard) password:') || '';
+    if (p) sessionStorage.setItem('orpPass', p);
+  }
+  return p;
+}
 
 async function checkPass() {
-  const pass = document.getElementById('passInput').value;
-  const btn  = document.querySelector('.login-btn');
-  const err  = document.getElementById('passError');
+  const email = document.getElementById('emailInput').value.trim();
+  const pass  = document.getElementById('passInput').value;
+  const btn   = document.querySelector('.login-btn');
+  const err   = document.getElementById('passError');
   err.style.display = 'none';
   btn.disabled = true; btn.textContent = 'Checking…';
   try {
-    const res = await fetch(LEADS_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pass }),
-    });
-    if (res.status === 401) {
-      err.textContent = 'Incorrect password. Try again.';
-      err.style.display = 'block';
-    } else if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      err.textContent = d.error || 'Server error. Check dashboard setup.';
-      err.style.display = 'block';
-    } else {
-      // Correct password — remember it for this tab and load the dashboard.
-      sessionStorage.setItem('orpPass', pass);
-      const { leads } = await res.json();
-      mergeLeads(leads || []);
-      document.getElementById('loginGate').style.display = 'none';
-      init();
-    }
+    await orpSignIn(email, pass);
+    await hydrateState();
+    document.getElementById('loginGate').style.display = 'none';
+    init();
   } catch (e) {
-    err.textContent = 'Could not reach the server. Are you running on the live site?';
+    const msg = (e && e.message) || 'Login failed';
+    err.textContent = /invalid|credential/i.test(msg) ? 'Incorrect email or password.' : msg;
     err.style.display = 'block';
   }
   btn.disabled = false; btn.textContent = 'Enter Dashboard';
@@ -563,13 +560,36 @@ const DEFAULT_VACANCIES = [
   { id:7, beds:1, baths:1,   type:'Apartment', price:1750, listed:'2026-04-29' },
 ];
 
-function getVacancies() {
-  try { return JSON.parse(localStorage.getItem('orpVacancies') || 'null') || DEFAULT_VACANCIES; } catch(e) { return DEFAULT_VACANCIES; }
+// In-memory cache, hydrated from Supabase on login. Reads are synchronous so all
+// existing render code is unchanged; writes update the cache and sync to Supabase.
+let STATE = { orpLeads: [], orpVacancies: DEFAULT_VACANCIES };
+const _saveTimers = {};
+function queueSave(key) {
+  clearTimeout(_saveTimers[key]);
+  _saveTimers[key] = setTimeout(() => {
+    orpSaveState(key, STATE[key]).catch(e => console.error('Cloud save failed for ' + key, e));
+  }, 400);
 }
-function getLeads() {
-  try { return JSON.parse(localStorage.getItem('orpLeads') || '[]'); } catch(e) { return []; }
+// Pull both keys from Supabase; on first run, migrate any existing localStorage data.
+async function hydrateState() {
+  let leads     = await orpLoadState('orpLeads');
+  let vacancies = await orpLoadState('orpVacancies');
+  if (leads === null) {
+    const local = JSON.parse(localStorage.getItem('orpLeads') || 'null');
+    leads = local || [];
+    await orpSaveState('orpLeads', leads);
+  }
+  if (vacancies === null) {
+    const local = JSON.parse(localStorage.getItem('orpVacancies') || 'null');
+    vacancies = local || DEFAULT_VACANCIES;
+    await orpSaveState('orpVacancies', vacancies);
+  }
+  STATE.orpLeads = leads || [];
+  STATE.orpVacancies = vacancies || DEFAULT_VACANCIES;
 }
-function saveLeads(l) { localStorage.setItem('orpLeads', JSON.stringify(l)); }
+function getVacancies() { return STATE.orpVacancies; }
+function getLeads() { return STATE.orpLeads; }
+function saveLeads(l) { STATE.orpLeads = l; queueSave('orpLeads'); }
 // Merge server-fetched leads into local store, dedup by netlifyId, notify on strong matches.
 // Returns the count of newly added leads.
 function mergeLeads(incoming) {
@@ -843,7 +863,7 @@ async function sendPushNotification(lead, score, vacancy) {
 }
 
 // ── VACANCIES (CRUD) ─────────────────────────────────────────────────
-function saveVacancyList(arr) { localStorage.setItem('orpVacancies', JSON.stringify(arr)); }
+function saveVacancyList(arr) { STATE.orpVacancies = arr; queueSave('orpVacancies'); }
 function nextVacancyId() {
   const ids = getVacancies().map(v => Number(v.id) || 0);
   return (ids.length ? Math.max(...ids) : 0) + 1;
@@ -1295,6 +1315,18 @@ async function init() {
   // Initial leads were already merged during login (checkPass). The "Sync Leads"
   // button re-pulls on demand via the secure function.
 }
+
+// Resume an existing Supabase session on reload so you stay logged in.
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const session = await orpSession();
+    if (session) {
+      await hydrateState();
+      document.getElementById('loginGate').style.display = 'none';
+      init();
+    }
+  } catch (e) { console.error('Session resume failed', e); }
+});
 </script>
 </body>
 </html>
