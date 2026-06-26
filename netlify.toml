@@ -1,6 +1,17 @@
 # Ottawa Rental Plug — Netlify config
 [build]
   publish = "."
+  functions = "netlify/functions"
+
+# Node 20 runtime so the function has global fetch available.
+[build.environment]
+  NODE_VERSION = "20"
+
+# Keep the private landlord dashboard out of search engines.
+[[headers]]
+  for = "/landlord.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
 
 # Long-cache static assets (filenames change when content changes)
 [[headers]]

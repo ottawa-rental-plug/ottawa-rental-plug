@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /landlord.html
 
 Sitemap: https://ottawarentalplug.com/sitemap.xml

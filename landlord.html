@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORP Landlord Dashboard</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy:#003a8c; --blue:#0071e3; --blue-light:#e8f0fd;
+      --green:#34c759; --orange:#ff9500; --red:#ff3b30;
+      --gray:#6e6e73; --border:#e8e8ed; --bg:#f0f2f5;
+      --white:#fff; --sidebar:#1a2332; --sidebar-hover:#243044;
+    }
+    body { font-family:'Inter',-apple-system,sans-serif; background:var(--bg); color:#1d1d1f; -webkit-font-smoothing:antialiased; display:flex; min-height:100vh; }
+
+    /* LOGIN */
+    #loginGate { position:fixed; inset:0; background:linear-gradient(135deg,#003a8c,#0055cc); display:flex; align-items:center; justify-content:center; z-index:9999; }
+    .login-card { background:#fff; border-radius:20px; padding:48px 40px; width:360px; text-align:center; box-shadow:0 24px 64px rgba(0,0,0,.25); }
+    .login-logo { font-size:15px; font-weight:800; color:var(--navy); margin-bottom:8px; }
+    .login-title { font-size:22px; font-weight:700; color:var(--navy); margin-bottom:6px; }
+    .login-sub { font-size:13px; color:var(--gray); margin-bottom:28px; }
+    .login-input { width:100%; padding:13px 16px; border:1.5px solid var(--border); border-radius:10px; font-size:15px; font-family:inherit; margin-bottom:14px; outline:none; transition:border-color .2s; text-align:center; letter-spacing:.1em; }
+    .login-input:focus { border-color:var(--blue); }
+    .login-btn { width:100%; padding:13px; background:var(--navy); color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; }
+    .login-btn:hover { background:#002a6e; }
+    .login-error { color:var(--red); font-size:13px; margin-top:10px; display:none; }
+
+    /* SIDEBAR */
+    .sidebar { width:220px; background:var(--sidebar); flex-shrink:0; display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto; }
+    .sidebar-brand { padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,.08); }
+    .sidebar-brand-name { font-size:13px; font-weight:800; color:#fff; }
+    .sidebar-brand-sub  { font-size:11px; color:rgba(255,255,255,.45); margin-top:2px; }
+    .sidebar-nav { padding:16px 10px; flex:1; }
+    .nav-section-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:rgba(255,255,255,.3); padding:8px 12px 4px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; font-size:13px; font-weight:500; color:rgba(255,255,255,.6); cursor:pointer; transition:all .15s; margin-bottom:2px; border:none; background:none; width:100%; text-align:left; }
+    .nav-item:hover { background:var(--sidebar-hover); color:#fff; }
+    .nav-item.active { background:var(--blue); color:#fff; }
+    .nav-badge { margin-left:auto; background:var(--red); color:#fff; font-size:10px; font-weight:700; border-radius:999px; padding:1px 6px; }
+    .sidebar-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,.08); font-size:11px; color:rgba(255,255,255,.35); }
+
+    /* MAIN */
+    .main { flex:1; overflow-y:auto; }
+    .topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 28px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; gap:12px; }
+    .topbar-title { font-size:16px; font-weight:700; color:var(--navy); }
+    .topbar-right { display:flex; align-items:center; gap:10px; }
+    .topbar-date { font-size:12px; color:var(--gray); }
+    .btn-top { display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; border:none; transition:opacity .2s; }
+    .btn-top:hover { opacity:.85; }
+    .btn-top.primary { background:var(--blue); color:#fff; }
+    .btn-top.secondary { background:var(--bg); color:var(--navy); border:1px solid var(--border); }
+    .btn-top:disabled { opacity:.45; cursor:default; }
+
+    .content { padding:24px 28px; }
+
+    /* ALERT BANNER */
+    .alert-banner { border-radius:12px; padding:14px 18px; margin-bottom:20px; display:flex; align-items:flex-start; gap:12px; }
+    .alert-banner.red    { background:#fff1f2; border:1px solid #fecdd3; }
+    .alert-banner.orange { background:#fffbeb; border:1px solid #fde68a; }
+    .alert-banner-title { font-size:13px; font-weight:700; margin-bottom:3px; }
+    .alert-banner.red    .alert-banner-title { color:#9f1239; }
+    .alert-banner.orange .alert-banner-title { color:#92400e; }
+    .alert-banner-text { font-size:12px; line-height:1.6; }
+    .alert-banner.red    .alert-banner-text { color:#be123c; }
+    .alert-banner.orange .alert-banner-text { color:#b45309; }
+
+    /* STATS */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+    .stat-card { background:var(--white); border-radius:14px; border:1px solid var(--border); padding:18px 20px; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+    .stat-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--gray); margin-bottom:8px; }
+    .stat-value { font-size:28px; font-weight:800; color:var(--navy); line-height:1; }
+    .stat-sub   { font-size:12px; color:var(--gray); margin-top:4px; }
+    .stat-card.alert .stat-value { color:var(--orange); }
+    .stat-card.good  .stat-value { color:var(--green); }
+    .stat-card.danger .stat-value { color:var(--red); }
+
+    /* SECTION */
+    .section { margin-bottom:24px; }
+    .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .section-title { font-size:14px; font-weight:700; color:var(--navy); }
+    .section-action { font-size:12px; color:var(--blue); cursor:pointer; font-weight:500; background:none; border:none; font-family:inherit; }
+
+    /* VACANCIES */
+    .vacancy-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:12px; }
+    .vacancy-card { background:var(--white); border-radius:14px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.04); overflow:hidden; }
+    .vacancy-card.stale  { border-color:#fecdd3; }
+    .vacancy-card.aging  { border-color:#fde68a; }
+    .vacancy-header { padding:13px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .vacancy-type  { font-size:13px; font-weight:700; color:var(--navy); }
+    .vacancy-price { font-size:15px; font-weight:800; color:var(--blue); }
+    .vacancy-body  { padding:13px 16px; }
+    .vacancy-detail { font-size:12px; color:var(--gray); display:flex; gap:12px; margin-bottom:10px; flex-wrap:wrap; }
+    .dom-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; border-radius:999px; padding:3px 10px; }
+    .dom-fresh  { background:#f0fdf4; color:#166534; }
+    .dom-normal { background:#fffbeb; color:#92400e; }
+    .dom-stale  { background:#fff1f2; color:#9f1239; }
+    .price-suggestion { margin-top:10px; padding:8px 10px; background:#fffbeb; border-radius:8px; font-size:12px; color:#92400e; font-weight:500; }
+    .vacancy-matches { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); font-size:12px; color:var(--gray); }
+    .match-count { font-weight:700; color:var(--blue); }
+    .vacancy-controls { margin-top:10px; display:flex; gap:6px; }
+    .vc-btn { flex:1; font-size:12px; font-weight:600; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--navy); cursor:pointer; font-family:inherit; }
+    .vc-btn:hover { background:var(--blue-light); border-color:var(--blue); }
+    .vc-btn.danger:hover { background:#fff1f2; border-color:#fecdd3; color:var(--red); }
+
+    /* LEADS */
+    .card { background:var(--white); border-radius:14px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.04); overflow:hidden; }
+    .leads-table { width:100%; border-collapse:collapse; min-width:760px; }
+    .leads-table th { text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--gray); padding:10px 14px; border-bottom:2px solid var(--border); background:#fafafa; white-space:nowrap; }
+    .leads-table td { padding:11px 14px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+    .leads-table tr:last-child td { border-bottom:none; }
+    .leads-table tr:hover td { background:#fafafa; }
+    .score-bar-wrap { display:flex; align-items:center; gap:8px; }
+    .score-bar { height:6px; width:60px; background:var(--border); border-radius:999px; overflow:hidden; flex-shrink:0; }
+    .score-fill { height:100%; border-radius:999px; }
+    .score-fill.high { background:var(--green); }
+    .score-fill.med  { background:var(--orange); }
+    .score-fill.low  { background:var(--border); }
+    .score-num { font-size:12px; font-weight:700; }
+    .score-num.high { color:#166534; }
+    .score-num.med  { color:#92400e; }
+    .score-num.low  { color:var(--gray); }
+    .match-pill { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; border-radius:999px; padding:3px 9px; }
+    .match-high { background:#f0fdf4; color:#166534; }
+    .match-med  { background:#fffbeb; color:#92400e; }
+    .match-low  { background:#f3f4f6; color:#6b7280; }
+    .contact-btn { font-size:12px; font-weight:600; color:var(--blue); background:var(--blue-light); border:none; border-radius:6px; padding:5px 11px; cursor:pointer; font-family:inherit; text-decoration:none; display:inline-block; white-space:nowrap; }
+    .status-select { font-size:12px; font-weight:600; font-family:inherit; border:1px solid var(--border); border-radius:6px; padding:5px 8px; cursor:pointer; outline:none; }
+    .status-select.status-new       { background:#f3f4f6; color:#374151; }
+    .status-select.status-contacted { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+    .status-select.status-viewing   { background:#ede9fe; color:#6d28d9; border-color:#ddd6fe; }
+    .status-select.status-leased    { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+    .status-select.status-passed    { background:#f9fafb; color:#9ca3af; }
+    .source-badge { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; border-radius:4px; padding:2px 6px; }
+    .source-orp     { background:var(--blue-light); color:var(--navy); }
+    .source-kijiji  { background:#fef3c7; color:#92400e; }
+    .source-facebook{ background:#dbeafe; color:#1e40af; }
+    .source-reddit  { background:#fee2e2; color:#991b1b; }
+    .source-direct  { background:#f3f4f6; color:#374151; }
+    .source-referral{ background:#f0fdf4; color:#166534; }
+
+    /* TABS */
+    .tabs { display:flex; gap:4px; margin-bottom:14px; flex-wrap:wrap; }
+    .tab { padding:7px 14px; font-size:13px; font-weight:500; border-radius:8px; cursor:pointer; border:none; background:none; font-family:inherit; color:var(--gray); transition:all .15s; }
+    .tab.active { background:var(--blue); color:#fff; }
+    .tab:hover:not(.active) { background:var(--border); color:var(--navy); }
+
+    /* TEMPLATES */
+    .template-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
+    .template-card { background:var(--white); border-radius:14px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.04); overflow:hidden; }
+    .template-header { padding:13px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .template-platform { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--gray); margin-bottom:3px; }
+    .template-label { font-size:14px; font-weight:700; color:var(--navy); }
+    .template-body { padding:14px 16px; font-size:12px; color:#374151; line-height:1.7; white-space:pre-wrap; background:#fafafa; border-bottom:1px solid var(--border); max-height:160px; overflow-y:auto; font-family:inherit; }
+    .template-footer { padding:12px 16px; display:flex; gap:8px; align-items:center; }
+    .copy-btn { display:flex; align-items:center; gap:5px; padding:7px 14px; background:var(--blue); color:#fff; border:none; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:opacity .2s; }
+    .copy-btn:hover { opacity:.85; }
+    .copy-btn.copied { background:var(--green); }
+    .char-count { font-size:11px; color:var(--gray); margin-left:auto; }
+
+    /* SETTINGS */
+    .settings-section { background:var(--white); border-radius:14px; border:1px solid var(--border); padding:24px; margin-bottom:16px; }
+    .settings-title { font-size:14px; font-weight:700; color:var(--navy); margin-bottom:4px; }
+    .settings-desc  { font-size:12px; color:var(--gray); margin-bottom:16px; line-height:1.6; }
+    .settings-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+    .field-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--gray); margin-bottom:4px; }
+    .field-input { width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none; transition:border-color .2s; }
+    .field-input:focus { border-color:var(--blue); }
+    .save-settings-btn { padding:9px 20px; background:var(--navy); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px; }
+    .status-dot.green { background:var(--green); }
+    .status-dot.gray  { background:var(--border); }
+    .status-pill { display:inline-flex; align-items:center; font-size:12px; font-weight:500; padding:4px 10px; border-radius:999px; }
+    .status-pill.connected    { background:#f0fdf4; color:#166534; }
+    .status-pill.disconnected { background:#f3f4f6; color:#6b7280; }
+    .howto-steps { margin-top:12px; padding:14px; background:#fafafa; border-radius:10px; }
+    .howto-step { font-size:12px; color:#374151; padding:4px 0; display:flex; gap:8px; }
+    .howto-step span:first-child { font-weight:700; color:var(--blue); flex-shrink:0; }
+
+    /* SCAN */
+    .scan-card { background:var(--white); border-radius:14px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.04); }
+    .scan-empty { padding:40px; text-align:center; color:var(--gray); font-size:13px; }
+    .scan-item { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:14px; }
+    .scan-item:last-child { border-bottom:none; }
+    .scan-source { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; border-radius:4px; padding:3px 7px; flex-shrink:0; margin-top:2px; }
+    .scan-title { font-size:13px; font-weight:600; color:var(--navy); margin-bottom:3px; }
+    .scan-meta  { font-size:12px; color:var(--gray); }
+
+    /* SHORTCUT */
+    .shortcut-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+    .shortcut-card { background:var(--white); border-radius:12px; border:1px solid var(--border); padding:14px; text-decoration:none; transition:box-shadow .15s; display:block; }
+    .shortcut-card:hover { box-shadow:0 4px 14px rgba(0,0,0,.1); }
+    .shortcut-platform { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--gray); margin-bottom:5px; }
+    .shortcut-label { font-size:13px; font-weight:700; color:var(--navy); margin-bottom:2px; }
+    .shortcut-desc  { font-size:12px; color:var(--gray); }
+
+    .panel { display:none; }
+    .panel.active { display:block; }
+
+    /* ADD LEAD FORM */
+    .add-lead-form { display:none; margin-top:14px; background:var(--white); border:1px solid var(--border); border-radius:12px; padding:20px; }
+    .form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+    .form-field label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--gray); margin-bottom:4px; }
+    .form-field input, .form-field select { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:6px; font-family:inherit; font-size:13px; outline:none; }
+    .form-field input:focus, .form-field select:focus { border-color:var(--blue); }
+
+    @media (max-width:900px) {
+      .sidebar { display:none; }
+      .stats-row { grid-template-columns:repeat(2,1fr); }
+      .content { padding:16px; }
+      .settings-row, .form-grid-2 { grid-template-columns:1fr; }
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginGate">
+  <div class="login-card">
+    <div class="login-logo">Ottawa Rental Plug</div>
+    <div class="login-title">Landlord Dashboard</div>
+    <div class="login-sub">Private — Cyril Babalola</div>
+    <input type="password" id="passInput" class="login-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPass()">
+    <button class="login-btn" onclick="checkPass()">Enter Dashboard</button>
+    <div class="login-error" id="passError">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-name">Ottawa Rental Plug</div>
+    <div class="sidebar-brand-sub">Landlord Command Centre</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <button class="nav-item active" onclick="showPanel('overview')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Overview
+    </button>
+    <button class="nav-item" onclick="showPanel('vacancies')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Vacancies
+    </button>
+    <div class="nav-section-label" style="margin-top:8px">Leads</div>
+    <button class="nav-item" onclick="showPanel('leads')" id="nav-leads">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Inbound Leads
+      <span class="nav-badge" id="matchBadge" style="display:none">0</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('scanner')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      Lead Scanner
+    </button>
+    <div class="nav-section-label" style="margin-top:8px">Tools</div>
+    <button class="nav-item" onclick="showPanel('templates')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+      Post Templates
+    </button>
+    <button class="nav-item" onclick="showPanel('shortcuts')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      Quick Scan Links
+    </button>
+    <button class="nav-item" onclick="showPanel('settings')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+  <div class="sidebar-footer">Updated: <span id="lastUpdated"></span></div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="panelTitle">Overview</div>
+    <div class="topbar-right">
+      <span class="topbar-date" id="topDate"></span>
+      <button class="btn-top secondary" onclick="syncNetlify()" id="syncBtn">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        Sync Leads
+      </button>
+      <button class="btn-top primary" onclick="runScan()" id="scanBtn">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        Scan Now
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div id="panel-overview" class="panel active">
+      <div id="agingAlerts"></div>
+      <div class="stats-row" id="statsRow"></div>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Vacancy Status</div>
+          <button class="section-action" onclick="showPanel('vacancies')">View all</button>
+        </div>
+        <div class="vacancy-grid" id="overviewVacancies"></div>
+      </div>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Top Matched Leads</div>
+          <button class="section-action" onclick="showPanel('leads')">View all</button>
+        </div>
+        <div class="scan-card" id="overviewLeads"></div>
+      </div>
+    </div>
+
+    <!-- VACANCIES -->
+    <div id="panel-vacancies" class="panel">
+      <div id="agingAlerts2"></div>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title" id="vacancyCount">Active Vacancies</div>
+          <button class="section-action" onclick="openVacancyForm()" style="font-weight:600">+ Add Vacancy</button>
+        </div>
+        <div class="add-lead-form" id="vacancyForm">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px" id="vacancyFormTitle">Add Vacancy</div>
+          <input type="hidden" id="vc-id">
+          <div class="form-grid-2">
+            <div class="form-field"><label>Bedrooms</label><input id="vc-beds" type="number" min="0" placeholder="2"></div>
+            <div class="form-field"><label>Bathrooms</label><input id="vc-baths" type="number" min="0" step="0.5" placeholder="1"></div>
+            <div class="form-field"><label>Type</label><select id="vc-type"><option>Apartment</option><option>Townhouse</option><option>House</option><option>Condo</option><option>Basement</option><option>Room</option></select></div>
+            <div class="form-field"><label>Price ($/mo)</label><input id="vc-price" type="number" min="0" placeholder="1650"></div>
+            <div class="form-field"><label>Date Listed</label><input id="vc-listed" type="date"></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="saveVacancy()" style="padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save Vacancy</button>
+            <button onclick="closeVacancyForm()" style="padding:9px 16px;background:var(--border);color:var(--navy);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+          </div>
+        </div>
+        <div class="vacancy-grid" id="allVacancies"></div>
+      </div>
+    </div>
+
+    <!-- LEADS -->
+    <div id="panel-leads" class="panel">
+      <div class="section">
+        <div class="section-header"><div class="section-title">Inbound Leads — Scored & Matched</div></div>
+        <div class="tabs">
+          <button class="tab active" onclick="filterLeads('all',this)">All</button>
+          <button class="tab" onclick="filterLeads('open',this)">Open</button>
+          <button class="tab" onclick="filterLeads('match',this)">Vacancy Matches</button>
+          <button class="tab" onclick="filterLeads('new',this)">This Week</button>
+          <button class="tab" onclick="filterLeads('hot',this)">Hot (80+)</button>
+        </div>
+        <div class="card" style="overflow-x:auto">
+          <table class="leads-table">
+            <thead><tr>
+              <th>Contact</th><th>Looking For</th><th>Budget</th><th>Move-in</th><th>Score</th><th>Match</th><th>Status</th><th>Action</th>
+            </tr></thead>
+            <tbody id="leadsBody"></tbody>
+          </table>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+          <button onclick="toggleAddLead()" style="padding:8px 16px;background:var(--blue-light);color:var(--blue);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">+ Add Lead</button>
+          <span style="font-size:12px;color:var(--gray)">Leads sync automatically when you click "Sync Leads" above.</span>
+        </div>
+        <div class="add-lead-form" id="addLeadForm">
+          <div class="form-grid-2">
+            <div class="form-field"><label>Name</label><input id="al-name" type="text"></div>
+            <div class="form-field"><label>Email</label><input id="al-email" type="email"></div>
+            <div class="form-field"><label>Phone</label><input id="al-phone" type="tel" placeholder="613-xxx-xxxx"></div>
+            <div class="form-field"><label>Bedrooms</label><select id="al-beds"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>Any</option></select></div>
+            <div class="form-field"><label>Max Budget</label><input id="al-budget" type="number" placeholder="2500"></div>
+            <div class="form-field"><label>Move-in</label><input id="al-movein" type="date"></div>
+            <div class="form-field"><label>Neighbourhood</label><input id="al-hood" type="text" placeholder="Kanata, any..."></div>
+            <div class="form-field"><label>Source</label><select id="al-source"><option value="orp">ORP Website</option><option value="kijiji">Kijiji</option><option value="facebook">Facebook</option><option value="reddit">Reddit</option><option value="referral">Referral</option><option value="direct">Direct</option></select></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="addLeadManual()" style="padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save Lead</button>
+            <button onclick="toggleAddLead()" style="padding:9px 16px;background:var(--border);color:var(--navy);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCANNER -->
+    <div id="panel-scanner" class="panel">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Lead Scanner</div>
+          <div style="font-size:12px;color:var(--gray)" id="scanTime">Not yet scanned</div>
+        </div>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Pulls live "housing wanted" posts from Reddit Ottawa (and Kijiji, if Bright Data is connected), scored against your vacancies. Click <strong>Scan Now</strong> in the top bar to run.</p>
+        <div class="scan-card" id="scanResults">
+          <div class="scan-empty">
+            <svg width="36" height="36" fill="none" stroke="var(--border)" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 10px;display:block"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <p>No scan yet. Click "Scan Now" to search for matched tenants.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEMPLATES -->
+    <div id="panel-templates" class="panel">
+      <div class="section">
+        <div class="section-header"><div class="section-title">Post Templates — One-Click Copy</div></div>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Ready-to-post copy for Facebook Groups, Kijiji, and Reddit. Click copy, paste directly into the platform.</p>
+        <div class="template-grid" id="templateGrid"></div>
+      </div>
+    </div>
+
+    <!-- SHORTCUTS -->
+    <div id="panel-shortcuts" class="panel">
+      <div class="section">
+        <div class="section-header"><div class="section-title">Quick Scan Links</div></div>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Pre-filtered searches for each vacancy. Click to open — results are pre-sorted by newest.</p>
+        <div class="shortcut-grid" id="shortcutGrid"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="panel-settings" class="panel">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+
+        <div class="settings-section" style="margin:0">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" fill="none" stroke="var(--blue)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+            <div>
+              <div class="settings-title" style="margin:0">Lead Sync</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:1px">ottawarentalplug.com forms</div>
+            </div>
+            <span class="status-pill connected" style="margin-left:auto"><span class="status-dot green"></span>Live</span>
+          </div>
+          <div style="font-size:13px;color:#374151;line-height:1.6">Every search form submission on your website flows directly into Inbound Leads — automatically scored and matched to your vacancies.</div>
+        </div>
+
+        <div class="settings-section" style="margin:0">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="width:40px;height:40px;border-radius:10px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            </div>
+            <div>
+              <div class="settings-title" style="margin:0">Push Notifications</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:1px">Phone alerts for strong matches</div>
+            </div>
+            <span class="status-pill connected" style="margin-left:auto"><span class="status-dot green"></span>Active</span>
+          </div>
+          <div style="font-size:13px;color:#374151;line-height:1.6">Instant notification to your phone when a lead scores 75 or higher. You'll hear about it before they even close their browser.</div>
+        </div>
+
+        <div class="settings-section" style="margin:0">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="width:40px;height:40px;border-radius:10px;background:#fffbeb;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" fill="none" stroke="var(--orange)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <div>
+              <div class="settings-title" style="margin:0">Lead Scoring</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:1px">Multi-factor match engine</div>
+            </div>
+            <span class="status-pill connected" style="margin-left:auto"><span class="status-dot green"></span>On</span>
+          </div>
+          <div style="font-size:13px;color:#374151;line-height:1.6">Every lead is scored out of 100 across bedrooms, budget fit, move-in timing, and profile completeness. Strongest matches surface first.</div>
+        </div>
+
+        <div class="settings-section" style="margin:0">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="width:40px;height:40px;border-radius:10px;background:#fff1f2;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" fill="none" stroke="var(--red)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+            </div>
+            <div>
+              <div class="settings-title" style="margin:0">Aging Alerts</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:1px">Vacancy market intelligence</div>
+            </div>
+            <span class="status-pill connected" style="margin-left:auto"><span class="status-dot green"></span>On</span>
+          </div>
+          <div style="font-size:13px;color:#374151;line-height:1.6">Units 30+ days on market get flagged with a specific suggested price adjustment to re-engage demand and fill faster.</div>
+        </div>
+
+        <div class="settings-section" style="margin:0">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="width:40px;height:40px;border-radius:10px;background:#ede9fe;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+              <div class="settings-title" style="margin:0">Post Templates</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:1px">Facebook, Kijiji, Reddit</div>
+            </div>
+            <span class="status-pill connected" style="margin-left:auto"><span class="status-dot green"></span>Ready</span>
+          </div>
+          <div style="font-size:13px;color:#374151;line-height:1.6">Pre-written posts for every vacancy, tailored per platform. One click to copy — paste directly into any Ottawa housing group.</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Password is verified server-side by the leads function — never stored in this file.
+// On success we keep it in sessionStorage for the tab session so syncs can re-auth.
+const LEADS_ENDPOINT = '/.netlify/functions/leads';
+function getPass() { return sessionStorage.getItem('orpPass') || ''; }
+
+async function checkPass() {
+  const pass = document.getElementById('passInput').value;
+  const btn  = document.querySelector('.login-btn');
+  const err  = document.getElementById('passError');
+  err.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Checking…';
+  try {
+    const res = await fetch(LEADS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pass }),
+    });
+    if (res.status === 401) {
+      err.textContent = 'Incorrect password. Try again.';
+      err.style.display = 'block';
+    } else if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      err.textContent = d.error || 'Server error. Check dashboard setup.';
+      err.style.display = 'block';
+    } else {
+      // Correct password — remember it for this tab and load the dashboard.
+      sessionStorage.setItem('orpPass', pass);
+      const { leads } = await res.json();
+      mergeLeads(leads || []);
+      document.getElementById('loginGate').style.display = 'none';
+      init();
+    }
+  } catch (e) {
+    err.textContent = 'Could not reach the server. Are you running on the live site?';
+    err.style.display = 'block';
+  }
+  btn.disabled = false; btn.textContent = 'Enter Dashboard';
+}
+
+// ── DATA ────────────────────────────────────────────────────────────
+const DEFAULT_VACANCIES = [
+  { id:1, beds:2, baths:1,   type:'Apartment', price:1650, listed:'2026-06-16' },
+  { id:2, beds:2, baths:1,   type:'Apartment', price:2500, listed:'2026-06-01' },
+  { id:3, beds:3, baths:2.5, type:'Townhouse', price:2388, listed:'2026-05-30' },
+  { id:4, beds:7, baths:3,   type:'House',     price:5600, listed:'2026-05-14' },
+  { id:5, beds:6, baths:2,   type:'Apartment', price:3900, listed:'2026-05-07' },
+  { id:6, beds:6, baths:2,   type:'House',     price:4200, listed:'2026-05-01' },
+  { id:7, beds:1, baths:1,   type:'Apartment', price:1750, listed:'2026-04-29' },
+];
+
+function getVacancies() {
+  try { return JSON.parse(localStorage.getItem('orpVacancies') || 'null') || DEFAULT_VACANCIES; } catch(e) { return DEFAULT_VACANCIES; }
+}
+function getLeads() {
+  try { return JSON.parse(localStorage.getItem('orpLeads') || '[]'); } catch(e) { return []; }
+}
+function saveLeads(l) { localStorage.setItem('orpLeads', JSON.stringify(l)); }
+// Merge server-fetched leads into local store, dedup by netlifyId, notify on strong matches.
+// Returns the count of newly added leads.
+function mergeLeads(incoming) {
+  const existing = getLeads();
+  const existingIds = new Set(existing.map(l => l.netlifyId).filter(Boolean));
+  let added = 0;
+  for (const lead of incoming) {
+    if (lead.netlifyId && existingIds.has(lead.netlifyId)) continue;
+    lead.id = lead.netlifyId || ('m' + Date.now().toString(36) + Math.random().toString(36).slice(2,7));
+    lead.status = lead.status || 'new';
+    existing.push(lead);
+    const { score, vacancy } = bestMatch(lead);
+    if (score >= 75 && vacancy) sendPushNotification(lead, score, vacancy);
+    added++;
+  }
+  if (added > 0) saveLeads(existing);
+  return added;
+}
+const NTFY_TOPIC      = 'ottawarentalplug';
+const NTFY_THRESHOLD  = 75;
+function getCfg(k, def) { return localStorage.getItem(k) || def || ''; }
+
+// ── ENHANCED SCORING ───────────────────────────────────────────────
+function scoreLeadAgainstVacancy(lead, v) {
+  let score = 0; const breakdown = {};
+  // Beds (40pts)
+  const bedsNum = parseInt(lead.beds) || 0;
+  if (lead.beds === 'Any')                          { score += 20; breakdown.beds = 20; }
+  else if (bedsNum === v.beds)                      { score += 40; breakdown.beds = 40; }
+  else if (Math.abs(bedsNum - v.beds) === 1)        { score += 15; breakdown.beds = 15; }
+  else                                              { breakdown.beds = 0; }
+  // Budget (30pts)
+  const budget = parseFloat(lead.budget) || 0;
+  if (!budget)                                      { score += 15; breakdown.budget = 15; }
+  else if (budget >= v.price)                       { score += 30; breakdown.budget = 30; }
+  else if (budget >= v.price * 0.92)                { score += 20; breakdown.budget = 20; }
+  else if (budget >= v.price * 0.85)                { score += 10; breakdown.budget = 10; }
+  else                                              { breakdown.budget = 0; }
+  // Move-in timing (20pts)
+  if (lead.moveIn) {
+    const daysOut = Math.round((new Date(lead.moveIn + 'T12:00:00') - new Date()) / 86400000);
+    if (daysOut >= 0 && daysOut <= 30)              { score += 20; breakdown.timing = 20; }
+    else if (daysOut > 30 && daysOut <= 60)         { score += 15; breakdown.timing = 15; }
+    else if (daysOut > 60 && daysOut <= 90)         { score += 8;  breakdown.timing = 8; }
+    else                                            { breakdown.timing = 0; }
+  } else                                            { score += 10; breakdown.timing = 10; }
+  // Urgency / profile completeness (10pts)
+  let urg = 0;
+  if (lead.name)    urg += 3;
+  if (lead.email)   urg += 3;
+  if (lead.moveIn)  urg += 2;
+  if (lead.budget)  urg += 2;
+  score += urg; breakdown.urgency = urg;
+  return { score: Math.min(Math.round(score), 100), breakdown };
+}
+
+// Escape untrusted text (scan results come from Reddit/Kijiji) before injecting as HTML.
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function bestMatch(lead) {
+  const vacancies = getVacancies();
+  let best = 0; let bestV = null; let bestBreakdown = {};
+  for (const v of vacancies) {
+    const { score, breakdown } = scoreLeadAgainstVacancy(lead, v);
+    if (score > best) { best = score; bestV = v; bestBreakdown = breakdown; }
+  }
+  return { score: best, vacancy: bestV, breakdown: bestBreakdown };
+}
+
+function scoreClass(s) {
+  if (s >= 75) return 'high';
+  if (s >= 50) return 'med';
+  return 'low';
+}
+
+// ── DOM HELPERS ─────────────────────────────────────────────────────
+function dom(listedStr) { return Math.round((new Date() - new Date(listedStr)) / 86400000); }
+function domBadge(d) {
+  if (d <= 21) return `<span class="dom-badge dom-fresh">${d}d on market</span>`;
+  if (d <= 35) return `<span class="dom-badge dom-normal">${d}d on market</span>`;
+  return `<span class="dom-badge dom-stale">${d}d — act now</span>`;
+}
+function priceSuggestion(d, price) {
+  if (d < 30) return null;
+  if (d < 45) return { pct:5,  suggested: Math.round(price * 0.95 / 50) * 50 };
+  if (d < 60) return { pct:8,  suggested: Math.round(price * 0.92 / 50) * 50 };
+  return              { pct:12, suggested: Math.round(price * 0.88 / 50) * 50 };
+}
+
+// ── AGING ALERTS ────────────────────────────────────────────────────
+function renderAgingAlerts(containerId) {
+  const vacancies = getVacancies();
+  const stale = vacancies.filter(v => dom(v.listed) >= 30).sort((a,b) => dom(b.listed) - dom(a.listed));
+  const el = document.getElementById(containerId);
+  if (!stale.length) { el.innerHTML = ''; return; }
+  el.innerHTML = stale.map(v => {
+    const d = dom(v.listed);
+    const sug = priceSuggestion(d, v.price);
+    const cls = d >= 45 ? 'red' : 'orange';
+    return `<div class="alert-banner ${cls}">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+      <div>
+        <div class="alert-banner-title">${v.beds}BR ${v.type} — ${d} days on market</div>
+        <div class="alert-banner-text">${d >= 45 ? 'Urgent:' : 'Consider:'} ${sug ? `Drop asking price by ${sug.pct}% to $${sug.suggested.toLocaleString()}/mo to re-engage the market.` : 'Re-post listing with fresh photos and updated description to reset visibility.'} ${d >= 60 ? 'Also check if your listing title needs reframing — "6 Bedroom" may underperform vs "Spacious Co-Living House".' : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── VACANCY CARD ────────────────────────────────────────────────────
+function renderVacancy(v, leads, editable) {
+  const d = dom(v.listed);
+  const sug = priceSuggestion(d, v.price);
+  const cls = d >= 45 ? 'stale' : d >= 30 ? 'aging' : '';
+  const matched = leads.filter(l => bestMatch(l).score >= 50 && (l.beds === 'Any' || parseInt(l.beds) === v.beds)).length;
+  return `<div class="vacancy-card ${cls}">
+    <div class="vacancy-header">
+      <div class="vacancy-type">${v.beds} BR ${v.type}</div>
+      <div class="vacancy-price">$${v.price.toLocaleString()}/mo</div>
+    </div>
+    <div class="vacancy-body">
+      <div class="vacancy-detail">
+        <span>${v.baths} bath</span>
+        <span>Listed ${new Date(v.listed).toLocaleDateString('en-CA',{month:'short',day:'numeric'})}</span>
+      </div>
+      ${domBadge(d)}
+      ${sug ? `<div class="price-suggestion">Suggested price: $${sug.suggested.toLocaleString()}/mo (−${sug.pct}%)</div>` : ''}
+      <div class="vacancy-matches"><span class="match-count">${matched}</span> lead${matched!==1?'s':''} matching this unit</div>
+      ${editable ? `<div class="vacancy-controls">
+        <button class="vc-btn" onclick="openVacancyForm(${v.id})">Edit</button>
+        <button class="vc-btn danger" onclick="deleteVacancy(${v.id})">Delete</button>
+      </div>` : ''}
+    </div>
+  </div>`;
+}
+
+// ── LEADS TABLE ─────────────────────────────────────────────────────
+let currentFilter = 'all';
+function renderLeads(filter) {
+  currentFilter = filter;
+  const leads = getLeads();
+  const now = new Date(); const weekAgo = new Date(now - 7*86400000);
+  let filtered = leads;
+  if (filter === 'match') filtered = leads.filter(l => bestMatch(l).score >= 50);
+  if (filter === 'new')   filtered = leads.filter(l => new Date(l.added) >= weekAgo);
+  if (filter === 'hot')   filtered = leads.filter(l => bestMatch(l).score >= 80);
+  filtered = filtered.sort((a,b) => bestMatch(b).score - bestMatch(a).score);
+
+  if (filter === 'open')  filtered = leads.filter(l => !['leased','passed'].includes(l.status||'new'));
+  if (!filtered.length) {
+    document.getElementById('leadsBody').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--gray);font-size:13px">No leads in this view. Sync from your website or add manually.</td></tr>`;
+    return;
+  }
+  document.getElementById('leadsBody').innerHTML = filtered.map(lead => {
+    const { score, vacancy, breakdown } = bestMatch(lead);
+    const cls = scoreClass(score);
+    const budgetStr = lead.budget ? '$' + parseInt(lead.budget).toLocaleString() : '—';
+    const moveStr = lead.moveIn ? new Date(lead.moveIn+'T12:00:00').toLocaleDateString('en-CA',{month:'short',day:'numeric'}) : '—';
+    const scoreBar = `<div class="score-bar-wrap"><div class="score-bar"><div class="score-fill ${cls}" style="width:${score}%"></div></div><span class="score-num ${cls}">${score}</span></div>`;
+    const srcBadge = `<span class="source-badge source-${lead.source||'orp'}">${escapeHtml(lead.source||'ORP')}</span>`;
+    const matchCell = vacancy && score >= 50
+      ? `<div style="font-size:12px;font-weight:600;color:var(--navy)">${vacancy.beds}BR ${vacancy.type}</div><div style="font-size:11px;color:var(--gray)">$${vacancy.price.toLocaleString()}/mo</div>`
+      : `<span style="font-size:12px;color:var(--gray)">—</span>`;
+    const firstName = encodeURIComponent((lead.name||'').split(' ')[0]);
+    return `<tr>
+      <td>
+        <div style="font-weight:600;color:var(--navy)">${escapeHtml(lead.name||'—')}</div>
+        <div style="font-size:11px;color:var(--gray)">${escapeHtml(lead.email||'')}</div>
+        <div style="margin-top:3px">${srcBadge}</div>
+      </td>
+      <td>
+        <div style="font-weight:600">${escapeHtml(String(lead.beds||'Any'))} BR</div>
+        <div style="font-size:11px;color:var(--gray)">${escapeHtml(lead.neighbourhood||'Any area')}</div>
+      </td>
+      <td>${budgetStr}/mo</td>
+      <td>${moveStr}</td>
+      <td>${scoreBar}</td>
+      <td>${matchCell}</td>
+      <td>${statusSelect(lead)}</td>
+      <td style="white-space:nowrap">
+        ${lead.email ? `<a href="mailto:${encodeURIComponent(lead.email)}?subject=Your Ottawa Rental Match — I Have a Unit for You&body=Hi ${firstName},%0A%0AI have a ${vacancy?vacancy.beds+'BR '+vacancy.type+' at $'+vacancy.price.toLocaleString()+'/mo':''} that matches your search. Are you still looking?%0A%0A— Cyril%0AOttawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>` : '—'}
+        ${lead.phone ? `<a href="tel:${encodeURIComponent(lead.phone)}" class="contact-btn" style="margin-left:4px">Call</a>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── LEAD STATUS PIPELINE ─────────────────────────────────────────────
+const STATUSES = [['new','New'],['contacted','Contacted'],['viewing','Viewing'],['leased','Leased'],['passed','Passed']];
+function getLeadId(lead) { return lead.id || lead.netlifyId || ''; }
+function ensureLeadIds() {
+  const leads = getLeads(); let changed = false;
+  for (const l of leads) {
+    if (!l.id) { l.id = l.netlifyId || ('m' + Date.now().toString(36) + Math.random().toString(36).slice(2,7)); changed = true; }
+    if (!l.status) { l.status = 'new'; changed = true; }
+  }
+  if (changed) saveLeads(leads);
+}
+function statusSelect(lead) {
+  const cur = lead.status || 'new';
+  const id = getLeadId(lead);
+  const opts = STATUSES.map(([v,l]) => `<option value="${v}" ${v===cur?'selected':''}>${l}</option>`).join('');
+  return `<select class="status-select status-${cur}" onchange="updateLeadStatus('${id}', this.value)">${opts}</select>`;
+}
+function updateLeadStatus(id, status) {
+  const leads = getLeads();
+  const lead = leads.find(l => getLeadId(l) === id);
+  if (!lead) return;
+  lead.status = status;
+  saveLeads(leads);
+  renderLeads(currentFilter);
+  renderOverview();
+}
+function filterLeads(f, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderLeads(f);
+}
+
+// ── LEAD SYNC (via secure function) ──────────────────────────────────
+async function fetchLeadsFromServer() {
+  const res = await fetch(LEADS_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: getPass() }),
+  });
+  if (res.status === 401) throw new Error('Session expired — reload and log in again.');
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(d.error || `Server error (${res.status})`);
+  }
+  const { leads } = await res.json();
+  return leads || [];
+}
+
+async function syncNetlify() {
+  const btn = document.getElementById('syncBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0"/></svg> Syncing...`;
+  try {
+    const leads = await fetchLeadsFromServer();
+    const added = mergeLeads(leads);
+    updateMatchBadge();
+    renderOverview();
+    alert(`Synced ${added} new lead${added!==1?'s':''} from your website.`);
+  } catch(e) {
+    alert('Sync failed: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.innerHTML = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg> Sync Leads`;
+}
+
+// ── PUSH NOTIFICATIONS (ntfy.sh) ────────────────────────────────────
+async function sendPushNotification(lead, score, vacancy) {
+  const topic = NTFY_TOPIC;
+  const threshold = NTFY_THRESHOLD;
+  if (score < threshold) return;
+  const title = `ORP Match — ${score}/100`;
+  const body  = `${lead.name||'New lead'} needs ${lead.beds||'?'}BR, budget $${lead.budget||'?'}/mo → matches your ${vacancy.beds}BR ${vacancy.type} at $${vacancy.price.toLocaleString()}. Reply in 60 min.`;
+  try {
+    await fetch(`https://ntfy.sh/${topic}`, {
+      method: 'POST',
+      headers: { 'Title': title, 'Priority': score >= 85 ? 'urgent' : 'high', 'Tags': 'house,moneybag' },
+      body
+    });
+  } catch(e) { console.log('ntfy error', e); }
+}
+
+// ── VACANCIES (CRUD) ─────────────────────────────────────────────────
+function saveVacancyList(arr) { localStorage.setItem('orpVacancies', JSON.stringify(arr)); }
+function nextVacancyId() {
+  const ids = getVacancies().map(v => Number(v.id) || 0);
+  return (ids.length ? Math.max(...ids) : 0) + 1;
+}
+function renderVacanciesPanel() {
+  const vacancies = getVacancies().sort((a,b) => dom(b.listed) - dom(a.listed));
+  const leads = getLeads();
+  document.getElementById('vacancyCount').textContent = `Active Vacancies (${vacancies.length})`;
+  document.getElementById('allVacancies').innerHTML = vacancies.length
+    ? vacancies.map(v => renderVacancy(v, leads, true)).join('')
+    : `<div class="scan-empty" style="grid-column:1/-1">No vacancies yet. Click "+ Add Vacancy" to add one.</div>`;
+  renderAgingAlerts('agingAlerts2');
+}
+function openVacancyForm(id) {
+  const form = document.getElementById('vacancyForm');
+  form.style.display = 'block';
+  const title = document.getElementById('vacancyFormTitle');
+  if (id != null) {
+    const v = getVacancies().find(x => x.id === id);
+    if (!v) return;
+    title.textContent = `Edit ${v.beds}BR ${v.type}`;
+    document.getElementById('vc-id').value = v.id;
+    document.getElementById('vc-beds').value = v.beds;
+    document.getElementById('vc-baths').value = v.baths;
+    document.getElementById('vc-type').value = v.type;
+    document.getElementById('vc-price').value = v.price;
+    document.getElementById('vc-listed').value = v.listed;
+  } else {
+    title.textContent = 'Add Vacancy';
+    document.getElementById('vc-id').value = '';
+    ['vc-beds','vc-baths','vc-price'].forEach(i => document.getElementById(i).value = '');
+    document.getElementById('vc-type').value = 'Apartment';
+    document.getElementById('vc-listed').value = new Date().toISOString().slice(0,10);
+  }
+  form.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+function closeVacancyForm() { document.getElementById('vacancyForm').style.display = 'none'; }
+function saveVacancy() {
+  const beds   = parseInt(document.getElementById('vc-beds').value);
+  const baths  = parseFloat(document.getElementById('vc-baths').value);
+  const price  = parseInt(document.getElementById('vc-price').value);
+  const type   = document.getElementById('vc-type').value;
+  const listed = document.getElementById('vc-listed').value;
+  if (!(beds >= 0) || !(price > 0) || !listed) { alert('Enter bedrooms, a price, and a listed date.'); return; }
+  const idVal = document.getElementById('vc-id').value;
+  const vacancies = getVacancies();
+  if (idVal) {
+    const v = vacancies.find(x => x.id === Number(idVal));
+    if (v) Object.assign(v, { beds, baths: baths || 0, type, price, listed });
+  } else {
+    vacancies.push({ id: nextVacancyId(), beds, baths: baths || 0, type, price, listed });
+  }
+  saveVacancyList(vacancies);
+  closeVacancyForm();
+  renderVacanciesPanel();
+  renderOverview();
+}
+function deleteVacancy(id) {
+  const v = getVacancies().find(x => x.id === id);
+  if (!v) return;
+  if (!confirm(`Delete the ${v.beds}BR ${v.type} at $${v.price.toLocaleString()}/mo?`)) return;
+  saveVacancyList(getVacancies().filter(x => x.id !== id));
+  renderVacanciesPanel();
+  renderOverview();
+}
+
+// ── TEMPLATES ─────────────────────────────────────────────────────────
+function buildTemplates() {
+  const vacancies = getVacancies();
+  const templates = [];
+  for (const v of vacancies) {
+    const perPerson = v.beds >= 4 ? ` (split = $${Math.round(v.price / v.beds / 50) * 50}/person)` : '';
+    // Facebook Group post
+    templates.push({
+      platform: 'Facebook Group',
+      label: `${v.beds}BR ${v.type} — $${v.price.toLocaleString()}/mo`,
+      text: `FOR RENT — ${v.beds} Bedroom ${v.type} in Ottawa
+$${v.price.toLocaleString()}/mo | ${v.baths} Bath${perPerson}
+
+${v.beds >= 4 ? `Perfect for a group — splits to $${Math.round(v.price / v.beds / 50) * 50}/person. Spacious, well-maintained, and available now.` : `Clean, well-maintained unit available now. Quiet building, great location.`}
+
+- ${v.beds} bedrooms
+- ${v.baths} bathrooms
+- $${v.price.toLocaleString()}/mo all-in
+- Available immediately
+
+Serious inquiries only. Message me directly with your move-in date and I'll get back to you same day.
+
+#OttawaRentals #OttawaHousing #${v.beds}Bedroom #ForRent #Ottawa`
+    });
+    // Kijiji post
+    templates.push({
+      platform: 'Kijiji',
+      label: `${v.beds}BR ${v.type} — $${v.price.toLocaleString()}/mo`,
+      text: `${v.beds} Bedroom ${v.type} for Rent — $${v.price.toLocaleString()}/mo
+
+${v.beds >= 4 ? `Large ${v.beds}-bedroom ${v.type.toLowerCase()} perfect for a group or large family. Splits to approximately $${Math.round(v.price / v.beds / 50) * 50}/person.` : `Well-kept ${v.type.toLowerCase()} in a great Ottawa location. Clean, move-in ready.`}
+
+- ${v.beds} bedrooms / ${v.baths} bathrooms
+- $${v.price.toLocaleString()}/mo
+- Available now
+
+Looking for responsible tenants. References and proof of income required. Message through this listing to schedule a viewing — quick response guaranteed.`
+    });
+  }
+  // Large unit group post
+  templates.push({
+    platform: 'Facebook Group',
+    label: 'Large Units — Groups & Families',
+    text: `FOR RENT — Large Ottawa Homes Available Now
+
+Looking for a group house or space for a large family? Three units available:
+
+- 6 Bedroom / 2 Bath Apartment — $3,900/mo ($650/person)
+- 6 Bedroom / 2 Bath House — $4,200/mo ($700/person)
+- 7 Bedroom / 3 Bath House — $5,600/mo ($800/person)
+
+All units are move-in ready. Ideal for students, working professionals splitting costs, or large families.
+
+Message me with your group size and move-in date. Viewings available this week.
+
+#OttawaRentals #OttawaHousing #StudentHousing #CoLiving #GroupHousing #Ottawa`
+  });
+  templates.push({
+    platform: 'Reddit r/Ottawa',
+    label: 'Large Units Available (6-7BR)',
+    text: `[FOR RENT] Large group homes available in Ottawa — 6BR & 7BR
+
+Three units available right now:
+
+- 6BR / 2 Bath Apartment — $3,900/mo (~$650/person)
+- 6BR / 2 Bath House — $4,200/mo (~$700/person)
+- 7BR / 3 Bath House — $5,600/mo (~$800/person)
+
+Great for student groups, co-living situations, or large families. All move-in ready.
+
+DM with your group size and preferred move-in date.`
+  });
+
+  document.getElementById('templateGrid').innerHTML = templates.map((t, i) => {
+    const chars = t.text.length;
+    return `<div class="template-card">
+      <div class="template-header">
+        <div>
+          <div class="template-platform">${t.platform}</div>
+          <div class="template-label">${t.label}</div>
+        </div>
+      </div>
+      <div class="template-body" id="tmpl-${i}">${t.text}</div>
+      <div class="template-footer">
+        <button class="copy-btn" id="copy-${i}" onclick="copyTemplate(${i}, '${encodeURIComponent(t.text)}')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+        <span class="char-count">${chars} chars</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function copyTemplate(i, encoded) {
+  const text = decodeURIComponent(encoded);
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-' + i);
+    btn.classList.add('copied');
+    btn.innerHTML = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Copied!`;
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy`;
+    }, 2500);
+  });
+}
+
+// ── SHORTCUT LINKS ──────────────────────────────────────────────────
+function buildShortcuts() {
+  const vacancies = getVacancies();
+  const bedGroups = [...new Set(vacancies.map(v => v.beds))].sort();
+  const shortcuts = [
+    ...bedGroups.map(b => ({
+      platform:'Reddit r/Ottawa', label:`Looking for ${b}BR`, desc:`Recent posts seeking ${b}-bedroom Ottawa rentals`,
+      url:`https://www.reddit.com/r/ottawa/search/?q=looking+for+${b}+bedroom+rent+ottawa&sort=new`
+    })),
+    { platform:'Reddit r/uOttawa', label:'Student Housing Wanted', desc:'University of Ottawa off-campus housing', url:'https://www.reddit.com/r/uOttawa/search/?q=looking+for+housing+rent&sort=new' },
+    { platform:'Reddit r/Carleton', label:'Carleton Housing Wanted', desc:'Carleton students seeking rentals', url:'https://www.reddit.com/r/Carleton/search/?q=looking+for+housing+rent&sort=new' },
+    { platform:'Kijiji', label:'Housing Wanted Ottawa', desc:'People posting what they need', url:'https://www.kijiji.ca/b-real-estate/ottawa/housing-wanted/k0c34l1700185' },
+    { platform:'Facebook', label:'Ottawa Housing Group', desc:'Ottawa Housing & Rentals community', url:'https://www.facebook.com/groups/ottawa.housing' },
+    { platform:'Facebook', label:'Ottawa Rentals Group', desc:'Ottawa Rental Listings group', url:'https://www.facebook.com/groups/ottawarentals' },
+  ];
+  document.getElementById('shortcutGrid').innerHTML = shortcuts.map(s => `
+    <a href="${s.url}" target="_blank" class="shortcut-card">
+      <div class="shortcut-platform">${s.platform}</div>
+      <div class="shortcut-label">${s.label}</div>
+      <div class="shortcut-desc">${s.desc}</div>
+    </a>`).join('');
+}
+
+// ── LIVE LEAD SCANNER (via secure function) ─────────────────────────
+const SCAN_ENDPOINT = '/.netlify/functions/scan';
+
+function scoreScanResult(r, vacancies) {
+  let best = 0, bestV = null;
+  for (const v of vacancies) {
+    let s = 30; // budget assumed flexible for an active seeker
+    if (r.beds == null)                            s += 20; // unknown beds — partial credit
+    else if (r.beds === v.beds)                    s += 60;
+    else if (Math.abs(r.beds - v.beds) === 1)      s += 25;
+    if (s > best) { best = s; bestV = v; }
+  }
+  return { score: Math.min(best, 100), matchedVacancy: bestV };
+}
+
+function renderScanSources(sources) {
+  const label = (key, name) => {
+    const s = sources[key] || {};
+    if (s.status === 'ok')      return `<span style="color:var(--green)">● ${name}: ${s.count} found</span>`;
+    if (s.status === 'skipped') return `<span style="color:var(--gray)">○ ${name}: not configured</span>`;
+    return `<span style="color:var(--red)">● ${name}: ${s.reason || 'error'}</span>`;
+  };
+  return `<div style="padding:10px 18px;border-bottom:1px solid var(--border);font-size:11px;display:flex;gap:16px;flex-wrap:wrap">${label('reddit','Reddit')} ${label('kijiji','Kijiji')}</div>`;
+}
+
+async function runScan() {
+  const btn = document.getElementById('scanBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0"/></svg> Scanning...`;
+  showPanel('scanner');
+  document.getElementById('scanResults').innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Scanning Ottawa rental boards for tenant leads…</div>`;
+
+  try {
+    const res = await fetch(SCAN_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: getPass() }),
+    });
+    if (res.status === 401) throw new Error('Session expired — reload and log in again.');
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || `Scanner error (${res.status})`);
+    }
+    const { results, sources, scannedAt } = await res.json();
+    const vacancies = getVacancies();
+    const scored = (results || [])
+      .map(r => ({ ...r, ...scoreScanResult(r, vacancies) }))
+      .sort((a, b) => b.score - a.score);
+
+    const now = new Date(scannedAt || Date.now());
+    document.getElementById('scanTime').textContent =
+      `Last scan: ${now.toLocaleDateString('en-CA',{month:'short',day:'numeric'})} ${now.toLocaleTimeString('en-CA',{hour:'2-digit',minute:'2-digit'})}`;
+
+    const sourcesBar = renderScanSources(sources || {});
+    if (!scored.length) {
+      document.getElementById('scanResults').innerHTML = sourcesBar +
+        `<div class="scan-empty"><p>No new housing-wanted posts matched right now. Try again later, or use Quick Scan Links to search manually.</p></div>`;
+    } else {
+      document.getElementById('scanResults').innerHTML = sourcesBar + scored.map(r => {
+        const cls = scoreClass(r.score);
+        const when = r.created ? new Date(r.created).toLocaleDateString('en-CA',{month:'short',day:'numeric'}) : '';
+        const srcName = r.sub ? 'r/' + r.sub : r.source;
+        return `<div class="scan-item">
+          <span class="scan-source source-${r.source==='reddit'?'reddit':'kijiji'}">${srcName}</span>
+          <div style="flex:1">
+            <div class="scan-title">${escapeHtml(r.title)}</div>
+            <div class="scan-meta">${escapeHtml(r.desc||'')}${when?` · ${when}`:''}</div>
+            ${r.matchedVacancy ? `<div style="font-size:11px;margin-top:5px;color:var(--blue);font-weight:600">Matches your ${r.matchedVacancy.beds}BR ${r.matchedVacancy.type} — $${r.matchedVacancy.price.toLocaleString()}/mo</div>` : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
+            <div class="score-bar-wrap"><div class="score-bar"><div class="score-fill ${cls}" style="width:${r.score}%"></div></div><span class="score-num ${cls}">${r.score}</span></div>
+            ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="contact-btn">View Post</a>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+  } catch (e) {
+    document.getElementById('scanResults').innerHTML =
+      `<div class="scan-empty"><p style="color:var(--red)">Scan failed: ${escapeHtml(e.message)}</p><p style="margin-top:6px">Use Quick Scan Links to search manually in the meantime.</p></div>`;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> Scan Now`;
+}
+
+// ── ADD LEAD ─────────────────────────────────────────────────────────
+function toggleAddLead() {
+  const f = document.getElementById('addLeadForm');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+function addLeadManual() {
+  const lead = {
+    name:          document.getElementById('al-name').value.trim(),
+    email:         document.getElementById('al-email').value.trim(),
+    phone:         document.getElementById('al-phone').value.trim(),
+    beds:          document.getElementById('al-beds').value,
+    budget:        document.getElementById('al-budget').value,
+    moveIn:        document.getElementById('al-movein').value,
+    neighbourhood: document.getElementById('al-hood').value.trim() || 'Any',
+    source:        document.getElementById('al-source').value,
+    added:         new Date().toISOString(),
+    id:            'm' + Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+    status:        'new',
+  };
+  if (!lead.name && !lead.email) { alert('Enter at least a name or email.'); return; }
+  const leads = getLeads(); leads.push(lead); saveLeads(leads);
+  const { score, vacancy } = bestMatch(lead);
+  if (score >= 75 && vacancy) sendPushNotification(lead, score, vacancy);
+  toggleAddLead();
+  ['al-name','al-email','al-phone','al-budget','al-movein','al-hood'].forEach(id => document.getElementById(id).value='');
+  updateMatchBadge(); renderOverview(); renderLeads(currentFilter);
+}
+
+// ── MATCH BADGE ──────────────────────────────────────────────────────
+function updateMatchBadge() {
+  const leads = getLeads();
+  const count = leads.filter(l => bestMatch(l).score >= 75).length;
+  const badge = document.getElementById('matchBadge');
+  if (count > 0) { badge.style.display=''; badge.textContent=count; }
+  else badge.style.display='none';
+}
+
+// ── OVERVIEW ─────────────────────────────────────────────────────────
+function renderOverview() {
+  const leads = getLeads(); const vacancies = getVacancies();
+  const total    = vacancies.length;
+  const stale    = vacancies.filter(v => dom(v.listed) >= 30).length;
+  const matches  = leads.filter(l => bestMatch(l).score >= 75).length;
+  const newLeads = leads.filter(l => new Date(l.added) >= new Date(Date.now()-7*86400000)).length;
+  const sorted   = vacancies.slice().sort((a,b) => dom(b.listed)-dom(a.listed));
+  const hardest  = sorted[0];
+  const hardestDom = hardest ? dom(hardest.listed) : 0;
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card ${stale>0?'alert':''}">
+      <div class="stat-label">Active Vacancies</div>
+      <div class="stat-value">${total}</div>
+      <div class="stat-sub">${stale} need attention (30+ days)</div>
+    </div>
+    <div class="stat-card ${matches>0?'good':''}">
+      <div class="stat-label">Strong Matches</div>
+      <div class="stat-value">${matches}</div>
+      <div class="stat-sub">Score 75+ — contact today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Leads</div>
+      <div class="stat-value">${leads.length}</div>
+      <div class="stat-sub">${newLeads} this week</div>
+    </div>
+    <div class="stat-card ${hardestDom>=45?'danger':hardestDom>=30?'alert':''}">
+      <div class="stat-label">Longest Vacant</div>
+      <div class="stat-value">${hardest ? hardestDom + 'd' : '—'}</div>
+      <div class="stat-sub">${hardest ? hardest.beds + 'BR ' + hardest.type : 'No vacancies'}</div>
+    </div>`;
+
+  renderAgingAlerts('agingAlerts');
+  document.getElementById('overviewVacancies').innerHTML = vacancies
+    .sort((a,b) => dom(b.listed)-dom(a.listed)).slice(0,4).map(v => renderVacancy(v, leads)).join('');
+
+  const top = leads.filter(l => bestMatch(l).score >= 50).sort((a,b) => bestMatch(b).score - bestMatch(a).score).slice(0,5);
+  document.getElementById('overviewLeads').innerHTML = !top.length
+    ? `<div class="scan-empty"><p>No matched leads yet. Sync from your website or add leads manually.</p></div>`
+    : top.map(lead => {
+        const { score, vacancy } = bestMatch(lead);
+        const cls = scoreClass(score);
+        return `<div class="scan-item">
+          <span class="source-badge source-${lead.source||'orp'}">${escapeHtml(lead.source||'ORP')}</span>
+          <div style="flex:1;margin-left:4px">
+            <div class="scan-title">${escapeHtml(lead.name||'Anonymous')} — ${escapeHtml(String(lead.beds||'Any'))} BR, $${parseInt(lead.budget||0).toLocaleString()}/mo</div>
+            <div class="scan-meta">${escapeHtml(lead.email||'')} · ${new Date(lead.added).toLocaleDateString('en-CA',{month:'short',day:'numeric'})}</div>
+            ${vacancy&&score>=50?`<div style="font-size:11px;margin-top:3px;color:var(--blue);font-weight:600">→ ${vacancy.beds}BR ${vacancy.type} $${vacancy.price.toLocaleString()}/mo</div>`:''}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+            <div class="score-bar-wrap"><div class="score-bar"><div class="score-fill ${cls}" style="width:${score}%"></div></div><span class="score-num ${cls}">${score}</span></div>
+            ${lead.email?`<a href="mailto:${encodeURIComponent(lead.email)}" class="contact-btn">Email</a>`:''}
+          </div>
+        </div>`;
+      }).join('');
+}
+
+// ── PANEL NAV ─────────────────────────────────────────────────────────
+const PANELS = ['overview','vacancies','leads','scanner','templates','shortcuts','settings'];
+const TITLES  = { overview:'Overview', vacancies:'Vacancies', leads:'Inbound Leads', scanner:'Lead Scanner', templates:'Post Templates', shortcuts:'Quick Scan Links', settings:'Settings' };
+function showPanel(name) {
+  PANELS.forEach(p => document.getElementById('panel-'+p).classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  const idx = ['overview','vacancies','leads','scanner','templates','shortcuts','settings'].indexOf(name);
+  if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  document.getElementById('panelTitle').textContent = TITLES[name]||name;
+  if (name==='leads')     renderLeads(currentFilter);
+  if (name==='templates') buildTemplates();
+  if (name==='shortcuts') buildShortcuts();
+  if (name==='vacancies') { closeVacancyForm(); renderVacanciesPanel(); }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+async function init() {
+  const now = new Date();
+  document.getElementById('topDate').textContent = now.toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'});
+  document.getElementById('lastUpdated').textContent = now.toLocaleTimeString('en-CA',{hour:'2-digit',minute:'2-digit'});
+  ensureLeadIds();
+  updateMatchBadge();
+  renderOverview();
+  // Initial leads were already merged during login (checkPass). The "Sync Leads"
+  // button re-pulls on demand via the secure function.
+}
+</script>
+</body>
+</html>
