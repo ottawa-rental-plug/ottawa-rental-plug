@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apply for an Ottawa Rental | Ottawa Rental Plug</title>
+  <meta name="description" content="Apply for an Ottawa rental in minutes. Tell us what you're looking for and Ottawa Rental Plug will match you to available units and follow up fast."/>
+  <link rel="canonical" href="https://ottawarentalplug.com/apply.html"/>
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="tw-tools.css"/>
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      background:
+        radial-gradient(ellipse 1400px 700px at 50% -100px, rgba(186,230,253,.13), transparent 60%),
+        radial-gradient(ellipse 900px 500px at 85% 25%, rgba(56,189,248,.07), transparent 55%),
+        radial-gradient(ellipse 1000px 600px at 15% 75%, rgba(201,168,76,.05), transparent 60%),
+        #283242;
+      background-attachment: fixed;
+      overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    body::before {
+      content:''; position:fixed; top:0; left:0; right:0; height:380px;
+      background:
+        radial-gradient(ellipse 900px 260px at 50% 0%, rgba(125,211,252,.20), transparent 70%),
+        radial-gradient(ellipse 600px 220px at 80% 0%, rgba(201,168,76,.10), transparent 70%);
+      pointer-events:none; z-index:-1;
+    }
+    h1, h2, h3 { letter-spacing: -0.022em; }
+    .font-serif { letter-spacing: -0.025em; }
+    ::selection { background: rgba(2,132,199,.35); color:#fff; }
+    .gradient-text {
+      background: linear-gradient(135deg,#38bdf8 0%,#c9a84c 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .glass {
+      background: linear-gradient(180deg, rgba(186,230,253,.05) 0%, transparent 40%), rgba(38,50,66,0.65);
+      border:1px solid rgba(125,211,252,0.18);
+      backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
+      box-shadow: inset 0 1px 0 rgba(186,230,253,0.10), 0 24px 48px -24px rgba(0,0,0,.4);
+    }
+    .btn-blue {
+      background:linear-gradient(135deg,#0284c7,#38bdf8);
+      box-shadow:0 4px 20px rgba(2,132,199,.35), inset 0 1px 0 rgba(255,255,255,.18);
+      transition:transform .35s cubic-bezier(.4,0,.2,1), box-shadow .35s cubic-bezier(.4,0,.2,1);
+      min-height:48px;
+    }
+    .btn-blue:hover { box-shadow:0 8px 36px rgba(2,132,199,.55); transform:translateY(-2px); }
+    .btn-blue:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+    .opt-btn.selected { border-color:#38bdf8 !important; background:rgba(56,189,248,.16) !important; color:#fff; }
+    .field-input { background:rgba(46,61,76,.8); }
+    .field-input:focus { border-color:#38bdf8; outline:none; }
+    @media (max-width: 768px) { input, select, textarea { font-size: 16px !important; } }
+  </style>
+</head>
+<body class="font-sans text-white antialiased">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 left-0 right-0 z-50" style="background:rgba(12,18,32,0.85);backdrop-filter:blur(18px);border-bottom:1px solid rgba(2,132,199,0.15);">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between py-3">
+        <a href="index.html" class="flex items-center">
+          <img src="logo-nav.png" alt="Ottawa Rental Plug" class="h-9 sm:h-10 w-auto object-contain"/>
+        </a>
+        <a href="index.html" class="text-sm text-plug-blueLight hover:text-white transition flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          Back to Home
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="pt-24 pb-6 px-4 sm:px-6">
+    <div class="max-w-3xl mx-auto text-center">
+      <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-5" style="background:rgba(56,189,248,.12); border:1px solid rgba(56,189,248,.3);">
+        <span class="w-2 h-2 rounded-full bg-plug-blueLight animate-pulse"></span>
+        <span class="text-xs font-bold tracking-widest uppercase text-plug-blueLight">Free · Fast Reply · Real Listings</span>
+      </span>
+      <h1 class="font-serif font-bold leading-tight mb-5" style="font-size:clamp(2rem,5.5vw,3.75rem);">
+        Apply for Your Next<br/>
+        <span class="gradient-text">Ottawa Rental</span>
+      </h1>
+      <p class="text-base sm:text-lg text-gray-300 leading-relaxed font-light max-w-xl mx-auto mb-3">
+        Tell us what you're looking for. We'll <strong class="text-white">match you to available units</strong> and reach out fast — usually the same day.
+      </p>
+      <p class="text-xs text-gray-500">Takes about a minute · No fee to apply · Handled by a licensed agent</p>
+    </div>
+  </section>
+
+  <!-- FORM -->
+  <section class="pb-20 px-4 sm:px-6">
+    <div class="max-w-2xl mx-auto">
+
+      <div id="stepForm">
+        <div class="glass rounded-3xl p-6 sm:p-8">
+          <form id="applyForm" class="space-y-6" novalidate>
+            <!-- Honeypot: real people leave this empty -->
+            <p class="hidden" aria-hidden="true"><label>Company<input name="company" tabindex="-1" autocomplete="off"/></label></p>
+
+            <!-- Name / Email -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Your name</label>
+                <input type="text" id="name" required placeholder="First &amp; last" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+              </div>
+              <div>
+                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Email</label>
+                <input type="email" id="email" required placeholder="you@email.com" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Phone <span class="text-gray-500 normal-case font-normal">(optional — fastest reply)</span></label>
+              <input type="tel" id="phone" placeholder="(613) 000-0000" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+            </div>
+
+            <hr style="border-color:rgba(255,255,255,.08)"/>
+
+            <!-- Beds / Budget -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Bedrooms needed</label>
+                <select id="beds" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base font-medium transition-all">
+                  <option value="Any">Any</option>
+                  <option value="0">Studio</option>
+                  <option value="1">1</option><option value="2">2</option>
+                  <option value="3">3</option><option value="4">4+</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Max budget / mo</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg font-semibold">$</span>
+                  <input type="number" id="budget" min="0" step="50" placeholder="2,200" class="field-input w-full border border-plug-border rounded-xl pl-9 pr-4 py-4 text-white text-base transition-all"/>
+                </div>
+              </div>
+            </div>
+
+            <!-- Neighbourhood / Move-in -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Preferred area</label>
+                <select id="neighbourhood" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base font-medium transition-all">
+                  <option value="Any">Any area</option>
+                  <option>Glebe</option><option>Westboro</option><option>Downtown</option><option>Centretown</option>
+                  <option>Kanata</option><option>Hazeldean</option><option>Stittsville</option><option>Nepean</option>
+                  <option>Barrhaven</option><option>Orleans</option><option>Vanier</option><option>Sandy Hill</option>
+                  <option>Gloucester</option><option>Other Ottawa</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Move-in date <span class="text-gray-500 normal-case font-normal">(optional)</span></label>
+                <input type="date" id="moveIn" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+              </div>
+            </div>
+
+            <!-- Screening consent -->
+            <label class="flex items-start gap-3 text-sm text-gray-300 leading-relaxed cursor-pointer">
+              <input type="checkbox" id="consentScreening" class="mt-1 w-4 h-4 flex-shrink-0"/>
+              <span>I consent to a credit &amp; background check (via SingleKey) if my application moves forward for a specific unit. I understand no check is run until then.</span>
+            </label>
+
+            <button type="submit" id="submitBtn" class="btn-blue w-full py-4 rounded-xl font-bold text-white text-base tracking-wide flex items-center justify-center gap-2">
+              Submit Application →
+            </button>
+            <p id="formError" class="hidden text-sm text-center" style="color:#fca5a5"></p>
+            <p class="text-xs text-plug-sky text-center">No fee to apply · Your details stay private · Reviewed by a licensed agent</p>
+          </form>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div id="stepSuccess" class="hidden">
+        <div class="glass rounded-3xl p-8 sm:p-10 text-center" style="border-width:2px;">
+          <div class="w-16 h-16 mx-auto mb-5 rounded-full flex items-center justify-center" style="background:rgba(56,189,248,.15);">
+            <svg class="w-8 h-8 text-plug-blueLight" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h2 class="font-serif font-bold text-2xl sm:text-3xl mb-3">Application received.</h2>
+          <p id="successMsg" class="text-gray-300 leading-relaxed max-w-md mx-auto mb-6">
+            Thanks — we've got your details and we're matching you to available Ottawa units now. Cyril will reach out shortly, usually <strong class="text-white">within one business day</strong>.
+          </p>
+          <a href="search-rentals.html" class="text-plug-blueLight hover:text-white text-sm font-semibold">Browse available rentals →</a>
+        </div>
+      </div>
+
+      <!-- VALUE PROPS -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-10">
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-plug-blueLight font-serif font-bold text-lg mb-1">Matched to real units</div>
+          <p class="text-xs text-gray-400 leading-relaxed">We line you up against live Ottawa vacancies, not a waitlist.</p>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-plug-blueLight font-serif font-bold text-lg mb-1">Fast, human reply</div>
+          <p class="text-xs text-gray-400 leading-relaxed">A licensed agent follows up — usually the same day.</p>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-plug-blueLight font-serif font-bold text-lg mb-1">Approved by Cyril</div>
+          <p class="text-xs text-gray-400 leading-relaxed">Get screened once, then carry your approval to future places.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="background:#080c11;border-top:1px solid rgba(2,132,199,0.15);">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 text-center">
+      <p class="text-gray-500 text-xs">© 2026 Ottawa Rental Plug · Cyril Babalola · Licensed Mortgage Agent &amp; Property Manager</p>
+      <p class="text-xs text-gray-500 mt-2">
+        <a href="tel:+16136013005" class="hover:text-plug-blueLight">(613) 601-3005</a> ·
+        <a href="property-management.html" class="hover:text-plug-blueLight">Property Management</a> ·
+        <a href="search-rentals.html" class="hover:text-plug-blueLight">Search Rentals</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    const form = document.getElementById('applyForm');
+    const errEl = document.getElementById('formError');
+    const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
+    function showError(msg) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errEl.classList.add('hidden');
+      const btn = document.getElementById('submitBtn');
+
+      const payload = {
+        company:          document.querySelector('[name="company"]').value, // honeypot
+        name:             document.getElementById('name').value.trim(),
+        email:            document.getElementById('email').value.trim(),
+        phone:            document.getElementById('phone').value.trim(),
+        beds:             document.getElementById('beds').value,
+        budget:           document.getElementById('budget').value,
+        moveIn:           document.getElementById('moveIn').value,
+        neighbourhood:    document.getElementById('neighbourhood').value,
+        consentScreening: document.getElementById('consentScreening').checked,
+      };
+
+      if (!payload.name) { showError('Please enter your name.'); return; }
+      if (!isEmail(payload.email)) { showError('Please enter a valid email address.'); return; }
+
+      btn.disabled = true; btn.textContent = 'Submitting…';
+      try {
+        const res = await fetch('/.netlify/functions/apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+
+        if (data.matched > 0) {
+          document.getElementById('successMsg').innerHTML =
+            `Thanks — we matched you to <strong class="text-white">${data.matched} available ${data.matched === 1 ? 'unit' : 'units'}</strong>. Cyril will reach out shortly, usually <strong class="text-white">within one business day</strong>.`;
+        }
+        document.getElementById('stepForm').classList.add('hidden');
+        document.getElementById('stepSuccess').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        showError(err.message);
+        btn.disabled = false; btn.textContent = 'Submit Application →';
+      }
+    });
+  </script>
+</body>
+</html>
