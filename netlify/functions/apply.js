@@ -66,6 +66,27 @@ async function sbFetch(path, init = {}) {
 const isEmail = (s) => typeof s === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 const clean   = (s, max = 200) => (typeof s === 'string' ? s.trim().slice(0, max) : '');
 
+// Best-effort phone alert via ntfy.sh (keyless). Never throws — a failed
+// notification must not fail the application submission.
+async function notify(applicant, matched, bestScore) {
+  const topic = process.env.NTFY_TOPIC || 'ottawarentalplug';
+  try {
+    const beds = applicant.beds_wanted && applicant.beds_wanted !== 'Any' ? `${applicant.beds_wanted}BR ` : '';
+    const budget = applicant.budget ? ` · $${applicant.budget}/mo` : '';
+    const area = applicant.neighbourhood && applicant.neighbourhood !== 'Any' ? ` in ${applicant.neighbourhood}` : '';
+    const matchLine = matched ? ` — matched ${matched} unit${matched === 1 ? '' : 's'} (best ${bestScore})` : ' — no unit match yet';
+    await fetch(`https://ntfy.sh/${topic}`, {
+      method: 'POST',
+      headers: {
+        Title: 'New ORP application',
+        Priority: bestScore >= 75 ? 'high' : 'default',
+        Tags: 'house',
+      },
+      body: `${applicant.name} wants a ${beds}place${area}${budget}${matchLine}. ${applicant.email}`,
+    });
+  } catch (e) { /* swallow — notification is non-critical */ }
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
   if (!SERVICE_KEY) return json(500, { error: 'Server not configured (SUPABASE_SERVICE_ROLE_KEY missing).' });
@@ -117,7 +138,7 @@ exports.handler = async (event) => {
     const [saved] = await insRes.json();
 
     // 2) Auto-match against available units; write scored applications.
-    let matched = 0;
+    let matched = 0, bestScore = 0;
     const unitsRes = await sbFetch('units?status=eq.available&select=id,beds,baths,type,price');
     if (unitsRes.ok) {
       const units = await unitsRes.json();
@@ -128,17 +149,21 @@ exports.handler = async (event) => {
       let keep = scored.filter((a) => a.match_score >= 50).slice(0, 5);
       if (!keep.length && scored.length) keep = [scored[0]];
       if (keep.length) {
+        bestScore = keep[0].match_score;
         const appRes = await sbFetch('applications', { method: 'POST', body: JSON.stringify(keep) });
         if (appRes.ok) matched = keep.length;
       }
       // Promote applicant stage if we found a real match.
-      if (matched && keep[0].match_score >= 50) {
+      if (matched && bestScore >= 50) {
         await sbFetch(`applicants?id=eq.${saved.id}`, {
           method: 'PATCH',
           body: JSON.stringify({ stage: 'matched' }),
         });
       }
     }
+
+    // 3) Phone alert to Cyril (best-effort; keyless ntfy.sh, same topic as the dashboard).
+    await notify(applicant, matched, bestScore);
 
     return json(200, { ok: true, matched });
   } catch (e) {
