@@ -568,7 +568,7 @@ async function checkPass() {
     init();
   } catch (e) {
     const msg = (e && e.message) || 'Login failed';
-    err.textContent = /invalid|credential/i.test(msg) ? 'Incorrect email or password.' : msg;
+    err.textContent = /invalid|credential/i.test(msg) ? 'Incorrect password. Try again.' : msg;
     err.style.display = 'block';
   }
   btn.disabled = false; btn.textContent = 'Enter Dashboard';
