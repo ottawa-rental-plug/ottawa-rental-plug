@@ -54,6 +54,12 @@
     .field-input { background:rgba(46,61,76,.8); }
     .field-input:focus { border-color:#38bdf8; outline:none; }
     @media (max-width: 768px) { input, select, textarea { font-size: 16px !important; } }
+    /* Two-column apply layout (precompiled Tailwind lacks lg:grid-cols-5) */
+    .apply-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; align-items: start; }
+    @media (min-width: 1024px) {
+      .apply-grid { grid-template-columns: 2fr 3fr; }
+      .apply-aside { position: sticky; top: 7rem; }
+    }
   </style>
 </head>
 <body class="font-sans text-white antialiased">
@@ -93,8 +99,50 @@
 
   <!-- FORM -->
   <section class="pb-20 px-4 sm:px-6">
-    <div class="max-w-2xl mx-auto">
+    <div class="max-w-6xl mx-auto">
+      <div class="apply-grid">
 
+      <!-- TRUST / HOW-IT-WORKS PANEL -->
+      <aside class="apply-aside space-y-4">
+        <div class="glass rounded-3xl p-6">
+          <div class="flex items-center gap-2 mb-5">
+            <span class="w-2 h-2 rounded-full bg-plug-blueLight animate-pulse"></span>
+            <span class="text-xs font-bold tracking-widest uppercase text-plug-blueLight">How it works</span>
+          </div>
+          <ol class="space-y-4">
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:linear-gradient(135deg,#0284c7,#38bdf8);">1</span>
+              <div><div class="font-semibold text-white text-sm">Apply in a minute</div><div class="text-xs text-gray-400 leading-relaxed">Tell us what you need — no fee, no account.</div></div>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:linear-gradient(135deg,#0284c7,#38bdf8);">2</span>
+              <div><div class="font-semibold text-white text-sm">We match you</div><div class="text-xs text-gray-400 leading-relaxed">Your profile is scored against live Ottawa units.</div></div>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:linear-gradient(135deg,#c9a84c,#e0be72);">3</span>
+              <div><div class="font-semibold text-white text-sm">Get approved by Cyril</div><div class="text-xs text-gray-400 leading-relaxed">Screened once — carry your approval to future places.</div></div>
+            </li>
+          </ol>
+        </div>
+
+        <!-- Approved by Cyril badge -->
+        <div class="glass rounded-3xl p-5 flex items-center gap-3">
+          <div class="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.35);">
+            <svg class="w-5 h-5" style="color:#c9a84c" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <div><div class="font-serif font-bold text-white">Approved by Cyril</div><div class="text-xs text-gray-400">A reusable tenant badge landlords trust.</div></div>
+        </div>
+
+        <!-- Testimonial -->
+        <div class="glass rounded-3xl p-5">
+          <div class="flex gap-0.5 mb-2 text-plug-gold text-sm">★★★★★</div>
+          <p class="text-sm text-gray-300 leading-relaxed italic">"Cyril found us a place in days after weeks of dead ends. Fast, honest, and he actually listened to what we wanted."</p>
+          <p class="text-xs text-gray-500 mt-2">— Recent ORP tenant</p>
+        </div>
+      </aside>
+
+      <!-- FORM COLUMN -->
+      <div>
       <div id="stepForm">
         <div class="glass rounded-3xl p-6 sm:p-8">
           <form id="applyForm" class="space-y-6" novalidate>
@@ -186,21 +234,8 @@
         </div>
       </div>
 
-      <!-- VALUE PROPS -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-10">
-        <div class="glass rounded-2xl p-5 text-center">
-          <div class="text-plug-blueLight font-serif font-bold text-lg mb-1">Matched to real units</div>
-          <p class="text-xs text-gray-400 leading-relaxed">We line you up against live Ottawa vacancies, not a waitlist.</p>
-        </div>
-        <div class="glass rounded-2xl p-5 text-center">
-          <div class="text-plug-blueLight font-serif font-bold text-lg mb-1">Fast, human reply</div>
-          <p class="text-xs text-gray-400 leading-relaxed">A licensed agent follows up — usually the same day.</p>
-        </div>
-        <div class="glass rounded-2xl p-5 text-center">
-          <div class="text-plug-blueLight font-serif font-bold text-lg mb-1">Approved by Cyril</div>
-          <p class="text-xs text-gray-400 leading-relaxed">Get screened once, then carry your approval to future places.</p>
-        </div>
-      </div>
+      </div><!-- /form column -->
+      </div><!-- /grid -->
     </div>
   </section>
 
