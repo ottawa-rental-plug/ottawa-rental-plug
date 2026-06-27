@@ -611,10 +611,29 @@ async function hydrateState() {
   }
   STATE.orpLeads = leads || [];
   STATE.orpVacancies = vacancies || DEFAULT_VACANCIES;
+
+  // Bridge with the apply pipeline. Both are guarded — a failure here must never
+  // block the dashboard from loading.
+  try {
+    const applied = await orpPullApplicants();
+    const have = new Set(STATE.orpLeads.map(l => l.id));
+    let added = 0;
+    for (const a of applied) { if (a.id && !have.has(a.id)) { STATE.orpLeads.push(a); added++; } }
+    if (added) queueSave('orpLeads');
+  } catch (e) { console.error('Pull applicants failed', e); }
+  try { await orpMirrorUnits(STATE.orpVacancies); } catch (e) { console.error('Mirror units failed', e); }
 }
 function getVacancies() { return STATE.orpVacancies; }
 function getLeads() { return STATE.orpLeads; }
 function saveLeads(l) { STATE.orpLeads = l; queueSave('orpLeads'); }
+// Keep the units table in sync with vacancies so the apply matcher sees them.
+let _mirrorTimer = null;
+function queueMirrorUnits() {
+  clearTimeout(_mirrorTimer);
+  _mirrorTimer = setTimeout(() => {
+    orpMirrorUnits(STATE.orpVacancies).catch(e => console.error('Mirror units failed', e));
+  }, 600);
+}
 // Merge server-fetched leads into local store, dedup by netlifyId, notify on strong matches.
 // Returns the count of newly added leads.
 function mergeLeads(incoming) {
@@ -888,7 +907,7 @@ async function sendPushNotification(lead, score, vacancy) {
 }
 
 // ── VACANCIES (CRUD) ─────────────────────────────────────────────────
-function saveVacancyList(arr) { STATE.orpVacancies = arr; queueSave('orpVacancies'); }
+function saveVacancyList(arr) { STATE.orpVacancies = arr; queueSave('orpVacancies'); queueMirrorUnits(); }
 function nextVacancyId() {
   const ids = getVacancies().map(v => Number(v.id) || 0);
   return (ids.length ? Math.max(...ids) : 0) + 1;

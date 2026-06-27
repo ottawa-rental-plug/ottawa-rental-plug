@@ -33,3 +33,41 @@ async function orpSaveState(key, value) {
             { onConflict: 'user_id,key' });
   if (error) throw error;
 }
+
+// ── Bridge to the normalized apply pipeline ──────────────────────────
+// The public apply form writes tenants to the `applicants` table and matches
+// them against `units`. These helpers let the dashboard (a) pull those
+// applications in as leads, and (b) mirror its vacancies into `units` so the
+// matcher sees real inventory. Both run under the authenticated session.
+function leadFromApplicant(r) {
+  return {
+    id: r.id, name: r.name, email: r.email, phone: r.phone,
+    beds: r.beds_wanted || 'Any', budget: r.budget,
+    moveIn: r.move_in, neighbourhood: r.neighbourhood,
+    status: 'new', source: r.source || 'apply', added: r.created_at,
+  };
+}
+async function orpPullApplicants() {
+  const { data, error } = await sb.from('applicants').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(leadFromApplicant);
+}
+function unitFromVacancy(v) {
+  return {
+    beds: v.beds != null ? parseInt(v.beds) : null,
+    baths: v.baths != null ? parseFloat(v.baths) : null,
+    type: v.type || null,
+    price: v.price != null ? parseFloat(v.price) : null,
+    listed_at: v.listed || null,
+    status: 'available',
+  };
+}
+// Replace the units table with the dashboard's current vacancies.
+async function orpMirrorUnits(vacancies) {
+  const del = await sb.from('units').delete().not('id', 'is', null);
+  if (del.error) throw del.error;
+  if (vacancies && vacancies.length) {
+    const { error } = await sb.from('units').insert(vacancies.map(unitFromVacancy));
+    if (error) throw error;
+  }
+}
