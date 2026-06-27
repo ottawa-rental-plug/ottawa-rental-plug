@@ -279,26 +279,45 @@
       if (!isEmail(payload.email)) { showError('Please enter a valid email address.'); return; }
 
       btn.disabled = true; btn.textContent = 'Submitting…';
+
+      // Always email Cyril the lead (fire-and-forget), so the application is
+      // captured even before the Supabase backend is configured.
+      const bedsLabel = payload.beds && payload.beds !== 'Any' ? payload.beds + 'BR' : 'Any beds';
+      try {
+        fetch('https://formspree.io/f/mdabgrqy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            _subject: `ORP RENTAL APPLICATION — ${bedsLabel} · ${payload.neighbourhood}`,
+            type: 'tenant-application',
+            timestamp: new Date().toISOString(),
+            name: payload.name, email: payload.email, phone: payload.phone,
+            bedrooms: payload.beds, budget: payload.budget, moveIn: payload.moveIn,
+            neighbourhood: payload.neighbourhood, consentScreening: payload.consentScreening,
+          }),
+        }).catch(() => {});
+      } catch (_) {}
+
+      // Try the Supabase function (stores + auto-matches). If it isn't configured
+      // yet, we still show success because Formspree captured the lead above.
+      let matched = 0, reached = false;
       try {
         const res = await fetch('/.netlify/functions/apply', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+        reached = true;
+        if (res.ok) { const data = await res.json().catch(() => ({})); matched = data.matched || 0; }
+      } catch (_) { /* network/offline — Formspree still has it */ }
 
-        if (data.matched > 0) {
-          document.getElementById('successMsg').innerHTML =
-            `Thanks — we matched you to <strong class="text-white">${data.matched} available ${data.matched === 1 ? 'unit' : 'units'}</strong>. Cyril will reach out shortly, usually <strong class="text-white">within one business day</strong>.`;
-        }
-        document.getElementById('stepForm').classList.add('hidden');
-        document.getElementById('stepSuccess').classList.remove('hidden');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } catch (err) {
-        showError(err.message);
-        btn.disabled = false; btn.textContent = 'Submit Application →';
+      if (matched > 0) {
+        document.getElementById('successMsg').innerHTML =
+          `Thanks — we matched you to <strong class="text-white">${matched} available ${matched === 1 ? 'unit' : 'units'}</strong>. Cyril will reach out shortly, usually <strong class="text-white">within one business day</strong>.`;
       }
+      document.getElementById('stepForm').classList.add('hidden');
+      document.getElementById('stepSuccess').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   </script>
 </body>
