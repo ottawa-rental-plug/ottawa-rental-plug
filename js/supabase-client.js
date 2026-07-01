@@ -100,3 +100,26 @@ async function orpScreeningCall(payload) {
   }
   return data;
 }
+
+// ── Approval (Phase 3) ────────────────────────────────────────────────
+// Records an approve/decline decision with its fixed criteria checklist, issues
+// the "Approved by Cyril" badge timestamp on approval, and advances the
+// applicant's stage. Written directly under the authenticated session (approvals
+// has no secrets — RLS already locks it to the signed-in agent).
+async function orpSaveApproval(applicantId, { decision, criteria, notes } = {}) {
+  const session = await orpSession();
+  if (!session) throw new Error('Not signed in');
+  const approved = decision === 'approved';
+  const { error } = await sb.from('approvals').insert({
+    applicant_id: applicantId,
+    decision: approved ? 'approved' : 'declined',
+    criteria_checklist: criteria || {},
+    badge_issued_at: approved ? new Date().toISOString() : null,
+    notes: notes || null,
+    decided_by: session.user.email || session.user.id,
+  });
+  if (error) throw error;
+  const { error: stageErr } = await sb.from('applicants')
+    .update({ stage: approved ? 'approved' : 'declined' }).eq('id', applicantId);
+  if (stageErr) throw stageErr;
+}
