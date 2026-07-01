@@ -6,7 +6,9 @@
   <title>Apply for an Ottawa Rental | Ottawa Rental Plug</title>
   <meta name="description" content="Apply for an Ottawa rental in minutes. Tell us what you're looking for and Ottawa Rental Plug will match you to available units and follow up fast."/>
   <link rel="canonical" href="https://ottawarentalplug.com/apply.html"/>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
   <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="tw-tools.css"/>
   <style>
@@ -236,7 +238,7 @@
           </div>
           <h2 class="font-serif font-bold text-2xl sm:text-3xl mb-3">Application received.</h2>
           <p id="successMsg" class="text-gray-300 leading-relaxed max-w-md mx-auto mb-6">
-            Thanks — we've got your details and we're matching you to available Ottawa units now. Cyril will reach out shortly, usually <strong class="text-white">within one business day</strong>.
+            Thanks — we've got your details and we're matching you to available Ottawa units now. We'll reach out shortly, usually <strong class="text-white">within one business day</strong>.
           </p>
           <a href="search-rentals.html" class="text-plug-blueLight hover:text-white text-sm font-semibold">Browse available rentals →</a>
         </div>
@@ -250,7 +252,7 @@
   <!-- FOOTER -->
   <footer style="background:#080c11;border-top:1px solid rgba(2,132,199,0.15);">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 text-center">
-      <p class="text-gray-500 text-xs">© 2026 Ottawa Rental Plug · Cyril Babalola · Licensed Mortgage Agent &amp; Property Manager</p>
+      <p class="text-gray-500 text-xs">© 2026 Ottawa Rental Plug · Licensed Mortgage Agent &amp; Property Manager</p>
       <p class="text-xs text-gray-500 mt-2">
         <a href="tel:+16136013005" class="hover:text-plug-blueLight">(613) 601-3005</a> ·
         <a href="property-management.html" class="hover:text-plug-blueLight">Property Management</a> ·
@@ -321,7 +323,7 @@
 
       if (matched > 0) {
         document.getElementById('successMsg').innerHTML =
-          `Thanks — we matched you to <strong class="text-white">${matched} available ${matched === 1 ? 'unit' : 'units'}</strong>. Cyril will reach out shortly, usually <strong class="text-white">within one business day</strong>.`;
+          `Thanks — we matched you to <strong class="text-white">${matched} available ${matched === 1 ? 'unit' : 'units'}</strong>. We'll reach out shortly, usually <strong class="text-white">within one business day</strong>.`;
       }
       document.getElementById('stepForm').classList.add('hidden');
       document.getElementById('stepSuccess').classList.remove('hidden');

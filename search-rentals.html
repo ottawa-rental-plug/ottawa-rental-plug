@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
   <link rel="icon" type="image/png" href="favicon.png"/>
-  <link rel="apple-touch-icon" href="favicon.png"/>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
   <meta name="theme-color" content="#f5f5f7"/>
   <title>Find Your Ottawa Rental — Ottawa Rental Plug</title>
   <meta name="description" content="Ottawa's rental marketplace helping you pinpoint exactly what you want across Rentals.ca, Kijiji & off-market inventory. One search. Real results."/>
@@ -13,7 +14,7 @@
   <meta property="og:url"         content="https://ottawarentalplug.com/search-rentals"/>
   <meta property="og:title"       content="Find Your Ottawa Rental — Ottawa Rental Plug"/>
   <meta property="og:description" content="Ottawa's rental marketplace helping you pinpoint exactly what you want across Rentals.ca, Kijiji & off-market inventory. One search. Real results."/>
-  <meta property="og:image"       content="https://ottawarentalplug.com/cyril.jpg"/>
+  <meta property="og:image"       content="https://ottawarentalplug.com/logo-nav.png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,300;1,14..32,400&display=swap" rel="stylesheet"/>
@@ -1090,7 +1091,7 @@
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </span>
         </button>
-        <p class="form-footer" style="color:#0284c7;"><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg><strong>24-hour response guarantee</strong> &nbsp;·&nbsp; No spam, ever</span></p>
+        <p class="form-footer" style="color:#0284c7;"><span style="display:inline-flex;align-items:center;gap:6px;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg><strong>24-hour response</strong> &nbsp;·&nbsp; No spam, ever</span></p>
 
       </form>
     </div>
@@ -1112,7 +1113,7 @@
 
       <div id="errorState" style="display:none" class="error-block">
         <p class="error-title" id="errorMsg">Search temporarily unavailable.</p>
-        <p class="error-sub">Or <a href="tel:+16136013005">call Cyril directly</a> at (613)&nbsp;601-3005.</p>
+        <p class="error-sub">Or <a href="tel:+16136013005">call us directly</a> at (613)&nbsp;601-3005.</p>
       </div>
 
       <div id="resultsContent" style="display:none">
@@ -1135,7 +1136,7 @@
   <div class="modal-overlay" id="helpModal">
     <div class="modal">
       <h2 class="modal-title">Request Personal Help</h2>
-      <p class="modal-sub">Cyril will reach out within 24 hours.</p>
+      <p class="modal-sub">We'll reach out within 24 hours.</p>
       <div class="modal-field">
         <input id="helpName" type="text" placeholder="Your name" class="field"/>
       </div>
@@ -1466,7 +1467,7 @@
     btn.textContent = 'Sending…'; btn.disabled = true;
     await captureLead({ neighborhood:'any', bedrooms:'Any', bathrooms:'Any', amenities:[], name, contact }, 'help');
     const s = document.getElementById('helpSuccess');
-    s.textContent = `Got it — Cyril will reach out within 24 hours.`;
+    s.textContent = `Got it — we'll reach out within 24 hours.`;
     s.style.display = 'block';
     btn.textContent = 'Sent';
   });

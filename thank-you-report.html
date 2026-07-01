@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Ottawa Rental Market Report | Ottawa Rental Plug</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -256,7 +258,7 @@
     </div>
     <h1 class="hero-title" id="heroTitle">Your Ottawa Rental Market Report</h1>
     <p class="hero-sub" id="heroSub">Personalized market intelligence for your search.</p>
-    <p class="hero-date">June 2026 — Prepared by Cyril Babalola, Licensed Agent</p>
+    <p class="hero-date">June 2026 — Prepared by Ottawa Rental Plug, Licensed Agent</p>
   </header>
 
   <!-- SEARCH SUMMARY -->
@@ -289,10 +291,10 @@
   <!-- CTA -->
   <div class="cta-card">
     <div class="cta-title" id="ctaTitle">Ready to Find Your Rental?</div>
-    <div class="cta-sub" id="ctaSub">Cyril will contact you within 24 hours with matched listings — including off-market units that never reach Kijiji or Rentals.ca.</div>
+    <div class="cta-sub" id="ctaSub">We'll contact you within 24 hours with matched listings — including off-market units that never reach Kijiji or Rentals.ca.</div>
     <div class="cta-phone">(613) 601-3005</div>
     <div class="cta-email">cyrilrentsottawa@gmail.com</div>
-    <a class="btn-white" href="tel:6136013005">Call Cyril Now</a>
+    <a class="btn-white" href="tel:6136013005">Call Now</a>
   </div>
 
   <!-- NEXT STEPS -->
@@ -303,7 +305,7 @@
         <div class="step-num">1</div>
         <div>
           <div class="step-title">Consultation Call — Within 24 Hours</div>
-          <div class="step-text">Cyril calls to confirm your criteria, answer questions, and align on timing. This shapes everything that follows.</div>
+          <div class="step-text">We call to confirm your criteria, answer questions, and align on timing. This shapes everything that follows.</div>
         </div>
       </div>
       <div class="step">
@@ -317,14 +319,14 @@
         <div class="step-num">3</div>
         <div>
           <div class="step-title">Guided Viewings</div>
-          <div class="step-text">Cyril accompanies or coordinates viewings, flags red flags, and gives you an honest read on value and lease terms.</div>
+          <div class="step-text">We accompany or coordinate viewings, flag red flags, and give you an honest read on value and lease terms.</div>
         </div>
       </div>
       <div class="step">
         <div class="step-num">4</div>
         <div>
           <div class="step-title">Application Support</div>
-          <div class="step-text">Cyril helps you present a strong application — especially useful in competitive situations where landlords have multiple candidates.</div>
+          <div class="step-text">We help you present a strong application — especially useful in competitive situations where landlords have multiple candidates.</div>
         </div>
       </div>
     </div>
@@ -340,7 +342,7 @@
   <div class="footer">
     <div class="footer-brand">Ottawa Rental Plug</div>
     <div class="footer-text">
-      Cyril Babalola — Licensed Real Estate Agent<br>
+      Licensed Real Estate Agent<br>
       (613) 601-3005 · cyrilrentsottawa@gmail.com<br><br>
       Market data current as of June 2026. Report valid 60 days from generation.
     </div>
@@ -489,8 +491,8 @@ const HOODS = {
     daysToRent: 18,
     vacancy: '3.1%',
     vibe: 'You\'re open to any Ottawa neighbourhood — this gives you the widest selection and the most negotiating flexibility.',
-    insight: 'With an open-city search, the best strategy is to identify 2–3 priority neighbourhoods and move quickly when something fits. Cyril can flag listings across all areas simultaneously.',
-    pockets: 'Depends on your priorities — transit access, space, walkability, or budget. Cyril will align your search based on your consultation call.',
+    insight: 'With an open-city search, the best strategy is to identify 2–3 priority neighbourhoods and move quickly when something fits. We can flag listings across all areas simultaneously.',
+    pockets: 'Depends on your priorities — transit access, space, walkability, or budget. We will align your search based on your consultation call.',
     amenities: { parking: 'avail', laundry: 'avail', backyard: 'avail', basement: 'avail', petFriendly: 'avail', furnished: 'limited', ac: 'limited', balcony: 'limited' },
   },
 };
@@ -533,8 +535,8 @@ document.getElementById('heroTitle').textContent =
 
 document.getElementById('heroSub').textContent =
   beds === 'Any'
-    ? `Personalized market intelligence for your search in ${hood.label}, prepared by Cyril Babalola.`
-    : `Personalized market intelligence for ${beds}-bedroom rentals in ${hood.label}, prepared by Cyril Babalola.`;
+    ? `Personalized market intelligence for your search in ${hood.label}, prepared by Ottawa Rental Plug.`
+    : `Personalized market intelligence for ${beds}-bedroom rentals in ${hood.label}, prepared by Ottawa Rental Plug.`;
 
 // ── Summary row ──────────────────────────────────────────────────────
 const summaryItems = [
@@ -559,17 +561,17 @@ if (budget) {
     cls = 'good';
     icon = `<svg width="22" height="22" fill="none" stroke="#166534" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
     title = `Strong budget for ${hood.label}`;
-    text  = `Your max of $${budget.toLocaleString()}/mo is $${diff} above the ${beds === 'Any' ? '' : beds + 'BR '}median in ${hood.label} ($${medianRent.toLocaleString()}). You have real options here — and room to be selective. Cyril can target listings below your ceiling to keep negotiating room.`;
+    text  = `Your max of $${budget.toLocaleString()}/mo is $${diff} above the ${beds === 'Any' ? '' : beds + 'BR '}median in ${hood.label} ($${medianRent.toLocaleString()}). You have real options here — and room to be selective. We can target listings below your ceiling to keep negotiating room.`;
   } else if (diff >= -100) {
     cls = 'tight';
     icon = `<svg width="22" height="22" fill="none" stroke="#92400e" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
     title = `Tight but workable in ${hood.label}`;
-    text  = `Your max of $${budget.toLocaleString()}/mo is close to the ${beds === 'Any' ? '' : beds + 'BR '}median in ${hood.label} ($${medianRent.toLocaleString()}). You'll find options but won't have much room to be choosy. Timing matters — Cyril will prioritize speed when something fits your criteria.`;
+    text  = `Your max of $${budget.toLocaleString()}/mo is close to the ${beds === 'Any' ? '' : beds + 'BR '}median in ${hood.label} ($${medianRent.toLocaleString()}). You'll find options but won't have much room to be choosy. Timing matters — we'll prioritize speed when something fits your criteria.`;
   } else {
     cls = 'over';
     icon = `<svg width="22" height="22" fill="none" stroke="#9f1239" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
     title = `Budget may be tight for ${hood.label}`;
-    text  = `Your max of $${budget.toLocaleString()}/mo is $${Math.abs(diff)} below the ${beds === 'Any' ? '' : beds + 'BR '}median in ${hood.label} ($${medianRent.toLocaleString()}). Options exist but will require patience. Cyril may recommend expanding to a neighbouring area for better value — or exploring off-market units where negotiation is more flexible.`;
+    text  = `Your max of $${budget.toLocaleString()}/mo is $${Math.abs(diff)} below the ${beds === 'Any' ? '' : beds + 'BR '}median in ${hood.label} ($${medianRent.toLocaleString()}). Options exist but will require patience. We may recommend expanding to a neighbouring area for better value — or exploring off-market units where negotiation is more flexible.`;
   }
   document.getElementById('budgetVerdict').innerHTML = `
     <div class="card">
@@ -638,7 +640,7 @@ if (moveIn) {
   const mi = new Date(moveIn + 'T00:00:00');
   const now = new Date();
   const daysOut = Math.round((mi - now) / (1000 * 60 * 60 * 24));
-  if (daysOut < 21)      moveInNote = `Your move-in is in ${daysOut} days — this is urgent. Cyril will prioritize immediately available listings.`;
+  if (daysOut < 21)      moveInNote = `Your move-in is in ${daysOut} days — this is urgent. We'll prioritize immediately available listings.`;
   else if (daysOut < 45) moveInNote = `Your move-in is in ${daysOut} days — good timing. Most landlords list 30–45 days out, so you\'re entering the sweet spot.`;
   else                   moveInNote = `Your move-in is in ${daysOut} days — you\'re searching early. This is smart for competitive areas, but some listings won\'t appear yet.`;
 }

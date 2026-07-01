@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ORP Landlord Dashboard</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -227,7 +229,7 @@
   <div class="login-card">
     <div class="login-logo">Ottawa Rental Plug</div>
     <div class="login-title">Landlord Dashboard</div>
-    <div class="login-sub">Private — Cyril Babalola</div>
+    <div class="login-sub">Private — Cyril</div>
     <input type="email" id="emailInput" value="cyrilrentsottawa@gmail.com" autocomplete="username" style="display:none">
     <input type="password" id="passInput" class="login-input" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')checkPass()">
     <button class="login-btn" onclick="checkPass()">Enter Dashboard</button>
@@ -818,7 +820,7 @@ function renderLeads(filter) {
       <td>${matchCell}</td>
       <td>${statusSelect(lead)}</td>
       <td style="white-space:nowrap">
-        ${lead.email ? `<a href="mailto:${encodeURIComponent(lead.email)}?subject=Your Ottawa Rental Match — I Have a Unit for You&body=Hi ${firstName},%0A%0AI have a ${vacancy?vacancy.beds+'BR '+vacancy.type+' at $'+vacancy.price.toLocaleString()+'/mo':''} that matches your search. Are you still looking?%0A%0A— Cyril%0AOttawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>` : '—'}
+        ${lead.email ? `<a href="mailto:${encodeURIComponent(lead.email)}?subject=Your Ottawa Rental Match — I Have a Unit for You&body=Hi ${firstName},%0A%0AI have a ${vacancy?vacancy.beds+'BR '+vacancy.type+' at $'+vacancy.price.toLocaleString()+'/mo':''} that matches your search. Are you still looking?%0A%0A— Ottawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>` : '—'}
         ${lead.phone ? `<a href="tel:${encodeURIComponent(lead.phone)}" class="contact-btn" style="margin-left:4px">Call</a>` : ''}
       </td>
     </tr>`;
@@ -1010,7 +1012,7 @@ ${v.beds >= 4 ? `Large ${v.beds}-bedroom ${v.type.toLowerCase()} perfect for a g
 - $${v.price.toLocaleString()}/mo
 - Available now
 
-Looking for responsible tenants. References and proof of income required. Message through this listing to schedule a viewing — quick response guaranteed.`
+Looking for responsible tenants. References and proof of income required. Message through this listing to schedule a viewing — quick response.`
     });
   }
   // Large unit group post
@@ -1323,7 +1325,7 @@ async function loadLandlordLeads() {
         <td>${rent}</td>
         <td>${when}</td>
         <td style="white-space:nowrap">
-          ${l.email?`<a href="mailto:${encodeURIComponent(l.email)}?subject=${subj}&body=Hi ${firstName},%0A%0AThanks for requesting a rent analysis. Based on current Ottawa comparables for your ${propEnc} in ${areaEnc}, here's what I'm seeing...%0A%0A— Cyril%0AOttawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>`:'—'}
+          ${l.email?`<a href="mailto:${encodeURIComponent(l.email)}?subject=${subj}&body=Hi ${firstName},%0A%0AThanks for requesting a rent analysis. Based on current Ottawa comparables for your ${propEnc} in ${areaEnc}, here's what I'm seeing...%0A%0A— Ottawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>`:'—'}
           ${l.phone?`<a href="tel:${encodeURIComponent(l.phone)}" class="contact-btn" style="margin-left:4px">Call</a>`:''}
         </td>
       </tr>`;
@@ -1345,7 +1347,7 @@ async function loadApplicants() {
   card.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading applicants…</div>`;
   try {
     const { data, error } = await sb.from('applicants')
-      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,applications(match_score,units(beds,type,neighbourhood,price))')
+      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,consent_screening_at,applications(match_score,units(beds,type,neighbourhood,price)),screenings(status,result_summary,report_url,requested_at,completed_at)')
       .order('created_at', { ascending: false });
     if (error) throw error;
     const applicants = data || [];
@@ -1360,7 +1362,7 @@ async function loadApplicants() {
     }
 
     card.innerHTML = `<table class="leads-table"><thead><tr>
-      <th>Applicant</th><th>Looking For</th><th>Move-in</th><th>Best Match</th><th>Stage</th><th>Applied</th><th>Action</th>
+      <th>Applicant</th><th>Looking For</th><th>Move-in</th><th>Best Match</th><th>Stage</th><th>Applied</th><th>Screening</th><th>Action</th>
     </tr></thead><tbody>` + applicants.map(a => {
       const want = [a.beds_wanted && a.beds_wanted !== 'Any' ? a.beds_wanted+' BR' : 'Any beds',
                     a.budget ? '$'+parseInt(a.budget).toLocaleString()+'/mo' : null,
@@ -1380,6 +1382,35 @@ async function loadApplicants() {
       const applied = new Date(a.created_at).toLocaleDateString('en-CA',{month:'short',day:'numeric'});
       const firstName = encodeURIComponent((a.name||'').split(' ')[0]);
       const subj = encodeURIComponent('Your Ottawa rental application — Ottawa Rental Plug');
+
+      // Screening (Phase 2) — most recent screenings row, if any.
+      const screenings = (a.screenings||[]).slice().sort((x,y)=>new Date(y.requested_at)-new Date(x.requested_at));
+      const latest = screenings[0];
+      let screenCell;
+      if (latest) {
+        if (latest.status === 'completed') {
+          screenCell = `<span class="score-num high">${escapeHtml(latest.result_summary||'Completed')}</span>` +
+            (latest.report_url ? `<br><a href="${escapeHtml(latest.report_url)}" target="_blank" rel="noopener" style="font-size:11px">View report</a>` : '');
+        } else if (latest.status === 'failed') {
+          screenCell = `<span style="color:var(--red);font-size:12px">Failed</span>`;
+        } else {
+          screenCell = `<span style="color:var(--orange);font-size:12px">Requested</span>`;
+        }
+      } else {
+        screenCell = `<span style="color:var(--gray);font-size:12px">—</span>`;
+      }
+
+      // Only offer to request screening once matched, and only if the tenant
+      // has already consented (checkbox on apply.html — see consent_screening_at).
+      let actionExtra = '';
+      if (!latest && best && best.match_score >= 50) {
+        if (a.consent_screening_at) {
+          actionExtra = `<button type="button" class="contact-btn" style="margin-left:4px;background:var(--blue-light)" onclick="requestScreening('${a.id}', this)">Request Screening</button>`;
+        } else {
+          actionExtra = `<span style="font-size:11px;color:var(--gray);margin-left:4px">No screening consent</span>`;
+        }
+      }
+
       return `<tr>
         <td><div style="font-weight:600;color:var(--navy)">${escapeHtml(a.name||'—')}</div>
             <div style="font-size:11px;color:var(--gray)">${escapeHtml(a.email||'')}</div></td>
@@ -1388,15 +1419,37 @@ async function loadApplicants() {
         <td>${matchCell}</td>
         <td>${escapeHtml(APPLICANT_STAGE_LABEL[a.stage]||a.stage||'New')}</td>
         <td>${applied}</td>
+        <td>${screenCell}</td>
         <td style="white-space:nowrap">
-          ${a.email?`<a href="mailto:${encodeURIComponent(a.email)}?subject=${subj}&body=Hi ${firstName},%0A%0AThanks for applying with Ottawa Rental Plug...%0A%0A— Cyril%0A(613) 601-3005" class="contact-btn">Email</a>`:'—'}
+          ${a.email?`<a href="mailto:${encodeURIComponent(a.email)}?subject=${subj}&body=Hi ${firstName},%0A%0AThanks for applying with Ottawa Rental Plug...%0A%0A— Ottawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>`:'—'}
           ${a.phone?`<a href="tel:${encodeURIComponent(a.phone)}" class="contact-btn" style="margin-left:4px">Call</a>`:''}
+          ${actionExtra}
         </td>
       </tr>`;
     }).join('') + `</tbody></table>`;
   } catch (e) {
     card.innerHTML = `<div class="scan-empty"><p style="color:var(--red)">Couldn't load applicants: ${escapeHtml(e.message||String(e))}</p>
       <p style="margin-top:6px;font-size:12px">If this is the first run, make sure <strong>db/schema.sql</strong> has been run in Supabase.</p></div>`;
+  }
+}
+
+// Agent-initiated SingleKey screening request (Phase 2). Safe to click any
+// time — until SINGLEKEY_API_TOKEN is set in Netlify the function returns a
+// clear "not configured yet" message instead of failing silently.
+async function requestScreening(id, btn) {
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Requesting…';
+  try {
+    const data = await orpRequestScreening(id);
+    await loadApplicants();
+    if (data.link) window.open(data.link, '_blank');
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = original;
+    if (e.status === 503) alert("Screening isn't live yet — still waiting on SingleKey API access. This button will start working automatically once that's configured.");
+    else if (e.status === 409) alert("This applicant hasn't consented to screening yet.");
+    else alert('Could not start screening: ' + e.message);
   }
 }
 

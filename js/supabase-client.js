@@ -71,3 +71,24 @@ async function orpMirrorUnits(vacancies) {
     if (error) throw error;
   }
 }
+
+// ── Screening (Phase 2) ───────────────────────────────────────────────
+// Calls the SingleKey-backed Netlify function as the signed-in agent.
+// Throws with `.status` set so callers can distinguish "not configured yet"
+// (503, expected until SINGLEKEY_API_TOKEN is set) from real errors.
+async function orpRequestScreening(applicantId) {
+  const session = await orpSession();
+  if (!session) throw new Error('Not signed in');
+  const res = await fetch('/.netlify/functions/screening', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ applicantId }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || `Request failed (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
