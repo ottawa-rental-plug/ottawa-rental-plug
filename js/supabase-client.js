@@ -77,12 +77,20 @@ async function orpMirrorUnits(vacancies) {
 // Throws with `.status` set so callers can distinguish "not configured yet"
 // (503, expected until SINGLEKEY_API_TOKEN is set) from real errors.
 async function orpRequestScreening(applicantId) {
+  return orpScreeningCall({ applicantId });
+}
+// Manual result entry (manual mode, before the SingleKey webhook is live).
+// Stores only a short summary + optional link — never raw report contents.
+async function orpUpdateScreening(screeningId, { status, resultSummary, reportUrl } = {}) {
+  return orpScreeningCall({ action: 'update', screeningId, status, resultSummary, reportUrl });
+}
+async function orpScreeningCall(payload) {
   const session = await orpSession();
   if (!session) throw new Error('Not signed in');
   const res = await fetch('/.netlify/functions/screening', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ applicantId }),
+    body: JSON.stringify(payload),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {

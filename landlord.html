@@ -1347,7 +1347,7 @@ async function loadApplicants() {
   card.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading applicants…</div>`;
   try {
     const { data, error } = await sb.from('applicants')
-      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,consent_screening_at,applications(match_score,units(beds,type,neighbourhood,price)),screenings(status,result_summary,report_url,requested_at,completed_at)')
+      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,consent_screening_at,applications(match_score,units(beds,type,neighbourhood,price)),screenings(id,status,result_summary,report_url,requested_at,completed_at)')
       .order('created_at', { ascending: false });
     if (error) throw error;
     const applicants = data || [];
@@ -1400,10 +1400,18 @@ async function loadApplicants() {
         screenCell = `<span style="color:var(--gray);font-size:12px">—</span>`;
       }
 
-      // Only offer to request screening once matched, and only if the tenant
-      // has already consented (checkbox on apply.html — see consent_screening_at).
+      // Screening actions. Only offer to request once matched, and only if the
+      // tenant has consented (checkbox on apply.html — see consent_screening_at).
+      // A pending request can be resolved manually ("Mark result") until the
+      // SingleKey webhook is live; completed/failed can be re-run ("Re-screen").
       let actionExtra = '';
-      if (!latest && best && best.match_score >= 50) {
+      if (latest && latest.status === 'requested') {
+        actionExtra = `<button type="button" class="contact-btn" style="margin-left:4px" onclick="markScreening('${latest.id}', this)">Mark result</button>`;
+      } else if (latest && (latest.status === 'completed' || latest.status === 'failed')) {
+        if (a.consent_screening_at) {
+          actionExtra = `<button type="button" class="contact-btn" style="margin-left:4px" onclick="requestScreening('${a.id}', this)">Re-screen</button>`;
+        }
+      } else if (!latest && best && best.match_score >= 50) {
         if (a.consent_screening_at) {
           actionExtra = `<button type="button" class="contact-btn" style="margin-left:4px;background:var(--blue-light)" onclick="requestScreening('${a.id}', this)">Request Screening</button>`;
         } else {
@@ -1434,8 +1442,9 @@ async function loadApplicants() {
 }
 
 // Agent-initiated SingleKey screening request (Phase 2). Safe to click any
-// time — until SINGLEKEY_API_TOKEN is set in Netlify the function returns a
-// clear "not configured yet" message instead of failing silently.
+// time. In API mode it opens SingleKey's embedded flow; in manual mode (no
+// SINGLEKEY_API_TOKEN yet) it logs the request so you can run it through your
+// SingleKey account and record the outcome with "Mark result".
 async function requestScreening(id, btn) {
   const original = btn.textContent;
   btn.disabled = true;
@@ -1444,12 +1453,33 @@ async function requestScreening(id, btn) {
     const data = await orpRequestScreening(id);
     await loadApplicants();
     if (data.link) window.open(data.link, '_blank');
+    else if (data.mode === 'manual') alert('Screening logged. Run it through your SingleKey account, then use "Mark result" to record the outcome.');
+    else if (data.reused) alert('A screening is already in progress for this applicant.');
   } catch (e) {
     btn.disabled = false;
     btn.textContent = original;
-    if (e.status === 503) alert("Screening isn't live yet — still waiting on SingleKey API access. This button will start working automatically once that's configured.");
-    else if (e.status === 409) alert("This applicant hasn't consented to screening yet.");
+    if (e.status === 409) alert("This applicant hasn't consented to screening yet.");
     else alert('Could not start screening: ' + e.message);
+  }
+}
+
+// Record a screening outcome by hand (manual mode / before the webhook is live).
+// Stores only a short summary + optional link — never raw report contents.
+async function markScreening(screeningId, btn) {
+  const pass = confirm('Did the applicant PASS screening?\n\nOK = Pass · Cancel = Needs review / failed');
+  const status = pass ? 'completed' : 'failed';
+  const resultSummary = pass ? 'Pass' : 'Review';
+  const reportUrl = (prompt('Optional: paste the SingleKey report link (leave blank to skip):', '') || '').trim();
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    await orpUpdateScreening(screeningId, { status, resultSummary, reportUrl });
+    await loadApplicants();
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = original;
+    alert('Could not save result: ' + e.message);
   }
 }
 
