@@ -123,3 +123,27 @@ async function orpSaveApproval(applicantId, { decision, criteria, notes } = {}) 
     .update({ stage: approved ? 'approved' : 'declined' }).eq('id', applicantId);
   if (stageErr) throw stageErr;
 }
+
+// ── Nurture / CRM (Phase 4) ───────────────────────────────────────────
+// The `activities` table is the applicant timeline: notes, comms logs, and
+// automatic status_change entries. Read/written directly under the authenticated
+// session (no secrets; RLS locks it to the signed-in agent).
+async function orpLoadActivities(applicantId) {
+  const { data, error } = await sb.from('activities')
+    .select('id,type,body,created_at')
+    .eq('applicant_id', applicantId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+async function orpAddActivity(applicantId, type, body) {
+  const { error } = await sb.from('activities')
+    .insert({ applicant_id: applicantId, type: type || 'note', body: body || null });
+  if (error) throw error;
+}
+// Move an applicant to a new stage and log the change on the timeline.
+async function orpSetStage(applicantId, stage, fromLabel, toLabel) {
+  const { error } = await sb.from('applicants').update({ stage }).eq('id', applicantId);
+  if (error) throw error;
+  await orpAddActivity(applicantId, 'status_change', `Stage: ${fromLabel || '—'} → ${toLabel || stage}`);
+}

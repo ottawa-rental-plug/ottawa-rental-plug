@@ -1470,6 +1470,7 @@ async function loadApplicants() {
         <td style="white-space:nowrap">
           ${a.email?`<a href="mailto:${encodeURIComponent(a.email)}?subject=${subj}&body=Hi ${firstName},%0A%0AThanks for applying with Ottawa Rental Plug...%0A%0A— Ottawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>`:'—'}
           ${a.phone?`<a href="tel:${encodeURIComponent(a.phone)}" class="contact-btn" style="margin-left:4px">Call</a>`:''}
+          <button type="button" class="contact-btn" style="margin-left:4px;background:var(--bg);color:var(--navy)" onclick="openCrm('${a.id}')">Timeline</button>
           ${actionExtra}
         </td>
       </tr>`;
@@ -1656,6 +1657,79 @@ function tenantSummary(id) {
   w.document.close();
 }
 
+// ── NURTURE / CRM (Phase 4) ──────────────────────────────────────────
+let _crmApplicantId = null;
+const ACTIVITY_LABEL = { note:'Note', sms:'Text', email:'Email', status_change:'Stage' };
+
+function stageOptions(current) {
+  return Object.entries(APPLICANT_STAGE_LABEL)
+    .map(([v,l]) => `<option value="${v}" ${v===current?'selected':''}>${escapeHtml(l)}</option>`).join('');
+}
+function openCrm(id) {
+  const a = getApplicant(id);
+  if (!a) return;
+  _crmApplicantId = id;
+  document.getElementById('crmWho').textContent = a.name || 'Applicant';
+  document.getElementById('crmContact').textContent =
+    [a.email, a.phone].filter(Boolean).join(' · ') || '—';
+  document.getElementById('crmStage').innerHTML = stageOptions(a.stage || 'new');
+  document.getElementById('crmNote').value = '';
+  document.getElementById('crmModal').classList.add('open');
+  renderCrmTimeline();
+}
+function closeCrm() {
+  document.getElementById('crmModal').classList.remove('open');
+  _crmApplicantId = null;
+}
+async function renderCrmTimeline() {
+  const el = document.getElementById('crmTimeline');
+  try {
+    const acts = await orpLoadActivities(_crmApplicantId);
+    if (!acts.length) { el.innerHTML = `<div style="font-size:12px;color:var(--gray);padding:6px 0">No activity yet.</div>`; return; }
+    el.innerHTML = acts.map(ev => {
+      const when = new Date(ev.created_at).toLocaleString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      const tag = ACTIVITY_LABEL[ev.type] || 'Note';
+      return `<div style="padding:8px 0;border-bottom:1px solid var(--bg)">
+        <div style="display:flex;justify-content:space-between;gap:8px">
+          <span style="font-size:11px;font-weight:700;color:var(--blue)">${escapeHtml(tag)}</span>
+          <span style="font-size:11px;color:var(--gray)">${escapeHtml(when)}</span>
+        </div>
+        <div style="font-size:13px;color:var(--navy);margin-top:2px;white-space:pre-wrap">${escapeHtml(ev.body||'')}</div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--red)">Couldn't load timeline: ${escapeHtml(e.message||String(e))}</div>`;
+  }
+}
+async function addCrmNote() {
+  const ta = document.getElementById('crmNote');
+  const body = ta.value.trim();
+  if (!body) return;
+  ta.disabled = true;
+  try {
+    await orpAddActivity(_crmApplicantId, 'note', body);
+    ta.value = '';
+    await renderCrmTimeline();
+  } catch (e) {
+    alert('Could not add note: ' + (e.message || e));
+  } finally { ta.disabled = false; }
+}
+async function changeCrmStage(stage) {
+  const a = getApplicant(_crmApplicantId);
+  if (!a || stage === a.stage) return;
+  const fromLabel = APPLICANT_STAGE_LABEL[a.stage] || a.stage || '—';
+  const toLabel = APPLICANT_STAGE_LABEL[stage] || stage;
+  try {
+    await orpSetStage(_crmApplicantId, stage, fromLabel, toLabel);
+    a.stage = stage;                       // keep the cache in sync
+    await renderCrmTimeline();
+    loadApplicants();                      // refresh the row's Stage cell
+  } catch (e) {
+    alert('Could not change stage: ' + (e.message || e));
+    document.getElementById('crmStage').value = a.stage;   // revert the selector
+  }
+}
+
 // Publish the dashboard's vacancies into the cloud `units` table so incoming
 // applicants get matched against them. Replaces the cloud unit list each time.
 async function publishUnits() {
@@ -1748,6 +1822,31 @@ window.addEventListener('DOMContentLoaded', async () => {
       <button class="btn-cancel" onclick="closeApproval()">Cancel</button>
       <button class="btn-decline" id="approvalDeclineBtn" onclick="submitApproval('declined')">Decline</button>
       <button class="btn-approve" id="approvalApproveBtn" onclick="submitApproval('approved')">Approve &amp; issue badge</button>
+    </div>
+  </div>
+</div>
+
+<!-- CRM / TIMELINE MODAL (Phase 4) -->
+<div class="modal-overlay" id="crmModal" onclick="if(event.target===this)closeCrm()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title" id="crmWho">Applicant</div>
+      <div class="modal-sub" id="crmContact">—</div>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;color:var(--navy)">Stage</span>
+        <select id="crmStage" class="status-select" onchange="changeCrmStage(this.value)" style="min-width:150px"></select>
+      </div>
+      <textarea class="modal-textarea" id="crmNote" placeholder="Add a note, call/text log, or follow-up…"></textarea>
+      <div style="display:flex;justify-content:flex-end;margin:8px 0 4px">
+        <button class="contact-btn" onclick="addCrmNote()">Add to timeline</button>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--navy);margin:12px 0 6px">Timeline</div>
+      <div id="crmTimeline"><div class="scan-empty" style="padding:16px">Loading…</div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeCrm()">Close</button>
     </div>
   </div>
 </div>
