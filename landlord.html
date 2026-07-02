@@ -1391,13 +1391,24 @@ function setApplicantFilter(f, btn) {
   btn.classList.add('active');
   loadApplicants();
 }
+// Follow-up columns are Phase 4 (db/phase4-followups.sql). If the migration
+// hasn't been run yet, the query is retried without them so the tab still works.
+let _followUpsEnabled = true;
+const APPLICANTS_BASE_SELECT = 'id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,consent_screening_at,applications(match_score,units(beds,type,neighbourhood,price)),screenings(id,status,result_summary,report_url,requested_at,completed_at),approvals(id,decision,criteria_checklist,badge_issued_at,notes,decided_by,created_at)';
 async function loadApplicants() {
   const card = document.getElementById('applicantsCard');
   card.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading applicants…</div>`;
   try {
-    const { data, error } = await sb.from('applicants')
-      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,consent_screening_at,follow_up_at,follow_up_note,applications(match_score,units(beds,type,neighbourhood,price)),screenings(id,status,result_summary,report_url,requested_at,completed_at),approvals(id,decision,criteria_checklist,badge_issued_at,notes,decided_by,created_at)')
+    let { data, error } = await sb.from('applicants')
+      .select('follow_up_at,follow_up_note,' + APPLICANTS_BASE_SELECT)
       .order('created_at', { ascending: false });
+    // Migration not run yet → columns don't exist; retry without follow-ups.
+    if (error && /follow_up/.test(error.message || '')) {
+      _followUpsEnabled = false;
+      ({ data, error } = await sb.from('applicants')
+        .select(APPLICANTS_BASE_SELECT)
+        .order('created_at', { ascending: false }));
+    }
     if (error) throw error;
     const applicants = data || [];
     _applicants = applicants;   // cache for the approval modal / tenant summary
@@ -1770,6 +1781,7 @@ async function changeCrmStage(stage) {
   }
 }
 async function setCrmFollowUp() {
+  if (!_followUpsEnabled) { alert('Follow-ups need a quick database update. Run db/phase4-followups.sql in Supabase → SQL Editor, then reload.'); return; }
   const dateVal = document.getElementById('crmFollowDate').value;
   if (!dateVal) { alert('Pick a follow-up date first.'); return; }
   const note = document.getElementById('crmFollowNote').value.trim();
