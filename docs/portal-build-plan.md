@@ -57,7 +57,7 @@ summary + link, never the raw credit/background report.
 - **Phase 1 — Apply + Match.** ✅ Branded application form → `applicants`; auto-match writes `applications`.
 - **Phase 2 — Screen + place.** ✅ Consent-gated SingleKey screening from the Applicants tab (agent-token auth); `screenings` rows store summary + link only. Ships with a **manual mode** that works today via your SingleKey account; flips to the live embedded flow + webhook once `SINGLEKEY_API_TOKEN` is set. See [`phase2-setup.md`](phase2-setup.md).
 - **Phase 3 — Approved.** ✅ Fixed criteria checklist (Human Rights Code defensible), approve/decline decision → `approvals`, "Approved by Cyril" badge, and a one-click Tenant Summary PDF. See [`phase3-approved.md`](phase3-approved.md).
-- **Phase 4 — Nurture / CRM.** ✅ *(core)* Per-applicant timeline (`activities`): notes/comms logs + automatic status-change entries, and manual stage control across the full pipeline (incl. nurture / future_buyer). See [`phase4-crm.md`](phase4-crm.md). *Still open: follow-up tags/reminders and a dedicated future-buyer view.*
+- **Phase 4 — Nurture / CRM.** ✅ Per-applicant timeline (`activities`): notes/comms logs + automatic status-change entries; manual stage control across the full pipeline; follow-up reminders with a "due" view; and Applicants-tab filters (follow-ups due / future buyers / approved). See [`phase4-crm.md`](phase4-crm.md). *Later: SMS/email comms hub.*
 - **Later.** Comms hub (SMS/email), payments (Stripe), landlord client portal (RLS), compliant form mapping, mortgage affordability triggers.
 
 ## Cost

@@ -147,3 +147,13 @@ async function orpSetStage(applicantId, stage, fromLabel, toLabel) {
   if (error) throw error;
   await orpAddActivity(applicantId, 'status_change', `Stage: ${fromLabel || '—'} → ${toLabel || stage}`);
 }
+// Set or clear an applicant's next follow-up (date + note) and log it.
+async function orpSetFollowUp(applicantId, followUpAt, note) {
+  const { error } = await sb.from('applicants')
+    .update({ follow_up_at: followUpAt || null, follow_up_note: note || null })
+    .eq('id', applicantId);
+  if (error) throw error;
+  await orpAddActivity(applicantId, 'note', followUpAt
+    ? `Follow-up set for ${new Date(followUpAt).toLocaleDateString('en-CA')}${note ? ' — ' + note : ''}`
+    : 'Follow-up cleared');
+}

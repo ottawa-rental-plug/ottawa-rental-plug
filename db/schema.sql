@@ -44,6 +44,8 @@ create table applicants (
   stage               applicant_stage not null default 'new',
   consent_screening_at timestamptz,        -- timestamped screening consent (PIPEDA)
   consent_ip          text,
+  follow_up_at        timestamptz,         -- next follow-up due (Phase 4 CRM)
+  follow_up_note      text,                -- what the follow-up is about
   created_at          timestamptz not null default now()
 );
 

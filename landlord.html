@@ -429,6 +429,12 @@
           <button class="btn-top secondary" onclick="loadApplicants()" style="padding:7px 12px">Refresh</button>
         </div>
         <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Tenants who applied at <strong>ottawarentalplug.com/apply</strong>, auto-matched to your published units. Publish your vacancies first (Vacancies &rarr; Publish to cloud) so matching has units to score against.</p>
+        <div class="tabs">
+          <button class="tab active" onclick="setApplicantFilter('all',this)">All</button>
+          <button class="tab" onclick="setApplicantFilter('followup',this)">Follow-ups due <span id="followupCount"></span></button>
+          <button class="tab" onclick="setApplicantFilter('future',this)">Future buyers</button>
+          <button class="tab" onclick="setApplicantFilter('approved',this)">Approved</button>
+        </div>
         <div class="card" id="applicantsCard"><div class="scan-empty">Loading…</div></div>
       </div>
     </div>
@@ -1362,12 +1368,35 @@ const APPLICANT_STAGE_LABEL = {
   new:'New', matched:'Matched', screening:'Screening', approved:'Approved',
   placed:'Placed', nurture:'Nurture', future_buyer:'Future buyer', declined:'Declined', lost:'Lost',
 };
+// Applicants-tab quick filter (Phase 4): all | followup | future | approved.
+let applicantFilter = 'all';
+function isFollowUpDue(a) { return !!a.follow_up_at && new Date(a.follow_up_at) <= new Date(); }
+function followUpChip(a) {
+  if (!a.follow_up_at) return '';
+  const due = isFollowUpDue(a);
+  const when = new Date(a.follow_up_at).toLocaleDateString('en-CA',{month:'short',day:'numeric'});
+  const note = a.follow_up_note ? ' · ' + escapeHtml(a.follow_up_note) : '';
+  const style = due ? 'background:#fef2f2;color:#b91c1c' : 'background:#fff7ed;color:#c2410c';
+  return `<div style="margin-top:3px"><span style="display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;${style}">${due?'⏰ Due':'Follow-up'} ${when}${note}</span></div>`;
+}
+function applyApplicantFilter(list) {
+  if (applicantFilter === 'followup') return list.filter(isFollowUpDue);
+  if (applicantFilter === 'future')   return list.filter(a => a.stage === 'future_buyer');
+  if (applicantFilter === 'approved') return list.filter(a => (a.approvals||[]).some(x => x.decision === 'approved'));
+  return list;
+}
+function setApplicantFilter(f, btn) {
+  applicantFilter = f;
+  document.querySelectorAll('#panel-applicants .tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  loadApplicants();
+}
 async function loadApplicants() {
   const card = document.getElementById('applicantsCard');
   card.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading applicants…</div>`;
   try {
     const { data, error } = await sb.from('applicants')
-      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,consent_screening_at,applications(match_score,units(beds,type,neighbourhood,price)),screenings(id,status,result_summary,report_url,requested_at,completed_at),approvals(id,decision,criteria_checklist,badge_issued_at,notes,decided_by,created_at)')
+      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,consent_screening_at,follow_up_at,follow_up_note,applications(match_score,units(beds,type,neighbourhood,price)),screenings(id,status,result_summary,report_url,requested_at,completed_at),approvals(id,decision,criteria_checklist,badge_issued_at,notes,decided_by,created_at)')
       .order('created_at', { ascending: false });
     if (error) throw error;
     const applicants = data || [];
@@ -1377,14 +1406,23 @@ async function loadApplicants() {
     const newCount = applicants.filter(a => a.stage === 'new').length;
     if (newCount > 0) { badge.style.display=''; badge.textContent = newCount; } else badge.style.display='none';
 
+    const dueCount = applicants.filter(isFollowUpDue).length;
+    document.getElementById('followupCount').textContent = dueCount ? `(${dueCount})` : '';
+
     if (!applicants.length) {
       card.innerHTML = `<div class="scan-empty"><p>No applicants yet. Share <strong>ottawarentalplug.com/apply</strong> to start capturing them.</p></div>`;
       return;
     }
 
+    const shown = applyApplicantFilter(applicants);
+    if (!shown.length) {
+      card.innerHTML = `<div class="scan-empty"><p>No applicants in this view.</p></div>`;
+      return;
+    }
+
     card.innerHTML = `<table class="leads-table"><thead><tr>
       <th>Applicant</th><th>Looking For</th><th>Move-in</th><th>Best Match</th><th>Stage</th><th>Applied</th><th>Screening</th><th>Action</th>
-    </tr></thead><tbody>` + applicants.map(a => {
+    </tr></thead><tbody>` + shown.map(a => {
       const want = [a.beds_wanted && a.beds_wanted !== 'Any' ? a.beds_wanted+' BR' : 'Any beds',
                     a.budget ? '$'+parseInt(a.budget).toLocaleString()+'/mo' : null,
                     a.neighbourhood && a.neighbourhood !== 'Any' ? a.neighbourhood : null].filter(Boolean).join(' · ');
@@ -1460,7 +1498,7 @@ async function loadApplicants() {
 
       return `<tr>
         <td><div style="font-weight:600;color:var(--navy)">${escapeHtml(a.name||'—')}</div>
-            <div style="font-size:11px;color:var(--gray)">${escapeHtml(a.email||'')}</div></td>
+            <div style="font-size:11px;color:var(--gray)">${escapeHtml(a.email||'')}</div>${followUpChip(a)}</td>
         <td>${escapeHtml(want||'—')}</td>
         <td>${moveIn}</td>
         <td>${matchCell}</td>
@@ -1673,6 +1711,8 @@ function openCrm(id) {
   document.getElementById('crmContact').textContent =
     [a.email, a.phone].filter(Boolean).join(' · ') || '—';
   document.getElementById('crmStage').innerHTML = stageOptions(a.stage || 'new');
+  document.getElementById('crmFollowDate').value = a.follow_up_at ? new Date(a.follow_up_at).toISOString().slice(0,10) : '';
+  document.getElementById('crmFollowNote').value = a.follow_up_note || '';
   document.getElementById('crmNote').value = '';
   document.getElementById('crmModal').classList.add('open');
   renderCrmTimeline();
@@ -1728,6 +1768,28 @@ async function changeCrmStage(stage) {
     alert('Could not change stage: ' + (e.message || e));
     document.getElementById('crmStage').value = a.stage;   // revert the selector
   }
+}
+async function setCrmFollowUp() {
+  const dateVal = document.getElementById('crmFollowDate').value;
+  if (!dateVal) { alert('Pick a follow-up date first.'); return; }
+  const note = document.getElementById('crmFollowNote').value.trim();
+  const at = new Date(dateVal + 'T09:00:00').toISOString();
+  try {
+    await orpSetFollowUp(_crmApplicantId, at, note);
+    const a = getApplicant(_crmApplicantId); if (a) { a.follow_up_at = at; a.follow_up_note = note; }
+    await renderCrmTimeline();
+    loadApplicants();
+  } catch (e) { alert('Could not set follow-up: ' + (e.message || e)); }
+}
+async function clearCrmFollowUp() {
+  try {
+    await orpSetFollowUp(_crmApplicantId, null, null);
+    const a = getApplicant(_crmApplicantId); if (a) { a.follow_up_at = null; a.follow_up_note = null; }
+    document.getElementById('crmFollowDate').value = '';
+    document.getElementById('crmFollowNote').value = '';
+    await renderCrmTimeline();
+    loadApplicants();
+  } catch (e) { alert('Could not clear follow-up: ' + (e.message || e)); }
 }
 
 // Publish the dashboard's vacancies into the cloud `units` table so incoming
@@ -1834,9 +1896,16 @@ window.addEventListener('DOMContentLoaded', async () => {
       <div class="modal-sub" id="crmContact">—</div>
     </div>
     <div class="modal-body">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
         <span style="font-size:12px;font-weight:700;color:var(--navy)">Stage</span>
         <select id="crmStage" class="status-select" onchange="changeCrmStage(this.value)" style="min-width:150px"></select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;color:var(--navy)">Follow-up</span>
+        <input type="date" id="crmFollowDate" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px">
+        <input type="text" id="crmFollowNote" placeholder="About…" style="flex:1;min-width:120px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px">
+        <button class="contact-btn" onclick="setCrmFollowUp()">Set</button>
+        <button class="contact-btn" style="background:var(--bg);color:var(--navy)" onclick="clearCrmFollowUp()">Clear</button>
       </div>
       <textarea class="modal-textarea" id="crmNote" placeholder="Add a note, call/text log, or follow-up…"></textarea>
       <div style="display:flex;justify-content:flex-end;margin:8px 0 4px">
