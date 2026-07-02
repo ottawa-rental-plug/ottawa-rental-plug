@@ -1,0 +1,27 @@
+{
+  "name": "website",
+  "version": "1.0.0",
+  "description": "",
+  "main": "analytics.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "tailwindcss -i tw-input.css -o tw-tools.css --minify && cp tw-tools.css tw-main.css && cp tw-tools.css tw-mortgage.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ottawa-rental-plug/ottawa-rental-plug.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ottawa-rental-plug/ottawa-rental-plug/issues"
+  },
+  "homepage": "https://github.com/ottawa-rental-plug/ottawa-rental-plug#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}
