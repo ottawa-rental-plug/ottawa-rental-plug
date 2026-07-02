@@ -1,6 +1,12 @@
-// Group B: property-management.html, am-i-overpaying.html
+// Group B (tw-tools.css): every page that loads tw-tools.css must be listed here,
+// or its utility classes get purged from the build.
 module.exports = {
-  content: ['../property-management.html', '../am-i-overpaying.html'],
+  content: [
+    '../property-management.html',
+    '../am-i-overpaying.html',
+    '../apply.html',
+    '../rental-estimate.html',
+  ],
   theme: {
     extend: {
       colors: {
