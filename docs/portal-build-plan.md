@@ -3,6 +3,23 @@
 The portal (`landlord.html`) evolves from a localStorage lead viewer into a
 Supabase-backed tenant-placement operating system. Screening via SingleKey.
 
+## Status: core build complete, deployed
+
+Phases 0–4 are built, merged to `main`, and live. The whole planned pipeline
+works end to end: **Apply → Match → Screen → Approved → Nurture**. What's left
+is not code — it's account setup only you can do:
+
+1. **(Optional, recommended) Run `db/phase4-followups.sql`** in Supabase → SQL
+   Editor, if you haven't already — enables follow-up reminders. Everything
+   else works without it.
+2. **(Optional) SingleKey API token** — screening already works today in manual
+   mode via your existing SingleKey account. Getting a token from SingleKey
+   (info@singlekey.com) upgrades it to the live embedded flow + auto webhook.
+   See [`phase2-setup.md`](phase2-setup.md).
+3. **Later bucket** (not started — each needs an external account/decision
+   before it's worth building): SMS/email comms hub, Stripe payments, a
+   landlord client portal (RLS logins), OREA Form 410 mapping.
+
 ## Flow (locked)
 
 Apply → Match → Screen + place → Approved → Nurture → Future buyer + referral
@@ -53,7 +70,7 @@ summary + link, never the raw credit/background report.
 
 ## Phases
 
-- **Phase 0 — Foundation.** Supabase project, schema, Cyril auth, migrate existing localStorage data, swap storage layer. *Outcome: portal works identically but cloud-backed and phone-synced — fixes the localStorage problem on its own.*
+- **Phase 0 — Foundation.** ✅ Supabase project, schema, Cyril auth, migrated localStorage data, swapped storage layer. Portal is cloud-backed and phone-synced.
 - **Phase 1 — Apply + Match.** ✅ Branded application form → `applicants`; auto-match writes `applications`.
 - **Phase 2 — Screen + place.** ✅ Consent-gated SingleKey screening from the Applicants tab (agent-token auth); `screenings` rows store summary + link only. Ships with a **manual mode** that works today via your SingleKey account; flips to the live embedded flow + webhook once `SINGLEKEY_API_TOKEN` is set. See [`phase2-setup.md`](phase2-setup.md).
 - **Phase 3 — Approved.** ✅ Fixed criteria checklist (Human Rights Code defensible), approve/decline decision → `approvals`, "Approved by Cyril" badge, and a one-click Tenant Summary PDF. See [`phase3-approved.md`](phase3-approved.md).
