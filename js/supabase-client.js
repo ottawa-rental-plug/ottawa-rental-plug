@@ -77,12 +77,20 @@ async function orpMirrorUnits(vacancies) {
 // Throws with `.status` set so callers can distinguish "not configured yet"
 // (503, expected until SINGLEKEY_API_TOKEN is set) from real errors.
 async function orpRequestScreening(applicantId) {
+  return orpScreeningCall({ applicantId });
+}
+// Manual result entry (manual mode, before the SingleKey webhook is live).
+// Stores only a short summary + optional link — never raw report contents.
+async function orpUpdateScreening(screeningId, { status, resultSummary, reportUrl } = {}) {
+  return orpScreeningCall({ action: 'update', screeningId, status, resultSummary, reportUrl });
+}
+async function orpScreeningCall(payload) {
   const session = await orpSession();
   if (!session) throw new Error('Not signed in');
   const res = await fetch('/.netlify/functions/screening', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ applicantId }),
+    body: JSON.stringify(payload),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -91,4 +99,27 @@ async function orpRequestScreening(applicantId) {
     throw err;
   }
   return data;
+}
+
+// ── Approval (Phase 3) ────────────────────────────────────────────────
+// Records an approve/decline decision with its fixed criteria checklist, issues
+// the "Approved by Cyril" badge timestamp on approval, and advances the
+// applicant's stage. Written directly under the authenticated session (approvals
+// has no secrets — RLS already locks it to the signed-in agent).
+async function orpSaveApproval(applicantId, { decision, criteria, notes } = {}) {
+  const session = await orpSession();
+  if (!session) throw new Error('Not signed in');
+  const approved = decision === 'approved';
+  const { error } = await sb.from('approvals').insert({
+    applicant_id: applicantId,
+    decision: approved ? 'approved' : 'declined',
+    criteria_checklist: criteria || {},
+    badge_issued_at: approved ? new Date().toISOString() : null,
+    notes: notes || null,
+    decided_by: session.user.email || session.user.id,
+  });
+  if (error) throw error;
+  const { error: stageErr } = await sb.from('applicants')
+    .update({ stage: approved ? 'approved' : 'declined' }).eq('id', applicantId);
+  if (stageErr) throw stageErr;
 }

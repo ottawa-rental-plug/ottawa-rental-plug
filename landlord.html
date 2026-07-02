@@ -220,6 +220,26 @@
     }
     @keyframes spin { to { transform:rotate(360deg); } }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+    /* Approval modal (Phase 3) */
+    .modal-overlay { position:fixed; inset:0; background:rgba(16,39,58,.5); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+    .modal-overlay.open { display:flex; }
+    .modal-card { background:var(--white); border-radius:14px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(16,39,58,.3); }
+    .modal-head { padding:20px 24px 12px; border-bottom:1px solid var(--border); }
+    .modal-title { font-size:18px; font-weight:800; color:var(--navy); }
+    .modal-sub { font-size:12px; color:var(--gray); margin-top:3px; }
+    .modal-body { padding:16px 24px; }
+    .crit-item { display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid var(--bg); }
+    .crit-item input { margin-top:2px; width:16px; height:16px; flex-shrink:0; cursor:pointer; }
+    .crit-item label { font-size:13px; color:var(--navy); line-height:1.4; cursor:pointer; }
+    .modal-note { font-size:11px; color:var(--gray); background:var(--bg); border-radius:8px; padding:10px 12px; margin-top:12px; line-height:1.5; }
+    .modal-foot { padding:14px 24px 20px; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+    .modal-textarea { width:100%; margin-top:12px; padding:10px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; resize:vertical; min-height:56px; }
+    .btn-approve { background:#047857; color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+    .btn-approve:disabled { opacity:.45; cursor:not-allowed; }
+    .btn-decline { background:#fff; color:var(--red); border:1px solid var(--red); border-radius:8px; padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+    .btn-cancel { background:var(--bg); color:var(--navy); border:1px solid var(--border); border-radius:8px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .badge-approved { display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:700; background:#ecfdf5; color:#047857; }
+    .badge-declined { display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:700; background:#fef2f2; color:#b91c1c; }
   </style>
 </head>
 <body>
@@ -1347,10 +1367,11 @@ async function loadApplicants() {
   card.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading applicants…</div>`;
   try {
     const { data, error } = await sb.from('applicants')
-      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,consent_screening_at,applications(match_score,units(beds,type,neighbourhood,price)),screenings(status,result_summary,report_url,requested_at,completed_at)')
+      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,consent_screening_at,applications(match_score,units(beds,type,neighbourhood,price)),screenings(id,status,result_summary,report_url,requested_at,completed_at),approvals(id,decision,criteria_checklist,badge_issued_at,notes,decided_by,created_at)')
       .order('created_at', { ascending: false });
     if (error) throw error;
     const applicants = data || [];
+    _applicants = applicants;   // cache for the approval modal / tenant summary
 
     const badge = document.getElementById('applicantBadge');
     const newCount = applicants.filter(a => a.stage === 'new').length;
@@ -1400,15 +1421,41 @@ async function loadApplicants() {
         screenCell = `<span style="color:var(--gray);font-size:12px">—</span>`;
       }
 
-      // Only offer to request screening once matched, and only if the tenant
-      // has already consented (checkbox on apply.html — see consent_screening_at).
+      // Screening actions. Only offer to request once matched, and only if the
+      // tenant has consented (checkbox on apply.html — see consent_screening_at).
+      // A pending request can be resolved manually ("Mark result") until the
+      // SingleKey webhook is live; completed/failed can be re-run ("Re-screen").
       let actionExtra = '';
-      if (!latest && best && best.match_score >= 50) {
+      if (latest && latest.status === 'requested') {
+        actionExtra = `<button type="button" class="contact-btn" style="margin-left:4px" onclick="markScreening('${latest.id}', this)">Mark result</button>`;
+      } else if (latest && (latest.status === 'completed' || latest.status === 'failed')) {
+        if (a.consent_screening_at) {
+          actionExtra = `<button type="button" class="contact-btn" style="margin-left:4px" onclick="requestScreening('${a.id}', this)">Re-screen</button>`;
+        }
+      } else if (!latest && best && best.match_score >= 50) {
         if (a.consent_screening_at) {
           actionExtra = `<button type="button" class="contact-btn" style="margin-left:4px;background:var(--blue-light)" onclick="requestScreening('${a.id}', this)">Request Screening</button>`;
         } else {
           actionExtra = `<span style="font-size:11px;color:var(--gray);margin-left:4px">No screening consent</span>`;
         }
+      }
+
+      // Approval (Phase 3) — most recent decision, if any.
+      const approval = (a.approvals||[]).slice().sort((x,y)=>new Date(y.created_at)-new Date(x.created_at))[0];
+      let approvalBadge = '';
+      if (approval) {
+        approvalBadge = approval.decision === 'approved'
+          ? ` <span class="badge-approved">Approved by Cyril</span>`
+          : ` <span class="badge-declined">Declined</span>`;
+      }
+      // Approval actions: review once screening is complete; summary once approved.
+      if (approval) {
+        if (approval.decision === 'approved') {
+          actionExtra += `<button type="button" class="contact-btn" style="margin-left:4px;background:#ecfdf5;color:#047857" onclick="tenantSummary('${a.id}')">Tenant Summary</button>`;
+        }
+        actionExtra += `<button type="button" class="contact-btn" style="margin-left:4px" onclick="openApproval('${a.id}')">Re-review</button>`;
+      } else if (latest && latest.status === 'completed') {
+        actionExtra += `<button type="button" class="contact-btn" style="margin-left:4px;background:var(--navy);color:#fff" onclick="openApproval('${a.id}')">Review for approval</button>`;
       }
 
       return `<tr>
@@ -1417,7 +1464,7 @@ async function loadApplicants() {
         <td>${escapeHtml(want||'—')}</td>
         <td>${moveIn}</td>
         <td>${matchCell}</td>
-        <td>${escapeHtml(APPLICANT_STAGE_LABEL[a.stage]||a.stage||'New')}</td>
+        <td>${escapeHtml(APPLICANT_STAGE_LABEL[a.stage]||a.stage||'New')}${approvalBadge}</td>
         <td>${applied}</td>
         <td>${screenCell}</td>
         <td style="white-space:nowrap">
@@ -1434,8 +1481,9 @@ async function loadApplicants() {
 }
 
 // Agent-initiated SingleKey screening request (Phase 2). Safe to click any
-// time — until SINGLEKEY_API_TOKEN is set in Netlify the function returns a
-// clear "not configured yet" message instead of failing silently.
+// time. In API mode it opens SingleKey's embedded flow; in manual mode (no
+// SINGLEKEY_API_TOKEN yet) it logs the request so you can run it through your
+// SingleKey account and record the outcome with "Mark result".
 async function requestScreening(id, btn) {
   const original = btn.textContent;
   btn.disabled = true;
@@ -1444,13 +1492,168 @@ async function requestScreening(id, btn) {
     const data = await orpRequestScreening(id);
     await loadApplicants();
     if (data.link) window.open(data.link, '_blank');
+    else if (data.mode === 'manual') alert('Screening logged. Run it through your SingleKey account, then use "Mark result" to record the outcome.');
+    else if (data.reused) alert('A screening is already in progress for this applicant.');
   } catch (e) {
     btn.disabled = false;
     btn.textContent = original;
-    if (e.status === 503) alert("Screening isn't live yet — still waiting on SingleKey API access. This button will start working automatically once that's configured.");
-    else if (e.status === 409) alert("This applicant hasn't consented to screening yet.");
+    if (e.status === 409) alert("This applicant hasn't consented to screening yet.");
     else alert('Could not start screening: ' + e.message);
   }
+}
+
+// Record a screening outcome by hand (manual mode / before the webhook is live).
+// Stores only a short summary + optional link — never raw report contents.
+async function markScreening(screeningId, btn) {
+  const pass = confirm('Did the applicant PASS screening?\n\nOK = Pass · Cancel = Needs review / failed');
+  const status = pass ? 'completed' : 'failed';
+  const resultSummary = pass ? 'Pass' : 'Review';
+  const reportUrl = (prompt('Optional: paste the SingleKey report link (leave blank to skip):', '') || '').trim();
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    await orpUpdateScreening(screeningId, { status, resultSummary, reportUrl });
+    await loadApplicants();
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = original;
+    alert('Could not save result: ' + e.message);
+  }
+}
+
+// ── APPROVAL (Phase 3: Approved) ─────────────────────────────────────
+// Cache of the currently-loaded applicants, so the modal / summary can read a
+// full record by id without re-querying.
+let _applicants = [];
+function getApplicant(id) { return _applicants.find(a => a.id === id) || null; }
+
+// Fixed, objective criteria applied to every applicant (Ontario Human Rights
+// Code: consistent standards, no protected grounds). Edit here to change the
+// checklist for everyone — the ticked set is stored on each approval.
+const APPROVAL_CRITERIA = [
+  ['identity',  'Identity verified (government photo ID)'],
+  ['income',    'Income / employment verified'],
+  ['references','Rental history & references checked'],
+  ['screening', 'Screening completed with an acceptable result'],
+  ['application','Application complete (required fields & documents)'],
+  ['deposit',   'First & last month’s deposit confirmed'],
+];
+let _approvalApplicantId = null;
+
+function openApproval(id) {
+  const a = getApplicant(id);
+  if (!a) return;
+  _approvalApplicantId = id;
+  document.getElementById('approvalWho').textContent =
+    `${a.name || 'Applicant'}${a.email ? ' · ' + a.email : ''}`;
+  // Pre-tick from any prior decision so a re-review starts where it left off.
+  const prior = (a.approvals||[]).slice().sort((x,y)=>new Date(y.created_at)-new Date(x.created_at))[0];
+  const priorChecks = (prior && prior.criteria_checklist) || {};
+  document.getElementById('approvalCriteria').innerHTML = APPROVAL_CRITERIA.map(([key,label]) =>
+    `<div class="crit-item">
+       <input type="checkbox" id="crit_${key}" ${priorChecks[key] ? 'checked' : ''}>
+       <label for="crit_${key}">${escapeHtml(label)}</label>
+     </div>`).join('');
+  document.getElementById('approvalNotes').value = (prior && prior.notes) || '';
+  document.getElementById('approvalModal').classList.add('open');
+}
+function closeApproval() {
+  document.getElementById('approvalModal').classList.remove('open');
+  _approvalApplicantId = null;
+}
+async function submitApproval(decision) {
+  const id = _approvalApplicantId;
+  if (!id) return;
+  const criteria = {};
+  for (const [key] of APPROVAL_CRITERIA) criteria[key] = !!document.getElementById('crit_' + key)?.checked;
+  const notes = document.getElementById('approvalNotes').value.trim();
+  if (decision === 'approved' && !Object.values(criteria).every(Boolean)) {
+    if (!confirm('Not every criterion is checked. Approve and issue the badge anyway?')) return;
+  }
+  const approveBtn = document.getElementById('approvalApproveBtn');
+  const declineBtn = document.getElementById('approvalDeclineBtn');
+  approveBtn.disabled = declineBtn.disabled = true;
+  try {
+    await orpSaveApproval(id, { decision, criteria, notes });
+    closeApproval();
+    await loadApplicants();
+  } catch (e) {
+    alert('Could not save decision: ' + (e.message || e));
+  } finally {
+    approveBtn.disabled = declineBtn.disabled = false;
+  }
+}
+
+// One-click Tenant Summary — opens a clean, printable page (print → Save as PDF).
+// Pulls only what's already on the record; no raw screening report is included.
+function tenantSummary(id) {
+  const a = getApplicant(id);
+  if (!a) return;
+  const approval = (a.approvals||[]).slice().sort((x,y)=>new Date(y.created_at)-new Date(x.created_at))[0];
+  const screening = (a.screenings||[]).slice().sort((x,y)=>new Date(y.requested_at)-new Date(x.requested_at))[0];
+  const best = (a.applications||[]).slice().sort((x,y)=>(y.match_score||0)-(x.match_score||0))[0];
+  const u = (best && best.units) || {};
+  const fmtDate = d => d ? new Date(d).toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}) : '—';
+  const esc = s => escapeHtml(s == null ? '' : s);
+  const row = (k,v) => `<tr><th>${esc(k)}</th><td>${v}</td></tr>`;
+  const critRows = approval && approval.criteria_checklist
+    ? APPROVAL_CRITERIA.map(([key,label]) =>
+        `<li>${approval.criteria_checklist[key] ? '✓' : '—'} ${esc(label)}</li>`).join('')
+    : '';
+  const badge = approval && approval.decision === 'approved'
+    ? `<div class="badge">✓ Approved by Cyril</div>`
+    : `<div class="badge decl">Not approved</div>`;
+  const wantStr = [a.beds_wanted && a.beds_wanted !== 'Any' ? a.beds_wanted + ' BR' : 'Any beds',
+                   a.budget ? '$'+parseInt(a.budget).toLocaleString()+'/mo' : null,
+                   a.neighbourhood && a.neighbourhood !== 'Any' ? a.neighbourhood : null].filter(Boolean).join(' · ');
+  const html = `<!doctype html><html><head><meta charset="utf-8">
+    <title>Tenant Summary — ${esc(a.name||'')}</title>
+    <style>
+      *{box-sizing:border-box} body{font-family:-apple-system,Segoe UI,Inter,sans-serif;color:#16273a;max-width:720px;margin:32px auto;padding:0 24px;line-height:1.5}
+      h1{font-size:22px;margin:0} .muted{color:#64748b;font-size:13px}
+      .badge{display:inline-block;margin:14px 0;padding:6px 14px;border-radius:999px;background:#ecfdf5;color:#047857;font-weight:800}
+      .badge.decl{background:#fef2f2;color:#b91c1c}
+      table{border-collapse:collapse;width:100%;margin:8px 0 20px} th,td{text-align:left;padding:7px 10px;border-bottom:1px solid #eef2f7;font-size:14px;vertical-align:top}
+      th{width:40%;color:#475569;font-weight:600} h2{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:#475569;margin:22px 0 6px}
+      ul{margin:6px 0;padding-left:18px} li{font-size:14px;margin:3px 0}
+      .foot{margin-top:28px;font-size:11px;color:#94a3b8} @media print{body{margin:0}.noprint{display:none}}
+      .btn{background:#003a8c;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer}
+    </style></head><body>
+    <button class="btn noprint" onclick="window.print()" style="float:right">Print / Save PDF</button>
+    <h1>Tenant Summary</h1>
+    <div class="muted">Ottawa Rental Plug · Prepared ${fmtDate(new Date().toISOString())}</div>
+    ${badge}
+    <h2>Applicant</h2>
+    <table>
+      ${row('Name', esc(a.name))}
+      ${row('Email', esc(a.email))}
+      ${row('Phone', esc(a.phone))}
+      ${row('Looking for', esc(wantStr))}
+      ${row('Move-in', fmtDate(a.move_in))}
+    </table>
+    <h2>Matched unit</h2>
+    <table>
+      ${row('Unit', best ? esc([u.beds!=null?u.beds+'BR':'', u.type].filter(Boolean).join(' ') || 'Unit') : '—')}
+      ${row('Area', esc(u.neighbourhood||'—'))}
+      ${row('Rent', u.price!=null ? '$'+Number(u.price).toLocaleString()+'/mo' : '—')}
+      ${row('Match score', best && best.match_score!=null ? best.match_score + '/100' : '—')}
+    </table>
+    <h2>Screening</h2>
+    <table>
+      ${row('Status', screening ? esc(screening.status) : '—')}
+      ${row('Result', screening && screening.result_summary ? esc(screening.result_summary) : '—')}
+      ${row('Provider', 'SingleKey')}
+    </table>
+    ${approval ? `<h2>Approval criteria</h2><ul>${critRows}</ul>
+      ${approval.notes ? `<p class="muted">Notes: ${esc(approval.notes)}</p>` : ''}
+      <p class="muted">Decision ${esc(approval.decision)} · ${fmtDate(approval.created_at)}${approval.decided_by ? ' · by ' + esc(approval.decided_by) : ''}</p>` : ''}
+    <div class="foot">The “Approved by Cyril” badge reflects a consistent screening process and is not a guarantee of tenancy. Screened once with the applicant’s consent; the full credit/background report is held by SingleKey.</div>
+    </body></html>`;
+  const w = window.open('', '_blank');
+  if (!w) { alert('Please allow pop-ups to open the Tenant Summary.'); return; }
+  w.document.write(html);
+  w.document.close();
 }
 
 // Publish the dashboard's vacancies into the cloud `units` table so incoming
@@ -1522,5 +1725,31 @@ window.addEventListener('DOMContentLoaded', async () => {
   } catch (e) { console.error('Session resume failed', e); }
 });
 </script>
+
+<!-- APPROVAL MODAL (Phase 3) -->
+<div class="modal-overlay" id="approvalModal" onclick="if(event.target===this)closeApproval()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title">Approval decision</div>
+      <div class="modal-sub" id="approvalWho">—</div>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">Fixed criteria — apply to every applicant</div>
+      <div id="approvalCriteria"></div>
+      <textarea class="modal-textarea" id="approvalNotes" placeholder="Notes (optional) — objective, file-relevant only."></textarea>
+      <div class="modal-note">
+        Apply these same criteria to <strong>every</strong> applicant. Do not consider Ontario Human Rights Code
+        protected grounds (race, ancestry, place of origin, colour, ethnic origin, citizenship, creed, sex, sexual
+        orientation, gender identity/expression, age, marital or family status, disability, or receipt of public
+        assistance). The “Approved by Cyril” badge is a screening summary, not a guarantee.
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeApproval()">Cancel</button>
+      <button class="btn-decline" id="approvalDeclineBtn" onclick="submitApproval('declined')">Decline</button>
+      <button class="btn-approve" id="approvalApproveBtn" onclick="submitApproval('approved')">Approve &amp; issue badge</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

@@ -54,9 +54,9 @@ summary + link, never the raw credit/background report.
 ## Phases
 
 - **Phase 0 — Foundation.** Supabase project, schema, Cyril auth, migrate existing localStorage data, swap storage layer. *Outcome: portal works identically but cloud-backed and phone-synced — fixes the localStorage problem on its own.*
-- **Phase 1 — Apply + Match.** Branded application form → `applicants`; auto-match writes `applications`.
-- **Phase 2 — Screen + place.** SingleKey integration + consent capture + screening status on the record.
-- **Phase 3 — Approved.** Fixed criteria checklist (Human Rights Code defensible), decision, badge issuance, one-click Tenant Summary PDF.
+- **Phase 1 — Apply + Match.** ✅ Branded application form → `applicants`; auto-match writes `applications`.
+- **Phase 2 — Screen + place.** ✅ Consent-gated SingleKey screening from the Applicants tab (agent-token auth); `screenings` rows store summary + link only. Ships with a **manual mode** that works today via your SingleKey account; flips to the live embedded flow + webhook once `SINGLEKEY_API_TOKEN` is set. See [`phase2-setup.md`](phase2-setup.md).
+- **Phase 3 — Approved.** ✅ Fixed criteria checklist (Human Rights Code defensible), approve/decline decision → `approvals`, "Approved by Cyril" badge, and a one-click Tenant Summary PDF. See [`phase3-approved.md`](phase3-approved.md).
 - **Phase 4 — Nurture / CRM.** Stages, activity timeline, follow-up tags, future-buyer pipeline seed.
 - **Later.** Comms hub (SMS/email), payments (Stripe), landlord client portal (RLS), compliant form mapping, mortgage affordability triggers.
 
@@ -73,7 +73,9 @@ summary + link, never the raw credit/background report.
 - Data minimization + retention limits; heavy PII stays with SingleKey.
 - "Approved by Cyril" badge must not imply a guarantee.
 
-## Open items to confirm before Phase 2
+## Open items to confirm before Phase 2 goes *live* (manual mode runs without them)
 
-- SingleKey partner/API signup + API key, exact embedded-flow endpoints, and webhook availability.
+- SingleKey API token (info@singlekey.com) + confirm the embedded-flow request/response
+  and webhook field names against their sandbox. Adjust in `screening.js` and
+  `screening-webhook.js` if they differ.
 - OREA Form 410 path deferred — use WEBForms export or free government forms (compliant).
