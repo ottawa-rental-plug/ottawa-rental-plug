@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Apply for an Ottawa Rental | Ottawa Rental Plug</title>
-  <meta name="description" content="Apply for an Ottawa rental in minutes. Tell us what you're looking for and Ottawa Rental Plug will match you to available units and follow up fast."/>
+  <title>Rental Application | Ottawa Rental Plug</title>
+  <meta name="description" content="Complete your Ottawa Rental Plug rental application for a specific unit — Form 410-equivalent info, reviewed by a licensed agent."/>
   <link rel="canonical" href="https://ottawarentalplug.com/apply.html"/>
   <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
   <link rel="icon" type="image/png" href="favicon.png"/>
@@ -52,27 +52,50 @@
     }
     .btn-blue:hover { box-shadow:0 8px 36px rgba(2,132,199,.55); transform:translateY(-2px); }
     .btn-blue:disabled { opacity:.6; cursor:not-allowed; transform:none; }
-    .opt-btn.selected { border-color:#38bdf8 !important; background:rgba(56,189,248,.16) !important; color:#fff; }
+    .btn-ghost {
+      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+      transition:background .2s; min-height:48px;
+    }
+    .btn-ghost:hover { background:rgba(255,255,255,.1); }
     .field-input { background:rgba(46,61,76,.8); }
     .field-input:focus { border-color:#38bdf8; outline:none; }
     @media (max-width: 768px) { input, select, textarea { font-size: 16px !important; } }
-    /* Two-column apply layout (precompiled Tailwind lacks lg:grid-cols-5) */
     .apply-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; align-items: start; }
     @media (min-width: 1024px) {
       .apply-grid { grid-template-columns: 2fr 3fr; }
       .apply-aside { position: sticky; top: 7rem; }
     }
-    /* Sizes/columns missing from the precompiled Tailwind subset */
     .w-7 { width: 1.75rem; } .w-11 { width: 2.75rem; } .h-11 { height: 2.75rem; }
     .w-16 { width: 4rem; } .h-16 { height: 4rem; }
     @media (min-width: 640px) { .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    /* Remove the boxed up/down spinner on number fields */
     input[type=number] { -moz-appearance: textfield; appearance: textfield; }
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    /* Wizard */
+    .step { display: none; }
+    .step.active { display: block; }
+    .why-note {
+      font-size: 12px; color: #93c5fd; background: rgba(56,189,248,.08);
+      border: 1px solid rgba(56,189,248,.2); border-radius: 10px; padding: 10px 14px;
+      margin-bottom: 20px; line-height: 1.5;
+    }
+    .progress-track { display: flex; gap: 6px; margin-bottom: 24px; }
+    .progress-seg { flex: 1; height: 4px; border-radius: 999px; background: rgba(255,255,255,.12); transition: background .3s; }
+    .progress-seg.done, .progress-seg.active { background: #38bdf8; }
+    .progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 20px; }
+    .progress-labels span.on { color: #38bdf8; font-weight: 700; }
   </style>
 </head>
 <body class="font-sans text-white antialiased">
+
+  <script>
+    // This form is per-unit only. No unit in the URL means there's nothing
+    // to apply to — send them to pick a real listing first.
+    if (!new URLSearchParams(location.search).get('unit')) {
+      location.replace('listings.html');
+    }
+  </script>
 
   <!-- NAV -->
   <nav class="fixed top-0 left-0 right-0 z-50" style="background:rgba(12,18,32,0.85);backdrop-filter:blur(18px);border-bottom:1px solid rgba(2,132,199,0.15);">
@@ -94,16 +117,12 @@
     <div class="max-w-3xl mx-auto text-center">
       <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-5" style="background:rgba(56,189,248,.12); border:1px solid rgba(56,189,248,.3);">
         <span class="w-2 h-2 rounded-full bg-plug-blueLight animate-pulse"></span>
-        <span class="text-xs font-bold tracking-widest uppercase text-plug-blueLight">Free · Fast Reply · Real Listings</span>
+        <span class="text-xs font-bold tracking-widest uppercase text-plug-blueLight">Rental Application</span>
       </span>
-      <h1 class="font-serif font-bold leading-tight mb-5" style="font-size:clamp(2rem,5.5vw,3.75rem);">
-        Apply for Your Next<br/>
-        <span class="gradient-text">Ottawa Rental</span>
+      <h1 class="font-serif font-bold leading-tight mb-4" style="font-size:clamp(2rem,5.5vw,3.75rem);">
+        Your Rental <span class="gradient-text">Application</span>
       </h1>
-      <p class="text-base sm:text-lg text-gray-300 leading-relaxed font-light max-w-xl mx-auto mb-3">
-        Tell us what you're looking for. We'll <strong class="text-white">match you to available units</strong> and reach out fast — usually the same day.
-      </p>
-      <p class="text-xs text-gray-500">Takes about a minute · No fee to apply · Handled by a licensed agent</p>
+      <div id="unitHeader" class="glass rounded-2xl px-6 py-4 max-w-lg mx-auto text-sm text-gray-300">Loading unit details…</div>
     </div>
   </section>
 
@@ -122,11 +141,11 @@
           <ol class="space-y-4">
             <li class="flex gap-3">
               <span class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:linear-gradient(135deg,#0284c7,#38bdf8);">1</span>
-              <div><div class="font-semibold text-white text-sm">Apply in a minute</div><div class="text-xs text-gray-400 leading-relaxed">Tell us what you need — no fee, no account.</div></div>
+              <div><div class="font-semibold text-white text-sm">Complete this application</div><div class="text-xs text-gray-400 leading-relaxed">Covers what Ontario's Form 410 asks for, in plain steps.</div></div>
             </li>
             <li class="flex gap-3">
               <span class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:linear-gradient(135deg,#0284c7,#38bdf8);">2</span>
-              <div><div class="font-semibold text-white text-sm">We match you</div><div class="text-xs text-gray-400 leading-relaxed">Your profile is scored against live Ottawa units.</div></div>
+              <div><div class="font-semibold text-white text-sm">Cyril reviews it</div><div class="text-xs text-gray-400 leading-relaxed">A licensed agent looks at your application for this unit.</div></div>
             </li>
             <li class="flex gap-3">
               <span class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:linear-gradient(135deg,#c9a84c,#e0be72);">3</span>
@@ -155,77 +174,274 @@
       <div>
       <div id="stepForm">
         <div class="glass rounded-3xl p-6 sm:p-8">
+
+          <div class="progress-track">
+            <div class="progress-seg active" data-seg="1"></div>
+            <div class="progress-seg" data-seg="2"></div>
+            <div class="progress-seg" data-seg="3"></div>
+            <div class="progress-seg" data-seg="4"></div>
+          </div>
+          <div class="progress-labels">
+            <span class="on" data-label="1">You &amp; unit</span>
+            <span data-label="2">Employment</span>
+            <span data-label="3">Address &amp; refs</span>
+            <span data-label="4">Review</span>
+          </div>
+
           <form id="applyForm" class="space-y-6" novalidate>
             <!-- Honeypot: real people leave this empty -->
             <p class="hidden" aria-hidden="true"><label>Company<input name="company" tabindex="-1" autocomplete="off"/></label></p>
 
-            <!-- Name / Email -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Your name</label>
-                <input type="text" id="name" required placeholder="First &amp; last" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
-              </div>
-              <div>
-                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Email</label>
-                <input type="email" id="email" required placeholder="you@email.com" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Phone <span class="text-gray-500 normal-case font-normal">(optional — fastest reply)</span></label>
-              <input type="tel" id="phone" placeholder="(613) 000-0000" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
-            </div>
+            <!-- ══ STEP 1 — You & this unit ══ -->
+            <div class="step active" data-step="1">
+              <p class="why-note">Basic contact info so we can reach you about this unit, plus who'll be living there.</p>
 
-            <hr style="border-color:rgba(255,255,255,.08)"/>
-
-            <!-- Beds / Budget -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Bedrooms needed</label>
-                <select id="beds" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base font-medium transition-all">
-                  <option value="Any">Any</option>
-                  <option value="0">Studio</option>
-                  <option value="1">1</option><option value="2">2</option>
-                  <option value="3">3</option><option value="4">4+</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Max budget / mo</label>
-                <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg font-semibold">$</span>
-                  <input type="number" id="budget" min="0" step="50" placeholder="2,200" class="field-input w-full border border-plug-border rounded-xl pl-9 pr-4 py-4 text-white text-base transition-all"/>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Your name</label>
+                  <input type="text" id="name" placeholder="First &amp; last" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Email</label>
+                  <input type="email" id="email" placeholder="you@email.com" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
                 </div>
               </div>
+              <div class="mb-4">
+                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Phone <span class="text-gray-500 normal-case font-normal">(optional — fastest reply)</span></label>
+                <input type="tel" id="phone" placeholder="(613) 000-0000" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Move-in date</label>
+                  <input type="date" id="moveIn" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Number of occupants</label>
+                  <input type="number" id="occupants" min="1" step="1" placeholder="1" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+              </div>
+              <label class="flex items-start gap-3 text-sm text-gray-300 leading-relaxed cursor-pointer mb-2">
+                <input type="checkbox" id="hasPets" class="mt-1 w-4 h-4 flex-shrink-0"/>
+                <span>I have a pet (dog, cat, etc.)</span>
+              </label>
+              <div id="petsDetailWrap" class="hidden mb-2">
+                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Pet details</label>
+                <input type="text" id="petsDetail" placeholder="e.g. 1 small dog, 25 lbs" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+              </div>
+
+              <div class="flex justify-end mt-6">
+                <button type="button" class="btn-blue px-8 py-3 rounded-xl font-bold text-white text-sm" onclick="goToStep(2)">Continue →</button>
+              </div>
             </div>
 
-            <!-- Neighbourhood / Move-in -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Preferred area</label>
-                <select id="neighbourhood" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base font-medium transition-all">
-                  <option value="Any">Any area</option>
-                  <option>Glebe</option><option>Westboro</option><option>Downtown</option><option>Centretown</option>
-                  <option>Kanata</option><option>Hazeldean</option><option>Stittsville</option><option>Nepean</option>
-                  <option>Barrhaven</option><option>Orleans</option><option>Vanier</option><option>Sandy Hill</option>
-                  <option>Gloucester</option><option>Other Ottawa</option>
+            <!-- ══ STEP 2 — Employment & income ══ -->
+            <div class="step" data-step="2">
+              <p class="why-note">Ontario's Application to Rent (Form 410) requires proof you can afford the rent — we use this to calculate an affordability check.</p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Gross monthly income</label>
+                  <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg font-semibold">$</span>
+                    <input type="number" id="income" min="0" step="50" placeholder="5,500" class="field-input w-full border border-plug-border rounded-xl pl-9 pr-4 py-4 text-white text-base transition-all"/>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Employment status</label>
+                  <select id="employmentStatus" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base font-medium transition-all">
+                    <option value="full_time">Full-time</option>
+                    <option value="part_time">Part-time</option>
+                    <option value="self_employed">Self-employed</option>
+                    <option value="student">Student</option>
+                    <option value="retired">Retired</option>
+                    <option value="unemployed">Unemployed</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Employer <span class="text-gray-500 normal-case font-normal">(optional)</span></label>
+                  <input type="text" id="employer" placeholder="Company name" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Job title <span class="text-gray-500 normal-case font-normal">(optional)</span></label>
+                  <input type="text" id="jobTitle" placeholder="e.g. Nurse, Software Developer" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+              </div>
+              <div class="mb-4">
+                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Time at current job</label>
+                <select id="employmentLength" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base font-medium transition-all">
+                  <option value="<6mo">Less than 6 months</option>
+                  <option value="6-12mo">6–12 months</option>
+                  <option value="1-2yr">1–2 years</option>
+                  <option value="2yr+">2+ years</option>
                 </select>
               </div>
-              <div>
-                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Move-in date <span class="text-gray-500 normal-case font-normal">(optional)</span></label>
-                <input type="date" id="moveIn" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+              <label class="flex items-start gap-3 text-sm text-gray-300 leading-relaxed cursor-pointer mb-2">
+                <input type="checkbox" id="hasAdditionalIncome" class="mt-1 w-4 h-4 flex-shrink-0"/>
+                <span>I have additional income <span class="text-gray-500">(optional — child support, investments, a second job, etc.)</span></span>
+              </label>
+              <div id="additionalIncomeWrap" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Source</label>
+                  <input type="text" id="additionalIncomeSource" placeholder="e.g. Freelance design" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Monthly amount</label>
+                  <input type="number" id="additionalIncomeAmount" min="0" step="50" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+              </div>
+
+              <div class="flex justify-between mt-6">
+                <button type="button" class="btn-ghost px-6 py-3 rounded-xl font-semibold text-white text-sm" onclick="goToStep(1)">← Back</button>
+                <button type="button" class="btn-blue px-8 py-3 rounded-xl font-bold text-white text-sm" onclick="goToStep(3)">Continue →</button>
               </div>
             </div>
 
-            <!-- Screening consent -->
-            <label class="flex items-start gap-3 text-sm text-gray-300 leading-relaxed cursor-pointer">
-              <input type="checkbox" id="consentScreening" class="mt-1 w-4 h-4 flex-shrink-0"/>
-              <span>I consent to a credit &amp; background check (via SingleKey) if my application moves forward for a specific unit. I understand no check is run until then.</span>
-            </label>
+            <!-- ══ STEP 3 — Address history & references ══ -->
+            <div class="step" data-step="3">
+              <p class="why-note">This mirrors Form 410's rental history and references section — it's how landlords confirm you're a reliable tenant.</p>
 
-            <button type="submit" id="submitBtn" class="btn-blue w-full py-4 rounded-xl font-bold text-white text-base tracking-wide flex items-center justify-center gap-2">
-              Submit Application →
-            </button>
-            <p id="formError" class="hidden text-sm text-center" style="color:#fca5a5"></p>
-            <p class="text-xs text-plug-sky text-center">No fee to apply · Your details stay private · Reviewed by a licensed agent</p>
+              <div class="text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-3">Current address</div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs text-gray-400 font-semibold mb-2">Street address</label>
+                  <input type="text" id="curAddress" placeholder="123 Main St, Apt 2" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-400 font-semibold mb-2">City</label>
+                  <input type="text" id="curCity" placeholder="Ottawa" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-400 font-semibold mb-2">Postal code</label>
+                  <input type="text" id="curPostal" placeholder="K1A 0B1" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-400 font-semibold mb-2">Time at this address</label>
+                  <select id="curTimeThere" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base font-medium transition-all">
+                    <option value="<6mo">Less than 6 months</option>
+                    <option value="6-12mo">6–12 months</option>
+                    <option value="1-2yr">1–2 years</option>
+                    <option value="2yr+">2+ years</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-400 font-semibold mb-2">Monthly rent paid <span class="text-gray-500 normal-case font-normal">(optional)</span></label>
+                  <input type="number" id="curRent" min="0" step="25" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+              </div>
+              <label class="flex items-start gap-3 text-sm text-gray-300 leading-relaxed cursor-pointer mb-3">
+                <input type="checkbox" id="firstTimeRenting" class="mt-1 w-4 h-4 flex-shrink-0"/>
+                <span>This is my first time renting / no current landlord</span>
+              </label>
+              <div id="curLandlordWrap" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-xs text-gray-400 font-semibold mb-2">Current landlord name</label>
+                  <input type="text" id="curLandlordName" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-400 font-semibold mb-2">Current landlord phone</label>
+                  <input type="tel" id="curLandlordPhone" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+              </div>
+              <div class="mb-6">
+                <label class="block text-xs text-gray-400 font-semibold mb-2">Reason for moving <span class="text-gray-500 normal-case font-normal">(optional)</span></label>
+                <input type="text" id="reasonMoving" placeholder="e.g. Relocating for work" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+              </div>
+
+              <div id="prevAddressBlock" class="hidden">
+                <hr style="border-color:rgba(255,255,255,.08); margin-bottom:20px"/>
+                <div class="text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-3">Previous address <span class="text-gray-500 normal-case font-normal">(optional — since you've been at your current address less than 2 years)</span></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs text-gray-400 font-semibold mb-2">Street address</label>
+                    <input type="text" id="prevAddress" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-400 font-semibold mb-2">City</label>
+                    <input type="text" id="prevCity" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-400 font-semibold mb-2">Landlord name</label>
+                    <input type="text" id="prevLandlordName" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-400 font-semibold mb-2">Landlord phone</label>
+                    <input type="tel" id="prevLandlordPhone" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                  </div>
+                </div>
+              </div>
+
+              <hr style="border-color:rgba(255,255,255,.08); margin-bottom:20px"/>
+              <div class="text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-3">Emergency contact</div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-xs text-gray-400 font-semibold mb-2">Name</label>
+                  <input type="text" id="ecName" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-400 font-semibold mb-2">Phone</label>
+                  <input type="tel" id="ecPhone" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs text-gray-400 font-semibold mb-2">Relationship</label>
+                  <input type="text" id="ecRelationship" placeholder="e.g. Parent, sibling, friend" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+              </div>
+
+              <hr style="border-color:rgba(255,255,255,.08); margin-bottom:20px"/>
+              <div class="text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-3">Personal references <span class="text-gray-500 normal-case font-normal">(optional)</span></div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
+                <input type="text" id="ref1Name" placeholder="Reference 1 — name" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                <input type="tel" id="ref1Phone" placeholder="Reference 1 — phone" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <input type="text" id="ref2Name" placeholder="Reference 2 — name" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                <input type="tel" id="ref2Phone" placeholder="Reference 2 — phone" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+              </div>
+
+              <hr style="border-color:rgba(255,255,255,.08); margin-bottom:20px"/>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Vehicle <span class="text-gray-500 normal-case font-normal">(optional)</span></label>
+                  <input type="text" id="vehicleMakeModel" placeholder="Make &amp; model" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Licence plate <span class="text-gray-500 normal-case font-normal">(optional)</span></label>
+                  <input type="text" id="vehiclePlate" class="field-input w-full border border-plug-border rounded-xl px-4 py-4 text-white text-base transition-all"/>
+                </div>
+              </div>
+              <label class="flex items-start gap-3 text-sm text-gray-300 leading-relaxed cursor-pointer">
+                <input type="checkbox" id="isSmoker" class="mt-1 w-4 h-4 flex-shrink-0"/>
+                <span>I am a smoker</span>
+              </label>
+
+              <div class="flex justify-between mt-6">
+                <button type="button" class="btn-ghost px-6 py-3 rounded-xl font-semibold text-white text-sm" onclick="goToStep(2)">← Back</button>
+                <button type="button" class="btn-blue px-8 py-3 rounded-xl font-bold text-white text-sm" onclick="goToStep(4)">Continue →</button>
+              </div>
+            </div>
+
+            <!-- ══ STEP 4 — Review & consent ══ -->
+            <div class="step" data-step="4">
+              <p class="why-note">Quick check before you submit — make sure everything below looks right.</p>
+              <div id="reviewSummary" class="text-sm text-gray-300 space-y-2 mb-6"></div>
+
+              <hr style="border-color:rgba(255,255,255,.08); margin-bottom:20px"/>
+              <label class="flex items-start gap-3 text-sm text-gray-300 leading-relaxed cursor-pointer">
+                <input type="checkbox" id="consentScreening" class="mt-1 w-4 h-4 flex-shrink-0"/>
+                <span>I consent to a credit &amp; background check (via SingleKey) for this application. I understand no check is run until Cyril requests it.</span>
+              </label>
+
+              <div class="flex justify-between mt-6">
+                <button type="button" class="btn-ghost px-6 py-3 rounded-xl font-semibold text-white text-sm" onclick="goToStep(3)">← Back</button>
+                <button type="submit" id="submitBtn" class="btn-blue px-8 py-3 rounded-xl font-bold text-white text-sm">Submit Application →</button>
+              </div>
+            </div>
+
+            <p id="formError" class="hidden text-sm text-center mt-4" style="color:#fca5a5"></p>
+            <p class="text-xs text-plug-sky text-center mt-4">No fee to apply · Your details stay private · Reviewed by a licensed agent</p>
           </form>
         </div>
       </div>
@@ -238,9 +454,9 @@
           </div>
           <h2 class="font-serif font-bold text-2xl sm:text-3xl mb-3">Application received.</h2>
           <p id="successMsg" class="text-gray-300 leading-relaxed max-w-md mx-auto mb-6">
-            Thanks — we've got your details and we're matching you to available Ottawa units now. We'll reach out shortly, usually <strong class="text-white">within one business day</strong>.
+            Thanks — Cyril has your application and will review it shortly, usually <strong class="text-white">within one business day</strong>.
           </p>
-          <a href="search-rentals.html" class="text-plug-blueLight hover:text-white text-sm font-semibold">Browse available rentals →</a>
+          <a href="listings.html" class="text-plug-blueLight hover:text-white text-sm font-semibold">View other available units →</a>
         </div>
       </div>
 
@@ -256,75 +472,202 @@
       <p class="text-xs text-gray-500 mt-2">
         <a href="tel:+16136013005" class="hover:text-plug-blueLight">(613) 601-3005</a> ·
         <a href="property-management.html" class="hover:text-plug-blueLight">Property Management</a> ·
-        <a href="search-rentals.html" class="hover:text-plug-blueLight">Search Rentals</a>
+        <a href="listings.html" class="hover:text-plug-blueLight">Current Availability</a>
       </p>
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
   <script>
-    const form = document.getElementById('applyForm');
+    const UNIT_ID = new URLSearchParams(location.search).get('unit');
+    let UNIT = null;
+
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    async function loadUnit() {
+      const el = document.getElementById('unitHeader');
+      try {
+        const { data, error } = await sb.from('units')
+          .select('id,beds,baths,type,price,neighbourhood,address,description')
+          .eq('id', UNIT_ID).eq('status', 'available').maybeSingle();
+        if (error) throw error;
+        if (!data) {
+          el.innerHTML = `This listing may no longer be available. <a href="listings.html" class="text-plug-blueLight font-semibold">View current availability →</a>`;
+          document.getElementById('stepForm').style.display = 'none';
+          return;
+        }
+        UNIT = data;
+        const bedsLabel = data.beds === 0 ? 'Studio' : (data.beds != null ? data.beds + 'BR' : '');
+        const parts = [bedsLabel, data.type, data.neighbourhood].filter(Boolean).join(' · ');
+        el.innerHTML = `<div class="font-semibold text-white">Applying for: ${escapeHtml(parts)}</div>
+          <div class="text-plug-blueLight font-bold mt-1">${data.price != null ? '$' + Math.round(data.price).toLocaleString() + '/mo' : ''}</div>
+          ${data.address ? `<div class="text-xs text-gray-400 mt-1">${escapeHtml(data.address)}</div>` : ''}`;
+      } catch (e) {
+        el.innerHTML = `Couldn't load this listing. <a href="listings.html" class="text-plug-blueLight font-semibold">View current availability →</a>`;
+        document.getElementById('stepForm').style.display = 'none';
+      }
+    }
+    if (UNIT_ID) loadUnit();
+
+    // ── Wizard navigation ──────────────────────────────────────────────
+    let currentStep = 1;
+    function goToStep(n) {
+      if (n > currentStep && !validateStep(currentStep)) return;
+      currentStep = n;
+      document.querySelectorAll('.step').forEach(s => s.classList.toggle('active', Number(s.dataset.step) === n));
+      document.querySelectorAll('.progress-seg').forEach(s => {
+        const seg = Number(s.dataset.seg);
+        s.classList.toggle('active', seg === n);
+        s.classList.toggle('done', seg < n);
+      });
+      document.querySelectorAll('.progress-labels span').forEach(s => s.classList.toggle('on', Number(s.dataset.label) === n));
+      if (n === 4) renderReview();
+      document.getElementById('stepForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    // Enter key on an early step advances instead of submitting the form.
+    document.getElementById('applyForm').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && currentStep < 4 && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        goToStep(currentStep + 1);
+      }
+    });
+
     const errEl = document.getElementById('formError');
+    function showError(msg) { errEl.textContent = msg; errEl.classList.remove('hidden'); errEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    function clearError() { errEl.classList.add('hidden'); }
     const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+    const val = (id) => document.getElementById(id).value.trim();
 
-    function showError(msg) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
+    function validateStep(n) {
+      clearError();
+      if (n === 1) {
+        if (!val('name')) { showError('Please enter your name.'); return false; }
+        if (!isEmail(val('email'))) { showError('Please enter a valid email address.'); return false; }
+        if (!val('moveIn')) { showError('Please choose a move-in date.'); return false; }
+      }
+      if (n === 2) {
+        if (!val('income') || Number(val('income')) <= 0) { showError('Please enter your gross monthly income.'); return false; }
+      }
+      if (n === 3) {
+        if (!val('curAddress') || !val('curCity') || !val('curPostal')) { showError('Please fill in your current address, city, and postal code.'); return false; }
+        if (!document.getElementById('firstTimeRenting').checked && (!val('curLandlordName') || !val('curLandlordPhone'))) {
+          showError('Please add your current landlord’s name and phone, or check "first time renting."'); return false;
+        }
+        if (!val('ecName') || !val('ecPhone')) { showError('Please add an emergency contact name and phone.'); return false; }
+      }
+      return true;
+    }
 
-    form.addEventListener('submit', async (e) => {
+    // ── Conditional sub-sections ────────────────────────────────────────
+    const hasPetsBox = document.getElementById('hasPets');
+    hasPetsBox.addEventListener('change', () => document.getElementById('petsDetailWrap').classList.toggle('hidden', !hasPetsBox.checked));
+
+    const addlIncomeBox = document.getElementById('hasAdditionalIncome');
+    addlIncomeBox.addEventListener('change', () => document.getElementById('additionalIncomeWrap').classList.toggle('hidden', !addlIncomeBox.checked));
+
+    const firstTimeBox = document.getElementById('firstTimeRenting');
+    firstTimeBox.addEventListener('change', () => document.getElementById('curLandlordWrap').classList.toggle('hidden', firstTimeBox.checked));
+
+    const timeThereSelect = document.getElementById('curTimeThere');
+    function updatePrevAddressVisibility() {
+      const short = ['<6mo', '6-12mo', '1-2yr'].includes(timeThereSelect.value);
+      document.getElementById('prevAddressBlock').classList.toggle('hidden', !short);
+    }
+    timeThereSelect.addEventListener('change', updatePrevAddressVisibility);
+    updatePrevAddressVisibility();
+
+    // ── Review step ──────────────────────────────────────────────────
+    function renderReview() {
+      const bedsLabel = UNIT ? (UNIT.beds === 0 ? 'Studio' : UNIT.beds + 'BR') : '';
+      const rows = [
+        ['Applying for', UNIT ? [bedsLabel, UNIT.type, UNIT.neighbourhood].filter(Boolean).join(' · ') + (UNIT.price != null ? ' — $' + Math.round(UNIT.price).toLocaleString() + '/mo' : '') : ''],
+        ['Name', val('name')], ['Email', val('email')], ['Phone', val('phone') || '—'],
+        ['Move-in', val('moveIn') || '—'], ['Occupants', val('occupants') || '1'],
+        ['Pets', hasPetsBox.checked ? (val('petsDetail') || 'Yes') : 'No'],
+        ['Monthly income', val('income') ? '$' + Number(val('income')).toLocaleString() : '—'],
+        ['Employment', document.getElementById('employmentStatus').selectedOptions[0].textContent],
+        ['Current address', [val('curAddress'), val('curCity'), val('curPostal')].filter(Boolean).join(', ') || '—'],
+        ['Emergency contact', [val('ecName'), val('ecPhone')].filter(Boolean).join(' · ') || '—'],
+      ];
+      document.getElementById('reviewSummary').innerHTML = rows.map(([k, v]) =>
+        `<div class="flex justify-between gap-4 border-b border-white/5 pb-2"><span class="text-gray-500">${escapeHtml(k)}</span><span class="text-white text-right">${escapeHtml(v)}</span></div>`
+      ).join('');
+    }
+
+    // ── Submit ──────────────────────────────────────────────────────
+    document.getElementById('applyForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      errEl.classList.add('hidden');
+      if (!validateStep(3)) { goToStep(3); return; }
+      clearError();
       const btn = document.getElementById('submitBtn');
 
       const payload = {
-        company:          document.querySelector('[name="company"]').value, // honeypot
-        name:             document.getElementById('name').value.trim(),
-        email:            document.getElementById('email').value.trim(),
-        phone:            document.getElementById('phone').value.trim(),
-        beds:             document.getElementById('beds').value,
-        budget:           document.getElementById('budget').value,
-        moveIn:           document.getElementById('moveIn').value,
-        neighbourhood:    document.getElementById('neighbourhood').value,
+        company: document.querySelector('[name="company"]').value, // honeypot
+        unitId: UNIT_ID,
+        name: val('name'), email: val('email'), phone: val('phone'),
+        moveIn: val('moveIn'), occupants: val('occupants'),
+        hasPets: hasPetsBox.checked, petsDetail: val('petsDetail'),
+        income: val('income'), employmentStatus: document.getElementById('employmentStatus').value,
+        employer: val('employer'), jobTitle: val('jobTitle'), employmentLength: document.getElementById('employmentLength').value,
+        additionalIncome: addlIncomeBox.checked ? { source: val('additionalIncomeSource'), amount: val('additionalIncomeAmount') } : null,
+        addressHistory: {
+          current: {
+            address: val('curAddress'), city: val('curCity'), postal: val('curPostal'),
+            time_there: timeThereSelect.value, monthly_rent: val('curRent'),
+            landlord_name: firstTimeBox.checked ? '' : val('curLandlordName'),
+            landlord_phone: firstTimeBox.checked ? '' : val('curLandlordPhone'),
+            reason_leaving: val('reasonMoving'),
+          },
+          previous: !document.getElementById('prevAddressBlock').classList.contains('hidden') && val('prevAddress') ? {
+            address: val('prevAddress'), city: val('prevCity'),
+            landlord_name: val('prevLandlordName'), landlord_phone: val('prevLandlordPhone'),
+          } : null,
+        },
+        emergencyContact: { name: val('ecName'), phone: val('ecPhone'), relationship: val('ecRelationship') },
+        personalReferences: [
+          val('ref1Name') ? { name: val('ref1Name'), phone: val('ref1Phone') } : null,
+          val('ref2Name') ? { name: val('ref2Name'), phone: val('ref2Phone') } : null,
+        ].filter(Boolean),
+        vehicle: (val('vehicleMakeModel') || val('vehiclePlate')) ? { make_model: val('vehicleMakeModel'), plate: val('vehiclePlate') } : null,
+        isSmoker: document.getElementById('isSmoker').checked,
         consentScreening: document.getElementById('consentScreening').checked,
       };
-
-      if (!payload.name) { showError('Please enter your name.'); return; }
-      if (!isEmail(payload.email)) { showError('Please enter a valid email address.'); return; }
 
       btn.disabled = true; btn.textContent = 'Submitting…';
 
       // Always email Cyril the lead (fire-and-forget), so the application is
-      // captured even before the Supabase backend is configured.
-      const bedsLabel = payload.beds && payload.beds !== 'Any' ? payload.beds + 'BR' : 'Any beds';
+      // captured even if the Supabase backend has a hiccup.
       try {
         fetch('https://formspree.io/f/mdabgrqy', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({
-            _subject: `ORP RENTAL APPLICATION — ${bedsLabel} · ${payload.neighbourhood}`,
-            type: 'tenant-application',
-            timestamp: new Date().toISOString(),
-            name: payload.name, email: payload.email, phone: payload.phone,
-            bedrooms: payload.beds, budget: payload.budget, moveIn: payload.moveIn,
-            neighbourhood: payload.neighbourhood, consentScreening: payload.consentScreening,
+            _subject: `ORP RENTAL APPLICATION — ${UNIT ? [UNIT.beds + 'BR', UNIT.neighbourhood].filter(Boolean).join(' ') : 'unit'}`,
+            type: 'tenant-application', timestamp: new Date().toISOString(),
+            ...payload,
           }),
         }).catch(() => {});
       } catch (_) {}
 
-      // Try the Supabase function (stores + auto-matches). If it isn't configured
-      // yet, we still show success because Formspree captured the lead above.
-      let matched = 0, reached = false;
       try {
         const res = await fetch('/.netlify/functions/apply', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-        reached = true;
-        if (res.ok) { const data = await res.json().catch(() => ({})); matched = data.matched || 0; }
-      } catch (_) { /* network/offline — Formspree still has it */ }
-
-      if (matched > 0) {
-        document.getElementById('successMsg').innerHTML =
-          `Thanks — we matched you to <strong class="text-white">${matched} available ${matched === 1 ? 'unit' : 'units'}</strong>. We'll reach out shortly, usually <strong class="text-white">within one business day</strong>.`;
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Could not submit your application.');
+        }
+      } catch (err) {
+        btn.disabled = false; btn.textContent = 'Submit Application →';
+        showError(err.message || 'Something went wrong submitting your application. Please try again.');
+        return;
       }
+
       document.getElementById('stepForm').classList.add('hidden');
       document.getElementById('stepSuccess').classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });

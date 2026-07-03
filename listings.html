@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <meta name="theme-color" content="#f5f5f7"/>
+  <title>Current Availability — Ottawa Rental Plug</title>
+  <meta name="description" content="Ottawa Rental Plug's current available rentals. Apply directly to a specific unit."/>
+  <link rel="canonical" href="https://ottawarentalplug.com/listings"/>
+  <meta property="og:type"        content="website"/>
+  <meta property="og:url"         content="https://ottawarentalplug.com/listings"/>
+  <meta property="og:title"       content="Current Availability — Ottawa Rental Plug"/>
+  <meta property="og:description" content="Ottawa Rental Plug's current available rentals. Apply directly to a specific unit."/>
+  <meta property="og:image"       content="https://ottawarentalplug.com/logo-nav.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,300;1,14..32,400&display=swap" rel="stylesheet"/>
+  <script src="analytics.js" defer></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:      #ffffff;
+      --bg:         #f5f5f7;
+      --surface:    #ffffff;
+      --border:     #d2d2d7;
+      --border-lt:  #e8e8ed;
+      --text-1:     #1d1d1f;
+      --text-2:     #6e6e73;
+      --text-3:     #86868b;
+      --blue:       #0071e3;
+      --blue-hover: #0077ed;
+      --blue-lt:    #e8f0fd;
+      --r-sm:       10px;
+      --r-md:       14px;
+      --r-lg:       18px;
+      --r-xl:       22px;
+      --shadow-sm:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:  0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+    }
+
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    h1, .hero-title { letter-spacing: -.03em; }
+
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.85);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--border-lt);
+    }
+    .nav-inner {
+      max-width: 1000px; margin: 0 auto; padding: 0 24px; height: 52px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-size: 15px; font-weight: 600; color: var(--text-1); text-decoration: none; letter-spacing: -.01em; }
+    .nav-back {
+      font-size: 13px; color: var(--blue); text-decoration: none;
+      display: flex; align-items: center; gap: 4px; transition: opacity .15s;
+    }
+    .nav-back:hover { opacity: .7; }
+    .nav-back svg { width: 14px; height: 14px; }
+
+    .page { max-width: 1000px; margin: 0 auto; padding: 0 24px 80px; }
+
+    .hero { text-align: center; padding: 56px 0 40px; }
+    .hero-badge {
+      display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--blue); border: 1px solid rgba(0,113,227,.3);
+      border-radius: 999px; padding: 5px 14px; margin-bottom: 20px;
+    }
+    .hero-title { font-size: clamp(32px, 5vw, 48px); font-weight: 700; line-height: 1.08; color: var(--text-1); margin-bottom: 14px; }
+    .hero-title em { font-style: normal; color: var(--blue); }
+    .hero-sub { font-size: 16px; color: var(--text-2); max-width: 520px; margin: 0 auto; line-height: 1.55; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 8px; }
+
+    .listing-card {
+      background: var(--surface); border-radius: var(--r-xl); border: 1px solid var(--border-lt);
+      box-shadow: var(--shadow-sm); padding: 24px; display: flex; flex-direction: column; gap: 12px;
+      transition: box-shadow .15s, transform .15s;
+    }
+    .listing-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .listing-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+    .listing-type { font-size: 16px; font-weight: 700; color: var(--text-1); }
+    .listing-price { font-size: 18px; font-weight: 800; color: var(--blue); white-space: nowrap; }
+    .listing-meta { font-size: 13px; color: var(--text-2); display: flex; gap: 10px; flex-wrap: wrap; }
+    .listing-meta span:not(:last-child)::after { content: '·'; margin-left: 10px; color: var(--border); }
+    .listing-desc { font-size: 13.5px; color: var(--text-2); line-height: 1.5; flex: 1; }
+    .listing-apply {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      background: var(--blue); color: #fff; text-decoration: none; font-weight: 600; font-size: 13.5px;
+      padding: 11px 16px; border-radius: var(--r-sm); transition: background .15s;
+    }
+    .listing-apply:hover { background: var(--blue-hover); }
+
+    .empty-state {
+      text-align: center; padding: 56px 24px; background: var(--surface);
+      border: 1px solid var(--border-lt); border-radius: var(--r-xl); box-shadow: var(--shadow-sm);
+    }
+    .empty-state p { color: var(--text-2); font-size: 14.5px; margin-bottom: 14px; }
+    .empty-state a { color: var(--blue); font-weight: 600; text-decoration: none; }
+    .empty-state a:hover { opacity: .75; }
+
+    .loading { text-align: center; padding: 56px 24px; color: var(--text-3); font-size: 14px; }
+
+    /* Viewing-confirmation modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,.45);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .18s;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface); border-radius: var(--r-xl);
+      box-shadow: 0 24px 64px rgba(0,0,0,.18), 0 4px 16px rgba(0,0,0,.08);
+      padding: 32px 28px 28px; max-width: 400px; width: 100%;
+      transform: translateY(10px); transition: transform .2s;
+    }
+    .modal-backdrop.open .modal { transform: none; }
+    .modal-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--blue-lt); display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .modal-icon svg { width: 22px; height: 22px; color: var(--blue); }
+    .modal h2 { font-size: 18px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+    .modal p  { font-size: 13.5px; color: var(--text-2); line-height: 1.5; margin-bottom: 20px; }
+    .modal-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .modal-opt {
+      border: 2px solid var(--border); border-radius: var(--r-md);
+      padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 14px;
+      transition: border-color .12s, background .12s;
+      background: transparent;
+      font-family: inherit; font-size: 14px; color: var(--text-1); text-align: left;
+    }
+    .modal-opt:hover { border-color: var(--blue); background: var(--blue-lt); }
+    .modal-opt.selected { border-color: var(--blue); background: var(--blue-lt); }
+    .modal-opt svg { width: 22px; height: 22px; flex-shrink: 0; color: var(--blue); }
+    .modal-opt-label { font-weight: 600; display: block; margin-bottom: 2px; }
+    .modal-opt-sub   { font-size: 12px; color: var(--text-3); }
+    .modal-actions { display: flex; gap: 10px; }
+    .btn-cancel {
+      flex: 1; padding: 11px 0; border-radius: var(--r-sm); border: 1px solid var(--border);
+      background: transparent; font-family: inherit; font-size: 13.5px; font-weight: 500;
+      color: var(--text-2); cursor: pointer; transition: background .12s;
+    }
+    .btn-cancel:hover { background: var(--bg); }
+    .btn-proceed {
+      flex: 2; padding: 11px 0; border-radius: var(--r-sm); border: none;
+      background: var(--blue); font-family: inherit; font-size: 13.5px; font-weight: 600;
+      color: #fff; cursor: pointer; transition: background .12s, opacity .12s;
+    }
+    .btn-proceed:hover:not(:disabled) { background: var(--blue-hover); }
+    .btn-proceed:disabled { opacity: .4; cursor: not-allowed; }
+    .modal-havent {
+      text-align: center; margin-top: 14px; font-size: 12.5px; color: var(--text-3);
+    }
+    .modal-havent a { color: var(--blue); text-decoration: none; font-weight: 500; }
+    .modal-havent a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <!-- VIEWING CONFIRMATION MODAL -->
+  <div class="modal-backdrop" id="viewingModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </div>
+      <h2 id="modalTitle">Have you seen this unit?</h2>
+      <p>Applications are only accepted from people who have already viewed the unit. How did you see it?</p>
+      <div class="modal-options">
+        <button class="modal-opt" data-value="in_person" type="button">
+          <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <div>
+            <span class="modal-opt-label">In-person showing</span>
+            <span class="modal-opt-sub">I visited the unit with a representative</span>
+          </div>
+        </button>
+        <button class="modal-opt" data-value="virtual" type="button">
+          <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          <div>
+            <span class="modal-opt-label">Virtual tour</span>
+            <span class="modal-opt-sub">I completed a video walkthrough</span>
+          </div>
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="modalCancel" type="button">Cancel</button>
+        <button class="btn-proceed" id="modalProceed" type="button" disabled>Continue to Application</button>
+      </div>
+      <p class="modal-havent">Haven't seen it yet? <a href="index.html#contact">Book a showing first →</a></p>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">Ottawa Rental Plug</a>
+      <a href="index.html" class="nav-back">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        Back
+      </a>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- HERO -->
+    <header class="hero">
+      <span class="hero-badge">Current Availability</span>
+      <h1 class="hero-title">Ottawa Rental Plug<br/><em>units available now.</em></h1>
+      <p class="hero-sub">Every listing below is a real, current vacancy. Apply directly to the unit you want.</p>
+    </header>
+
+    <div id="listingsRoot" class="loading">Loading availability…</div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script>
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function listingCard(u) {
+      const meta = [
+        u.beds != null ? (u.beds === 0 ? 'Studio' : u.beds + ' BR') : null,
+        u.baths != null ? u.baths + ' bath' : null,
+        u.neighbourhood || null,
+      ].filter(Boolean).map(m => `<span>${escapeHtml(m)}</span>`).join('');
+      return `<div class="listing-card">
+        <div class="listing-top">
+          <div class="listing-type">${escapeHtml(u.type || 'Rental unit')}</div>
+          <div class="listing-price">${u.price != null ? '$' + Math.round(u.price).toLocaleString() + '/mo' : ''}</div>
+        </div>
+        <div class="listing-meta">${meta}</div>
+        ${u.description ? `<div class="listing-desc">${escapeHtml(u.description)}</div>` : ''}
+        <button class="listing-apply" type="button" data-unit="${escapeHtml(u.id)}" onclick="openViewingModal(this)">Apply for this unit →</button>
+      </div>`;
+    }
+
+    async function loadListings() {
+      const root = document.getElementById('listingsRoot');
+      try {
+        const { data, error } = await sb.from('units')
+          .select('id,beds,baths,type,price,neighbourhood,description')
+          .eq('status', 'available')
+          .order('listed_at', { ascending: false });
+        if (error) throw error;
+        const units = data || [];
+        if (!units.length) {
+          root.className = '';
+          root.innerHTML = `<div class="empty-state">
+            <p>No units published right now — check back soon.</p>
+            <a href="search-rentals.html">Search the wider Ottawa rental market →</a>
+          </div>`;
+          return;
+        }
+        root.className = 'grid';
+        root.innerHTML = units.map(listingCard).join('');
+      } catch (e) {
+        root.className = '';
+        root.innerHTML = `<div class="empty-state">
+          <p>Couldn't load availability right now.</p>
+          <a href="search-rentals.html">Search the wider Ottawa rental market →</a>
+        </div>`;
+      }
+    }
+    loadListings();
+
+    // --- Viewing-confirmation modal ---
+    (function () {
+      const modal    = document.getElementById('viewingModal');
+      const proceed  = document.getElementById('modalProceed');
+      const cancel   = document.getElementById('modalCancel');
+      let pendingUrl = null;
+
+      function openModal(url) {
+        pendingUrl = url;
+        modal.querySelectorAll('.modal-opt').forEach(b => b.classList.remove('selected'));
+        proceed.disabled = true;
+        modal.removeAttribute('aria-hidden');
+        modal.classList.add('open');
+        modal.querySelector('.modal-opt').focus();
+      }
+
+      function closeModal() {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        pendingUrl = null;
+      }
+
+      window.openViewingModal = function (btn) {
+        const unitId = btn.dataset.unit;
+        openModal('apply.html?unit=' + encodeURIComponent(unitId));
+      };
+
+      modal.querySelectorAll('.modal-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          modal.querySelectorAll('.modal-opt').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          proceed.disabled = false;
+          proceed.dataset.viewed = btn.dataset.value;
+        });
+      });
+
+      proceed.addEventListener('click', () => {
+        if (!pendingUrl || proceed.disabled) return;
+        const viewed = proceed.dataset.viewed || '';
+        window.location.href = pendingUrl + '&viewed=' + encodeURIComponent(viewed);
+      });
+
+      cancel.addEventListener('click', closeModal);
+
+      // Close on backdrop click
+      modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+      // Close on Escape
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+    })();
+  </script>
+</body>
+</html>

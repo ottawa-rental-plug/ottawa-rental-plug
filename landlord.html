@@ -349,6 +349,15 @@
             <div class="form-field"><label>Type</label><select id="vc-type"><option>Apartment</option><option>Townhouse</option><option>House</option><option>Condo</option><option>Basement</option><option>Room</option></select></div>
             <div class="form-field"><label>Price ($/mo)</label><input id="vc-price" type="number" min="0" placeholder="1650"></div>
             <div class="form-field"><label>Date Listed</label><input id="vc-listed" type="date"></div>
+            <div class="form-field"><label>Neighbourhood</label><select id="vc-neighbourhood">
+              <option value="">— Select —</option>
+              <option>Glebe</option><option>Westboro</option><option>Downtown</option><option>Centretown</option>
+              <option>Kanata</option><option>Hazeldean</option><option>Stittsville</option><option>Nepean</option>
+              <option>Barrhaven</option><option>Orleans</option><option>Vanier</option><option>Sandy Hill</option>
+              <option>Gloucester</option><option>Other Ottawa</option>
+            </select></div>
+            <div class="form-field"><label>Address <span style="font-weight:400;color:var(--gray)">(shown to applicants only after they open this unit's apply link)</span></label><input id="vc-address" type="text" placeholder="123 Bank St, Unit 4"></div>
+            <div class="form-field" style="grid-column:1/-1"><label>Public description <span style="font-weight:400;color:var(--gray)">(optional, shown on the listings page)</span></label><textarea id="vc-description" rows="2" style="width:100%;font-family:inherit" placeholder="Bright 2BR near the canal, in-unit laundry, parking included."></textarea></div>
           </div>
           <div style="display:flex;gap:8px">
             <button onclick="saveVacancy()" style="padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save Vacancy</button>
@@ -764,6 +773,7 @@ function renderVacancy(v, leads, editable) {
       <div class="vacancy-detail">
         <span>${v.baths} bath</span>
         <span>Listed ${new Date(v.listed).toLocaleDateString('en-CA',{month:'short',day:'numeric'})}</span>
+        ${v.neighbourhood ? `<span>${escapeHtml(v.neighbourhood)}</span>` : ''}
       </div>
       ${domBadge(d)}
       ${sug ? `<div class="price-suggestion">Suggested price: $${sug.suggested.toLocaleString()}/mo (−${sug.pct}%)</div>` : ''}
@@ -937,11 +947,15 @@ function openVacancyForm(id) {
     document.getElementById('vc-type').value = v.type;
     document.getElementById('vc-price').value = v.price;
     document.getElementById('vc-listed').value = v.listed;
+    document.getElementById('vc-neighbourhood').value = v.neighbourhood || '';
+    document.getElementById('vc-address').value = v.address || '';
+    document.getElementById('vc-description').value = v.description || '';
   } else {
     title.textContent = 'Add Vacancy';
     document.getElementById('vc-id').value = '';
-    ['vc-beds','vc-baths','vc-price'].forEach(i => document.getElementById(i).value = '');
+    ['vc-beds','vc-baths','vc-price','vc-address','vc-description'].forEach(i => document.getElementById(i).value = '');
     document.getElementById('vc-type').value = 'Apartment';
+    document.getElementById('vc-neighbourhood').value = '';
     document.getElementById('vc-listed').value = new Date().toISOString().slice(0,10);
   }
   form.scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -953,14 +967,17 @@ function saveVacancy() {
   const price  = parseInt(document.getElementById('vc-price').value);
   const type   = document.getElementById('vc-type').value;
   const listed = document.getElementById('vc-listed').value;
+  const neighbourhood = document.getElementById('vc-neighbourhood').value || '';
+  const address       = document.getElementById('vc-address').value.trim();
+  const description   = document.getElementById('vc-description').value.trim();
   if (!(beds >= 0) || !(price > 0) || !listed) { alert('Enter bedrooms, a price, and a listed date.'); return; }
   const idVal = document.getElementById('vc-id').value;
   const vacancies = getVacancies();
   if (idVal) {
     const v = vacancies.find(x => x.id === Number(idVal));
-    if (v) Object.assign(v, { beds, baths: baths || 0, type, price, listed });
+    if (v) Object.assign(v, { beds, baths: baths || 0, type, price, listed, neighbourhood, address, description });
   } else {
-    vacancies.push({ id: nextVacancyId(), beds, baths: baths || 0, type, price, listed });
+    vacancies.push({ id: nextVacancyId(), beds, baths: baths || 0, type, price, listed, neighbourhood, address, description });
   }
   saveVacancyList(vacancies);
   closeVacancyForm();
@@ -1342,12 +1359,25 @@ const APPLICANT_STAGE_LABEL = {
   new:'New', matched:'Matched', screening:'Screening', approved:'Approved',
   placed:'Placed', nurture:'Nurture', future_buyer:'Future buyer', declined:'Declined', lost:'Lost',
 };
+const EMPLOYMENT_STATUS_LABEL = {
+  full_time:'Full-time', part_time:'Part-time', self_employed:'Self-employed',
+  student:'Student', retired:'Retired', unemployed:'Unemployed', other:'Other',
+};
+const EMPLOYMENT_LENGTH_LABEL = { '<6mo':'<6 months', '6-12mo':'6–12 months', '1-2yr':'1–2 years', '2yr+':'2+ years' };
+
+// Standard Ontario landlord affordability rule: monthly income should be at
+// least 3x the rent (rent <= ~33% of gross income). 2.5x-3x is borderline.
+function affordabilityClass(ratio) {
+  if (ratio >= 3)   return 'high';
+  if (ratio >= 2.5) return 'med';
+  return 'low';
+}
 async function loadApplicants() {
   const card = document.getElementById('applicantsCard');
   card.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading applicants…</div>`;
   try {
     const { data, error } = await sb.from('applicants')
-      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,consent_screening_at,applications(match_score,units(beds,type,neighbourhood,price)),screenings(status,result_summary,report_url,requested_at,completed_at)')
+      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,consent_screening_at,monthly_income,employer,job_title,employment_status,employment_length,occupants,has_pets,pets_detail,address_history,emergency_contact,personal_references,vehicle,additional_income,is_smoker,applications(match_score,unit_snapshot,units(beds,type,neighbourhood,price)),screenings(status,result_summary,report_url,requested_at,completed_at)')
       .order('created_at', { ascending: false });
     if (error) throw error;
     const applicants = data || [];
@@ -1362,15 +1392,26 @@ async function loadApplicants() {
     }
 
     card.innerHTML = `<table class="leads-table"><thead><tr>
-      <th>Applicant</th><th>Looking For</th><th>Move-in</th><th>Best Match</th><th>Stage</th><th>Applied</th><th>Screening</th><th>Action</th>
+      <th>Applicant</th><th>Looking For</th><th>Move-in</th><th>Applied For</th><th>Affordability</th><th>Stage</th><th>Applied</th><th>Screening</th><th>Action</th>
     </tr></thead><tbody>` + applicants.map(a => {
       const want = [a.beds_wanted && a.beds_wanted !== 'Any' ? a.beds_wanted+' BR' : 'Any beds',
                     a.budget ? '$'+parseInt(a.budget).toLocaleString()+'/mo' : null,
                     a.neighbourhood && a.neighbourhood !== 'Any' ? a.neighbourhood : null].filter(Boolean).join(' · ');
       const apps = (a.applications||[]).slice().sort((x,y)=>(y.match_score||0)-(x.match_score||0));
       const best = apps[0];
-      let matchCell = '<span style="color:var(--gray);font-size:12px">No match yet</span>';
-      if (best) {
+      let matchCell = '<span style="color:var(--gray);font-size:12px">No application yet</span>';
+      if (best && best.unit_snapshot) {
+        // Direct per-unit application (current flow) — show what was applied
+        // for, snapshotted at submit time so later unit edits/removal can't
+        // corrupt this record.
+        const u = best.unit_snapshot;
+        const bedsLabel = u.beds === 0 ? 'Studio' : (u.beds != null ? u.beds + 'BR' : '');
+        const unitDesc = [bedsLabel, u.type].filter(Boolean).join(' ') || 'unit';
+        matchCell = `<div style="font-size:12px;color:var(--navy);font-weight:600">${escapeHtml(unitDesc)}${u.neighbourhood ? ` · ${escapeHtml(u.neighbourhood)}` : ''}</div>
+                     ${u.price != null ? `<div style="font-size:11px;color:var(--gray)">$${Math.round(u.price).toLocaleString()}/mo${u.address ? ' · ' + escapeHtml(u.address) : ''}</div>` : ''}`;
+      } else if (best) {
+        // Backward compatibility: applicants submitted before the per-unit
+        // rewrite have a match_score but no unit_snapshot.
         const u = best.units || {};
         const s = best.match_score || 0;
         const cls = scoreClass(s);
@@ -1378,6 +1419,29 @@ async function loadApplicants() {
         matchCell = `<div class="score-bar-wrap"><div class="score-bar"><div class="score-fill ${cls}" style="width:${s}%"></div></div><span class="score-num ${cls}">${s}</span></div>
                      <div style="font-size:11px;color:var(--gray)">${escapeHtml(unitDesc)}${u.neighbourhood?` · ${escapeHtml(u.neighbourhood)}`:''}</div>`;
       }
+      // Affordability (self-reported income vs. rent). Rent = the applied-for
+      // unit's price if available, else fall back to the applicant's stated budget.
+      const rentBasis = (best && best.unit_snapshot && best.unit_snapshot.price) ? Number(best.unit_snapshot.price)
+                       : (best && best.units && best.units.price) ? Number(best.units.price) : (Number(a.budget) || null);
+      let affordCell = '<span style="color:var(--gray);font-size:12px">No income given</span>';
+      if (a.monthly_income && rentBasis) {
+        const ratio = a.monthly_income / rentBasis;
+        const cls = affordabilityClass(ratio);
+        const verdict = cls === 'high' ? 'Qualifies (3x+)' : cls === 'med' ? 'Borderline' : 'Below 2.5x';
+        affordCell = `<span class="score-num ${cls}">${ratio.toFixed(1)}x</span>
+          <div style="font-size:11px;color:var(--gray)">$${Math.round(a.monthly_income).toLocaleString()}/mo income · ${verdict}</div>`;
+      } else if (a.monthly_income) {
+        affordCell = `<div style="font-size:12px;color:var(--navy)">$${Math.round(a.monthly_income).toLocaleString()}/mo income</div>
+          <div style="font-size:11px;color:var(--gray)">No rent to compare yet</div>`;
+      }
+      const profileBits = [
+        a.employment_status ? EMPLOYMENT_STATUS_LABEL[a.employment_status] || a.employment_status : null,
+        a.employer || null,
+        a.employment_length ? EMPLOYMENT_LENGTH_LABEL[a.employment_length] || a.employment_length : null,
+        a.occupants ? a.occupants + (a.occupants === 1 ? ' occupant' : ' occupants') : null,
+        a.has_pets ? ('Pet' + (a.pets_detail ? ': ' + a.pets_detail : '')) : (a.has_pets === false ? 'No pets' : null),
+      ].filter(Boolean).join(' · ');
+
       const moveIn = a.move_in ? new Date(a.move_in+'T12:00:00').toLocaleDateString('en-CA',{month:'short',day:'numeric'}) : '—';
       const applied = new Date(a.created_at).toLocaleDateString('en-CA',{month:'short',day:'numeric'});
       const firstName = encodeURIComponent((a.name||'').split(' ')[0]);
@@ -1413,10 +1477,12 @@ async function loadApplicants() {
 
       return `<tr>
         <td><div style="font-weight:600;color:var(--navy)">${escapeHtml(a.name||'—')}</div>
-            <div style="font-size:11px;color:var(--gray)">${escapeHtml(a.email||'')}</div></td>
+            <div style="font-size:11px;color:var(--gray)">${escapeHtml(a.email||'')}</div>
+            ${profileBits ? `<div style="font-size:11px;color:var(--gray)">${escapeHtml(profileBits)}</div>` : ''}</td>
         <td>${escapeHtml(want||'—')}</td>
         <td>${moveIn}</td>
         <td>${matchCell}</td>
+        <td>${affordCell}</td>
         <td>${escapeHtml(APPLICANT_STAGE_LABEL[a.stage]||a.stage||'New')}</td>
         <td>${applied}</td>
         <td>${screenCell}</td>
@@ -1454,29 +1520,17 @@ async function requestScreening(id, btn) {
 }
 
 // Publish the dashboard's vacancies into the cloud `units` table so incoming
-// applicants get matched against them. Replaces the cloud unit list each time.
+// applicants can browse and apply to them. Upserts by client_id (via
+// orpMirrorUnits, js/supabase-client.js) so each unit's real id — and any
+// apply link already sent out for it — stays stable across edits.
 async function publishUnits() {
   const vacancies = getVacancies();
-  if (!confirm(`Publish your ${vacancies.length} vacancy(ies) to the cloud so new applicants are matched against them?\n\nThis replaces the current cloud unit list.`)) return;
+  if (!confirm(`Publish your ${vacancies.length} vacancy(ies) to the cloud so applicants can view and apply to them?`)) return;
   try {
-    const del = await sb.from('units').delete().neq('id','00000000-0000-0000-0000-000000000000');
-    if (del.error) throw del.error;
-    if (vacancies.length) {
-      const rows = vacancies.map(v => ({
-        beds: parseInt(v.beds)||0,
-        baths: (v.baths!=null && v.baths!=='') ? parseFloat(v.baths) : null,
-        type: v.type || null,
-        price: (v.price!=null && v.price!=='') ? parseFloat(v.price) : null,
-        neighbourhood: v.neighbourhood || null,
-        status: 'available',
-        listed_at: v.listed || null,
-      }));
-      const ins = await sb.from('units').insert(rows);
-      if (ins.error) throw ins.error;
-    }
-    alert(`Published ${vacancies.length} unit(s) to the cloud. New applications will now be matched against them.`);
+    await orpMirrorUnits(vacancies);
+    alert(`Published ${vacancies.length} unit(s) to the cloud. They're now visible on listings.html and applicants can apply directly.`);
   } catch (e) {
-    alert('Could not publish units: ' + (e.message || e) + '\n\nMake sure db/schema.sql has been run in Supabase.');
+    alert('Could not publish units: ' + (e.message || e) + '\n\nMake sure db/migrations/003_per_unit_apply.sql has been run in Supabase.');
   }
 }
 

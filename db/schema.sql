@@ -20,16 +20,19 @@ create table landlords (
 create table units (
   id            uuid primary key default gen_random_uuid(),
   landlord_id   uuid references landlords(id) on delete set null,
+  client_id     text,   -- stable id from the dashboard's local vacancy list; lets "publish" upsert instead of wiping/recreating so apply links never break
   beds          int,
   baths         numeric,
   type          text,
   price         numeric,
-  address       text,
+  address       text,   -- shown once a unit is chosen, not on the public listings card
   neighbourhood text,
+  description   text,   -- short public blurb shown on the listings card
   status        text not null default 'available',  -- available | rented
   listed_at     date,
   created_at    timestamptz not null default now()
 );
+create unique index on units (client_id) where client_id is not null;
 
 create table applicants (
   id                  uuid primary key default gen_random_uuid(),
@@ -44,6 +47,25 @@ create table applicants (
   stage               applicant_stage not null default 'new',
   consent_screening_at timestamptz,        -- timestamped screening consent (PIPEDA)
   consent_ip          text,
+  -- Self-reported affordability screening (Phase 1.5) — used to compute the
+  -- rent-to-income ratio on the dashboard. Self-reported only; SingleKey (screenings
+  -- table) is the verified credit/background check layer.
+  monthly_income      numeric,
+  employer            text,
+  job_title            text,
+  employment_status   text,   -- full_time | part_time | self_employed | student | unemployed | retired | other
+  employment_length   text,   -- <6mo | 6-12mo | 1-2yr | 2yr+
+  occupants           int,
+  has_pets            boolean,
+  pets_detail         text,
+  -- Form-410-equivalent CRM fields (Phase 1.6). No SIN/bank/licence — see
+  -- docs/portal-build-plan.md for why those stay out of a public web form.
+  address_history     jsonb,  -- {current:{address,city,postal,landlord_name,landlord_phone,monthly_rent,time_there,reason_leaving}, previous:{...}|null}
+  emergency_contact   jsonb,  -- {name,phone,relationship}
+  personal_references jsonb,  -- [{name,phone,relationship}, ...]
+  vehicle             jsonb,  -- {make_model,plate} | null
+  additional_income   jsonb,  -- {source,amount} | null
+  is_smoker           boolean,
   created_at          timestamptz not null default now()
 );
 
@@ -52,6 +74,7 @@ create table applications (
   applicant_id  uuid not null references applicants(id) on delete cascade,
   unit_id       uuid references units(id) on delete set null,
   match_score   int,
+  unit_snapshot jsonb,  -- unit's beds/baths/type/price/neighbourhood/address at time of application, so later unit edits/removal never corrupt the record
   stage         text,
   created_at    timestamptz not null default now()
 );
@@ -126,3 +149,8 @@ begin
     );
   end loop;
 end $$;
+
+-- Public (unauthenticated) visitors may browse available units only — this
+-- is what powers the public listings page and per-unit apply links. Every
+-- other table stays fully locked to Cyril's authenticated session.
+create policy units_public_read on units for select to anon using (status = 'available');

@@ -54,22 +54,35 @@ async function orpPullApplicants() {
 }
 function unitFromVacancy(v) {
   return {
+    client_id: String(v.id),
     beds: v.beds != null ? parseInt(v.beds) : null,
     baths: v.baths != null ? parseFloat(v.baths) : null,
     type: v.type || null,
     price: v.price != null ? parseFloat(v.price) : null,
+    address: v.address || null,
+    neighbourhood: v.neighbourhood || null,
+    description: v.description || null,
     listed_at: v.listed || null,
     status: 'available',
   };
 }
-// Replace the units table with the dashboard's current vacancies.
+// Upsert the dashboard's current vacancies into the cloud `units` table,
+// keyed on a stable client_id (the vacancy's local id). This keeps each
+// unit's real uuid — and therefore any apply link already sent out — stable
+// across edits, instead of wiping and recreating every unit on every
+// publish. Only removes cloud units whose vacancy was actually deleted.
 async function orpMirrorUnits(vacancies) {
-  const del = await sb.from('units').delete().not('id', 'is', null);
-  if (del.error) throw del.error;
-  if (vacancies && vacancies.length) {
-    const { error } = await sb.from('units').insert(vacancies.map(unitFromVacancy));
+  const list = vacancies || [];
+  if (list.length) {
+    const { error } = await sb.from('units')
+      .upsert(list.map(unitFromVacancy), { onConflict: 'client_id' });
     if (error) throw error;
   }
+  const keepIds = list.map(v => String(v.id));
+  const del = keepIds.length
+    ? await sb.from('units').delete().not('client_id', 'is', null).not('client_id', 'in', `(${keepIds.map(id => `"${id}"`).join(',')})`)
+    : await sb.from('units').delete().not('client_id', 'is', null);
+  if (del.error) throw del.error;
 }
 
 // ── Screening (Phase 2) ───────────────────────────────────────────────
