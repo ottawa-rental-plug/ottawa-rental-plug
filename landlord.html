@@ -159,6 +159,12 @@
     .applicant-select { padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; color:var(--navy); background:var(--white); cursor:pointer; outline:none; }
     .applicant-select:focus { border-color:var(--blue); }
     .applicant-filterbar .tabs { margin-bottom:0; }
+    /* Buyer-potential bands */
+    .buyer-band { display:inline-block; font-size:11px; font-weight:700; border-radius:999px; padding:2px 9px; white-space:nowrap; }
+    .buyer-band.high { background:#fbf1d3; color:#8a6d1a; }
+    .buyer-band.med  { background:var(--blue-light); color:var(--blue); }
+    .buyer-band.low  { background:var(--border); color:var(--gray); }
+    .buyer-star { display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#8a6d1a; background:#fbf1d3; border-radius:999px; padding:1px 7px; margin-left:6px; vertical-align:middle; }
 
     /* TEMPLATES */
     .template-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
@@ -279,6 +285,12 @@
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>
       Landlord Leads
       <span class="nav-badge" id="landlordBadge" style="display:none">0</span>
+    </button>
+    <div class="nav-section-label" style="margin-top:8px">Mortgage</div>
+    <button class="nav-item" onclick="showPanel('futurebuyers')" id="nav-futurebuyers">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6M9 12h.01M15 12h.01"/></svg>
+      Future Buyers
+      <span class="nav-badge" id="buyerBadge" style="display:none;background:#c9a84c">0</span>
     </button>
     <div class="nav-section-label" style="margin-top:8px">Tools</div>
     <button class="nav-item" onclick="showPanel('templates')">
@@ -447,6 +459,19 @@
         </div>
         <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Landlords who requested a free rent analysis at <strong>ottawarentalplug.com/rental-estimate</strong>. Each one is a potential placement — or a managed door. Reply fast.</p>
         <div class="card" id="landlordCard"><div class="scan-empty">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- FUTURE BUYERS -->
+    <div id="panel-futurebuyers" class="panel">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Future Buyers — Tenant → Mortgage Pipeline</div>
+          <button class="btn-top secondary" onclick="loadFutureBuyers()" style="padding:7px 12px">Refresh</button>
+        </div>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Placed tenants ranked by buyer potential (estimated from income, profile &amp; timing). As each lease nears its end, they surface here to nurture toward a purchase — with a one-click, pre-written email. <span style="color:var(--gray)">Estimates are rough — confirm with a full pre-qualification.</span></p>
+        <div id="buyerFilterBar" class="applicant-filterbar" style="display:none"></div>
+        <div class="card" id="futureBuyersCard"><div class="scan-empty">Loading…</div></div>
       </div>
     </div>
 
@@ -1437,8 +1462,9 @@ function renderApplicantsTable() {
     const applied = new Date(a.created_at).toLocaleDateString('en-CA',{month:'short',day:'numeric'});
     const firstName = encodeURIComponent((a.name||'').split(' ')[0]);
     const subj = encodeURIComponent('Your Ottawa rental application — Ottawa Rental Plug');
+    const buyerStar = buyerProfile(a).band === 'High' ? '<span class="buyer-star" title="Strong future-buyer candidate">★ Buyer</span>' : '';
     return `<tr>
-      <td><div style="font-weight:600;color:var(--navy)">${escapeHtml(a.name||'—')}</div>
+      <td><div style="font-weight:600;color:var(--navy)">${escapeHtml(a.name||'—')}${buyerStar}</div>
           <div style="font-size:11px;color:var(--gray)">${escapeHtml(a.email||'')}</div></td>
       <td>${escapeHtml(want||'—')}</td>
       <td>${moveIn}</td>
@@ -1480,9 +1506,162 @@ async function publishUnits() {
   }
 }
 
+// ── FUTURE BUYERS (tenant → mortgage nurture) ────────────────────────
+// Estimate buyer potential from budget (income proxy), stage, profile
+// completeness, and lease timing. All rough — for prioritising outreach,
+// not a real pre-qualification.
+function leaseTiming(a) {
+  if (!a.move_in) return { end:null, days:null };
+  const end = new Date(a.move_in + 'T12:00:00');
+  end.setFullYear(end.getFullYear() + 1);           // assume a 12-month lease from move-in
+  const days = Math.round((end - new Date()) / 86400000);
+  return { end, days };
+}
+function nurtureDue(lease) { return lease.days != null && lease.days <= 90 && lease.days >= -60; }
+
+function buyerProfile(a) {
+  const budget = parseFloat(a.budget) || 0;
+  const incomeEst   = Math.round(budget * 40);                 // rent ≈ 30% of gross → annual income ≈ budget×40
+  const purchaseEst = Math.round((incomeEst * 4.5) / 5000) * 5000; // very rough max purchase
+  let score = 0;
+  if (incomeEst >= 100000)     score += 40;
+  else if (incomeEst >= 80000) score += 30;
+  else if (incomeEst >= 65000) score += 20;
+  else if (incomeEst > 0)      score += 10;
+  const st = a.stage || 'new';
+  if (st === 'placed')                             score += 25;
+  else if (st === 'nurture' || st === 'future_buyer') score += 22;
+  else if (st === 'approved')                      score += 12;
+  if (a.phone)   score += 8;
+  if (a.budget)  score += 8;
+  if (a.move_in) score += 5;
+  if (a.email)   score += 4;
+  const lt = leaseTiming(a);
+  if (lt.days != null && lt.days <= 90 && lt.days >= -30) score += 10;
+  else if (lt.days != null && lt.days <= 180)            score += 5;
+  score = Math.min(score, 100);
+  const band = score >= 70 ? 'High' : score >= 45 ? 'Medium' : 'Low';
+  return { incomeEst, purchaseEst, score, band };
+}
+function buyerBandClass(b) { return b === 'High' ? 'high' : b === 'Medium' ? 'med' : 'low'; }
+
+// One-click nurture tracking (browser-local; no backend needed).
+function getNurtured() { try { return JSON.parse(localStorage.getItem('orpNurtured') || '{}'); } catch(e) { return {}; } }
+function markNurtured(id) { const n = getNurtured(); n[id] = new Date().toISOString(); localStorage.setItem('orpNurtured', JSON.stringify(n)); }
+
+function sendNurture(id) {
+  const b = buyersCache.find(x => x.id === id);
+  if (!b) return;
+  const first = (b.name || '').split(' ')[0] || 'there';
+  const subj = encodeURIComponent('Thinking about buying in Ottawa? — Cyril, Ottawa Rental Plug');
+  const body = encodeURIComponent(
+`Hi ${first},
+
+Hope you're settling in well! With your lease renewal coming up, I wanted to reach out — a lot of renters don't realise they may already qualify to buy.
+
+I'm a licensed mortgage agent here in Ottawa, and I'd be glad to run a quick, no-obligation pre-qualification so you know your options — no pressure either way.
+
+Worth a 10-minute chat?
+
+— Cyril
+Ottawa Rental Plug
+(613) 601-3005`);
+  const a = document.createElement('a');
+  a.href = `mailto:${encodeURIComponent(b.email || '')}?subject=${subj}&body=${body}`;
+  a.click();
+  markNurtured(id);
+  renderFutureBuyers();
+}
+
+let buyersCache = [];
+let buyerFilter = 'all'; // all | due | high
+
+async function loadFutureBuyers() {
+  const bar = document.getElementById('buyerFilterBar');
+  const card = document.getElementById('futureBuyersCard');
+  bar.style.display = 'none';
+  card.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading future buyers…</div>`;
+  try {
+    const { data, error } = await sb.from('applicants')
+      .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,created_at')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    // Reachable future buyers = settled tenants.
+    const settled = (data || []).filter(a => ['placed','nurture','future_buyer','approved'].includes(a.stage || ''));
+    buyersCache = settled
+      .map(a => ({ ...a, _buyer: buyerProfile(a), _lease: leaseTiming(a) }))
+      .sort((x, y) => y._buyer.score - x._buyer.score);
+
+    const dueCount = buyersCache.filter(b => nurtureDue(b._lease)).length;
+    const badge = document.getElementById('buyerBadge');
+    if (dueCount > 0) { badge.style.display = ''; badge.textContent = dueCount; } else badge.style.display = 'none';
+
+    if (!buyersCache.length) {
+      card.innerHTML = `<div class="scan-empty"><p>No placed tenants yet. Mark applicants as <strong>Placed</strong> in the Applicants tab and your future-buyer prospects appear here.</p></div>`;
+      return;
+    }
+    buyerFilter = 'all';
+    bar.style.display = '';
+    bar.innerHTML = `<div class="tabs" id="buyerPills"></div>`;
+    renderBuyerPills();
+    renderFutureBuyers();
+  } catch (e) {
+    bar.style.display = 'none';
+    card.innerHTML = `<div class="scan-empty"><p style="color:var(--red)">Couldn't load future buyers: ${escapeHtml(e.message||String(e))}</p>
+      <p style="margin-top:6px;font-size:12px">If this is the first run, make sure <strong>db/schema.sql</strong> has been run in Supabase.</p></div>`;
+  }
+}
+
+function renderBuyerPills() {
+  const due  = buyersCache.filter(b => nurtureDue(b._lease)).length;
+  const high = buyersCache.filter(b => b._buyer.band === 'High').length;
+  const pills = [['all','All',buyersCache.length],['due','Due for nurture',due],['high','High potential',high]];
+  document.getElementById('buyerPills').innerHTML = pills
+    .map(([k,label,n]) => `<button class="tab ${buyerFilter===k?'active':''}" onclick="setBuyerFilter('${k}')">${label}<span class="cnt">${n}</span></button>`)
+    .join('');
+}
+function setBuyerFilter(f) { buyerFilter = f; renderBuyerPills(); renderFutureBuyers(); }
+
+function renderFutureBuyers() {
+  const card = document.getElementById('futureBuyersCard');
+  let list = buyersCache.slice();
+  if (buyerFilter === 'due')  list = list.filter(b => nurtureDue(b._lease));
+  if (buyerFilter === 'high') list = list.filter(b => b._buyer.band === 'High');
+  if (!list.length) { card.innerHTML = `<div class="scan-empty"><p>No tenants in this view.</p></div>`; return; }
+  const nurtured = getNurtured();
+  card.innerHTML = `<table class="leads-table"><thead><tr>
+    <th>Tenant</th><th>Buyer Potential</th><th>Est. Income / Buying Power</th><th>Lease Ends</th><th>Nurture</th><th>Action</th>
+  </tr></thead><tbody>` + list.map(b => {
+    const bp = b._buyer, lt = b._lease;
+    const cls = buyerBandClass(bp.band);
+    const leaseCell = lt.days == null ? '<span style="color:var(--gray);font-size:12px">—</span>'
+      : `<div>${lt.end.toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'})}</div>` +
+        (lt.days < 0 ? `<span class="dom-badge dom-stale">ended ${-lt.days}d ago</span>`
+         : lt.days <= 90 ? `<span class="dom-badge dom-normal">${lt.days}d left</span>`
+         : `<span class="dom-badge dom-fresh">${lt.days}d left</span>`);
+    const sent = nurtured[b.id];
+    const nurtureCell = sent
+      ? `<span style="font-size:12px;color:var(--green);font-weight:600">Sent ${new Date(sent).toLocaleDateString('en-CA',{month:'short',day:'numeric'})}</span>`
+      : nurtureDue(lt) ? `<span style="font-size:12px;color:var(--orange);font-weight:700">Due now</span>`
+        : `<span style="font-size:12px;color:var(--gray)">Not yet</span>`;
+    return `<tr>
+      <td><div style="font-weight:600;color:var(--navy)">${escapeHtml(b.name||'—')}</div>
+          <div style="font-size:11px;color:var(--gray)">${escapeHtml(b.email||'')}${b.neighbourhood&&b.neighbourhood!=='Any'?' · '+escapeHtml(b.neighbourhood):''}</div></td>
+      <td><span class="buyer-band ${cls}">${bp.band}</span> <span style="font-size:11px;color:var(--gray)">${bp.score}</span></td>
+      <td><div style="font-weight:600;color:var(--navy)">~$${bp.incomeEst.toLocaleString()}<span style="font-weight:400;color:var(--gray)">/yr</span></div>
+          <div style="font-size:11px;color:var(--gray)">could carry ~$${bp.purchaseEst.toLocaleString()} home</div></td>
+      <td>${leaseCell}</td>
+      <td>${nurtureCell}</td>
+      <td style="white-space:nowrap">
+        ${b.email?`<button class="contact-btn" onclick="sendNurture('${b.id}')">${sent?'Send again':'Send nurture'}</button>`:'—'}
+      </td>
+    </tr>`;
+  }).join('') + `</tbody></table>`;
+}
+
 // ── PANEL NAV ─────────────────────────────────────────────────────────
-const PANELS = ['overview','vacancies','leads','applicants','scanner','landlords','templates','shortcuts','settings'];
-const TITLES  = { overview:'Overview', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', templates:'Post Templates', shortcuts:'Quick Scan Links', settings:'Settings' };
+const PANELS = ['overview','vacancies','leads','applicants','scanner','landlords','futurebuyers','templates','shortcuts','settings'];
+const TITLES  = { overview:'Overview', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', futurebuyers:'Future Buyers', templates:'Post Templates', shortcuts:'Quick Scan Links', settings:'Settings' };
 function showPanel(name) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1496,6 +1675,7 @@ function showPanel(name) {
   if (name==='vacancies') { closeVacancyForm(); renderVacanciesPanel(); }
   if (name==='landlords') loadLandlordLeads();
   if (name==='applicants') loadApplicants();
+  if (name==='futurebuyers') loadFutureBuyers();
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────
