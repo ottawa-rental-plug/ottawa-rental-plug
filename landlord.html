@@ -832,6 +832,7 @@ function scoreLeadAgainstVacancy(lead, v) {
   // Budget (30pts)
   const budget = parseFloat(lead.budget) || 0;
   if (!budget)                                      { score += 15; breakdown.budget = 15; }
+  else if (!v.price)                                { breakdown.budget = 0; }
   else if (budget >= v.price)                       { score += 30; breakdown.budget = 30; }
   else if (budget >= v.price * 0.92)                { score += 20; breakdown.budget = 20; }
   else if (budget >= v.price * 0.85)                { score += 10; breakdown.budget = 10; }
@@ -885,7 +886,7 @@ function domBadge(d) {
   return `<span class="dom-badge dom-stale">${d}d — act now</span>`;
 }
 function priceSuggestion(d, price) {
-  if (d < 30) return null;
+  if (!price || d < 30) return null;
   if (d < 45) return { pct:5,  suggested: Math.round(price * 0.95 / 50) * 50 };
   if (d < 60) return { pct:8,  suggested: Math.round(price * 0.92 / 50) * 50 };
   return              { pct:12, suggested: Math.round(price * 0.88 / 50) * 50 };
@@ -983,7 +984,7 @@ function renderLeads(filter) {
       <td>${matchCell}</td>
       <td>${statusSelect(lead)}</td>
       <td style="white-space:nowrap">
-        ${lead.email ? `<a href="mailto:${encodeURIComponent(lead.email)}?subject=Your Ottawa Rental Match — I Have a Unit for You&body=Hi ${firstName},%0A%0AI have a ${vacancy?vacancy.beds+'BR '+vacancy.type+' at $'+vacancy.price.toLocaleString()+'/mo':''} that matches your search. Are you still looking?%0A%0A— Ottawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>` : '—'}
+        ${lead.email ? `<a href="mailto:${encodeURIComponent(lead.email)}?subject=Your Ottawa Rental Match — I Have a Unit for You&body=Hi ${firstName},%0A%0AI have a ${vacancy?vacancy.beds+'BR '+vacancy.type+(vacancy.price!=null?' at $'+vacancy.price.toLocaleString()+'/mo':''):''}%20that matches your search. Are you still looking?%0A%0A— Ottawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>` : '—'}
         ${lead.phone ? `<a href="tel:${encodeURIComponent(lead.phone)}" class="contact-btn" style="margin-left:4px">Call</a>` : ''}
       </td>
     </tr>`;
@@ -1061,7 +1062,7 @@ async function sendPushNotification(lead, score, vacancy) {
   const threshold = NTFY_THRESHOLD;
   if (score < threshold) return;
   const title = `ORP Match — ${score}/100`;
-  const body  = `${lead.name||'New lead'} needs ${lead.beds||'?'}BR, budget $${lead.budget||'?'}/mo → matches your ${vacancy.beds}BR ${vacancy.type} at $${vacancy.price.toLocaleString()}. Reply in 60 min.`;
+  const body  = `${lead.name||'New lead'} needs ${lead.beds||'?'}BR, budget $${lead.budget||'?'}/mo → matches your ${vacancy.beds}BR ${vacancy.type}${vacancy.price!=null?' at $'+vacancy.price.toLocaleString():''}. Reply in 60 min.`;
   try {
     await fetch(`https://ntfy.sh/${topic}`, {
       method: 'POST',
@@ -1157,7 +1158,7 @@ function saveVacancy() {
 function deleteVacancy(id) {
   const v = getVacancies().find(x => x.id === id);
   if (!v) return;
-  if (!confirm(`Delete the ${v.beds}BR ${v.type} at $${v.price.toLocaleString()}/mo?`)) return;
+  if (!confirm(`Delete the ${v.beds}BR ${v.type}${v.price!=null?' at $'+v.price.toLocaleString()+'/mo':''}?`)) return;
   saveVacancyList(getVacancies().filter(x => x.id !== id));
   renderVacanciesPanel();
   renderOverview();
@@ -1168,6 +1169,7 @@ function buildTemplates() {
   const vacancies = getVacancies();
   const templates = [];
   for (const v of vacancies) {
+    if (!v.price) continue;
     const perPerson = v.beds >= 4 ? ` (split = $${Math.round(v.price / v.beds / 50) * 50}/person)` : '';
     // Facebook Group post
     templates.push({
@@ -1359,7 +1361,7 @@ async function runScan() {
           <div style="flex:1">
             <div class="scan-title">${escapeHtml(r.title)}</div>
             <div class="scan-meta">${escapeHtml(r.desc||'')}${when?` · ${when}`:''}</div>
-            ${r.matchedVacancy ? `<div style="font-size:11px;margin-top:5px;color:var(--blue);font-weight:600">Matches your ${r.matchedVacancy.beds}BR ${r.matchedVacancy.type} — $${r.matchedVacancy.price.toLocaleString()}/mo</div>` : ''}
+            ${r.matchedVacancy ? `<div style="font-size:11px;margin-top:5px;color:var(--blue);font-weight:600">Matches your ${r.matchedVacancy.beds}BR ${r.matchedVacancy.type}${r.matchedVacancy.price != null ? ' — $'+r.matchedVacancy.price.toLocaleString()+'/mo' : ''}</div>` : ''}
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
             <div class="score-bar-wrap"><div class="score-bar"><div class="score-fill ${cls}" style="width:${r.score}%"></div></div><span class="score-num ${cls}">${r.score}</span></div>
@@ -1985,7 +1987,7 @@ async function loadToday() {
       const d = Math.round((now - new Date(v.listed)) / 86400000);
       if (d >= 30) items.push({ prio: d >= 45 ? 1 : 2, cls: d >= 45 ? 'hot' : 'urgent', icon:'tag',
         title:`${v.beds}BR ${v.type} — ${d} days on market`,
-        sub:`$${parseInt(v.price).toLocaleString()}/mo · consider a price adjustment`,
+        sub:`${v.price != null ? '$'+parseInt(v.price).toLocaleString()+'/mo · ' : ''}consider a price adjustment`,
         panel:'vacancies', label:'Open' });
     });
 
