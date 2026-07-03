@@ -1418,6 +1418,7 @@ function updateMatchBadge() {
 
 // ── OVERVIEW ─────────────────────────────────────────────────────────
 function renderOverview() {
+  try {
   const leads = getLeads(); const vacancies = getVacancies();
   const total    = vacancies.length;
   const stale    = vacancies.filter(v => dom(v.listed) >= 30).length;
@@ -1472,6 +1473,7 @@ function renderOverview() {
           </div>
         </div>`;
       }).join('');
+  } catch (e) { console.error('renderOverview failed:', e); }
 }
 
 // ── LANDLORD LEADS (supply side) ─────────────────────────────────────
