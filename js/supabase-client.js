@@ -62,6 +62,7 @@ function unitFromVacancy(v) {
     address: v.address || null,
     neighbourhood: v.neighbourhood || null,
     description: v.description || null,
+    landlord_id: v.landlordId || null,
     listed_at: v.listed || null,
     status: 'available',
   };
@@ -103,5 +104,48 @@ async function orpRequestScreening(applicantId) {
     err.status = res.status;
     throw err;
   }
+  return data;
+}
+
+// ── Landlord accounts (Phase 5: client portal) ────────────────────────
+async function orpLoadLandlords() {
+  const { data, error } = await sb.from('landlords').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+async function orpSaveLandlord({ id, name, email, phone }) {
+  const row = { name: name || null, email: (email || '').toLowerCase() || null, phone: phone || null };
+  if (id) {
+    const { error } = await sb.from('landlords').update(row).eq('id', id);
+    if (error) throw error;
+    return id;
+  }
+  const { data, error } = await sb.from('landlords').insert(row).select('id').single();
+  if (error) throw error;
+  return data.id;
+}
+async function orpDeleteLandlord(id) {
+  const { error } = await sb.from('landlords').delete().eq('id', id);
+  if (error) throw error;
+}
+async function orpAssignUnitLandlord(unitId, landlordId) {
+  const { error } = await sb.from('units').update({ landlord_id: landlordId }).eq('id', unitId);
+  if (error) throw error;
+}
+async function orpLoadUnits() {
+  const { data, error } = await sb.from('units').select('id,beds,baths,type,price,address,neighbourhood,status,landlord_id').order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+async function orpInviteLandlord(landlordId, email) {
+  const session = await orpSession();
+  if (!session) throw new Error('Not signed in');
+  const res = await fetch('/.netlify/functions/landlord-invite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ landlordId, email }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
   return data;
 }
