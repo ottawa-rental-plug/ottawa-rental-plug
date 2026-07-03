@@ -2085,6 +2085,8 @@ function showPanel(name) {
   const idx = PANELS.indexOf(name);
   if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
   document.getElementById('panelTitle').textContent = TITLES[name]||name;
+  if (name==='today')     loadToday();
+  if (name==='analytics') loadAnalytics();
   if (name==='leads')     renderLeads(currentFilter);
   if (name==='templates') buildTemplates();
   if (name==='shortcuts') buildShortcuts();
