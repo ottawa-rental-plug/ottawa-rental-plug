@@ -150,6 +150,15 @@
     .tab { padding:7px 14px; font-size:13px; font-weight:500; border-radius:8px; cursor:pointer; border:none; background:none; font-family:inherit; color:var(--gray); transition:all .15s; }
     .tab.active { background:var(--blue); color:#fff; }
     .tab:hover:not(.active) { background:var(--border); color:var(--navy); }
+    .tab .cnt { opacity:.5; font-weight:700; margin-left:5px; }
+    .tab.active .cnt { opacity:.8; }
+    /* Applicant filter bar (DashQ-style segmenting) */
+    .applicant-filterbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+    .applicant-search { padding:8px 12px 8px 32px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none; color:var(--navy); min-width:210px; background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%236e6e73' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") 10px center/14px no-repeat; }
+    .applicant-search:focus { border-color:var(--blue); }
+    .applicant-select { padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; color:var(--navy); background:var(--white); cursor:pointer; outline:none; }
+    .applicant-select:focus { border-color:var(--blue); }
+    .applicant-filterbar .tabs { margin-bottom:0; }
 
     /* TEMPLATES */
     .template-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
@@ -407,6 +416,7 @@
           <button class="btn-top secondary" onclick="loadApplicants()" style="padding:7px 12px">Refresh</button>
         </div>
         <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Tenants who applied at <strong>ottawarentalplug.com/apply</strong>, auto-matched to your published units. Publish your vacancies first (Vacancies &rarr; Publish to cloud) so matching has units to score against.</p>
+        <div id="applicantFilterBar" class="applicant-filterbar" style="display:none"></div>
         <div class="card" id="applicantsCard"><div class="scan-empty">Loading…</div></div>
       </div>
     </div>
@@ -1321,64 +1331,126 @@ const APPLICANT_STAGE_LABEL = {
   new:'New', matched:'Matched', screening:'Screening', approved:'Approved',
   placed:'Placed', nurture:'Nurture', future_buyer:'Future buyer', declined:'Declined', lost:'Lost',
 };
+let applicantsCache = [];
+let applicantFilter = { stage:'all', q:'', match:'any' };
+
+// Best match score for an applicant: highest across their applications; -1 = no match.
+function applicantBestScore(a) {
+  let best = -1;
+  (a.applications||[]).forEach(x => { const s = x.match_score||0; if (s > best) best = s; });
+  return best;
+}
+
 async function loadApplicants() {
+  const bar = document.getElementById('applicantFilterBar');
   const card = document.getElementById('applicantsCard');
+  bar.style.display = 'none';
   card.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading applicants…</div>`;
   try {
     const { data, error } = await sb.from('applicants')
       .select('id,name,email,phone,beds_wanted,budget,move_in,neighbourhood,stage,source,created_at,applications(match_score,units(beds,type,neighbourhood,price))')
       .order('created_at', { ascending: false });
     if (error) throw error;
-    const applicants = data || [];
+    applicantsCache = data || [];
 
     const badge = document.getElementById('applicantBadge');
-    const newCount = applicants.filter(a => a.stage === 'new').length;
+    const newCount = applicantsCache.filter(a => (a.stage||'new') === 'new').length;
     if (newCount > 0) { badge.style.display=''; badge.textContent = newCount; } else badge.style.display='none';
 
-    if (!applicants.length) {
+    if (!applicantsCache.length) {
       card.innerHTML = `<div class="scan-empty"><p>No applicants yet. Share <strong>ottawarentalplug.com/apply</strong> to start capturing them.</p></div>`;
       return;
     }
 
-    card.innerHTML = `<table class="leads-table"><thead><tr>
-      <th>Applicant</th><th>Looking For</th><th>Move-in</th><th>Best Match</th><th>Stage</th><th>Applied</th><th>Action</th>
-    </tr></thead><tbody>` + applicants.map(a => {
-      const want = [a.beds_wanted && a.beds_wanted !== 'Any' ? a.beds_wanted+' BR' : 'Any beds',
-                    a.budget ? '$'+parseInt(a.budget).toLocaleString()+'/mo' : null,
-                    a.neighbourhood && a.neighbourhood !== 'Any' ? a.neighbourhood : null].filter(Boolean).join(' · ');
-      const apps = (a.applications||[]).slice().sort((x,y)=>(y.match_score||0)-(x.match_score||0));
-      const best = apps[0];
-      let matchCell = '<span style="color:var(--gray);font-size:12px">No match yet</span>';
-      if (best) {
-        const u = best.units || {};
-        const s = best.match_score || 0;
-        const cls = scoreClass(s);
-        const unitDesc = [u.beds!=null?u.beds+'BR':'', u.type].filter(Boolean).join(' ') || 'unit';
-        matchCell = `<div class="score-bar-wrap"><div class="score-bar"><div class="score-fill ${cls}" style="width:${s}%"></div></div><span class="score-num ${cls}">${s}</span></div>
-                     <div style="font-size:11px;color:var(--gray)">${escapeHtml(unitDesc)}${u.neighbourhood?` · ${escapeHtml(u.neighbourhood)}`:''}</div>`;
-      }
-      const moveIn = a.move_in ? new Date(a.move_in+'T12:00:00').toLocaleDateString('en-CA',{month:'short',day:'numeric'}) : '—';
-      const applied = new Date(a.created_at).toLocaleDateString('en-CA',{month:'short',day:'numeric'});
-      const firstName = encodeURIComponent((a.name||'').split(' ')[0]);
-      const subj = encodeURIComponent('Your Ottawa rental application — Ottawa Rental Plug');
-      return `<tr>
-        <td><div style="font-weight:600;color:var(--navy)">${escapeHtml(a.name||'—')}</div>
-            <div style="font-size:11px;color:var(--gray)">${escapeHtml(a.email||'')}</div></td>
-        <td>${escapeHtml(want||'—')}</td>
-        <td>${moveIn}</td>
-        <td>${matchCell}</td>
-        <td>${escapeHtml(APPLICANT_STAGE_LABEL[a.stage]||a.stage||'New')}</td>
-        <td>${applied}</td>
-        <td style="white-space:nowrap">
-          ${a.email?`<a href="mailto:${encodeURIComponent(a.email)}?subject=${subj}&body=Hi ${firstName},%0A%0AThanks for applying with Ottawa Rental Plug...%0A%0A— Cyril%0A(613) 601-3005" class="contact-btn">Email</a>`:'—'}
-          ${a.phone?`<a href="tel:${encodeURIComponent(a.phone)}" class="contact-btn" style="margin-left:4px">Call</a>`:''}
-        </td>
-      </tr>`;
-    }).join('') + `</tbody></table>`;
+    applicantFilter = { stage:'all', q:'', match:'any' };
+    bar.style.display = '';
+    bar.innerHTML = `
+      <input id="applicantSearch" class="applicant-search" placeholder="Search name, email, area…" oninput="setApplicantSearch(this.value)">
+      <select class="applicant-select" onchange="setApplicantMatch(this.value)">
+        <option value="any">Any match</option>
+        <option value="strong">Strong match (75+)</option>
+        <option value="has">Has a match</option>
+        <option value="none">No match yet</option>
+      </select>
+      <div id="applicantPills" class="tabs"></div>`;
+    renderApplicantPills();
+    renderApplicantsTable();
   } catch (e) {
+    bar.style.display = 'none';
     card.innerHTML = `<div class="scan-empty"><p style="color:var(--red)">Couldn't load applicants: ${escapeHtml(e.message||String(e))}</p>
       <p style="margin-top:6px;font-size:12px">If this is the first run, make sure <strong>db/schema.sql</strong> has been run in Supabase.</p></div>`;
   }
+}
+
+const APPLICANT_STAGE_ORDER = ['all','new','matched','screening','approved','placed','nurture','future_buyer','declined','lost'];
+function renderApplicantPills() {
+  const counts = { all: applicantsCache.length };
+  applicantsCache.forEach(a => { const s = a.stage||'new'; counts[s] = (counts[s]||0)+1; });
+  document.getElementById('applicantPills').innerHTML = APPLICANT_STAGE_ORDER
+    .filter(s => s === 'all' || counts[s])
+    .map(s => `<button class="tab ${applicantFilter.stage===s?'active':''}" onclick="setApplicantStage('${s}')">${s==='all'?'All':APPLICANT_STAGE_LABEL[s]}<span class="cnt">${counts[s]||0}</span></button>`)
+    .join('');
+}
+
+function getFilteredApplicants() {
+  const q = applicantFilter.q.trim().toLowerCase();
+  return applicantsCache.filter(a => {
+    if (applicantFilter.stage !== 'all' && (a.stage||'new') !== applicantFilter.stage) return false;
+    if (q && !`${a.name||''} ${a.email||''} ${a.neighbourhood||''}`.toLowerCase().includes(q)) return false;
+    const best = applicantBestScore(a);
+    if (applicantFilter.match === 'strong' && best < 75) return false;
+    if (applicantFilter.match === 'has'    && best < 0)  return false;
+    if (applicantFilter.match === 'none'   && best >= 0) return false;
+    return true;
+  });
+}
+
+function setApplicantStage(s) { applicantFilter.stage = s; renderApplicantPills(); renderApplicantsTable(); }
+function setApplicantSearch(v) { applicantFilter.q = v; renderApplicantsTable(); }
+function setApplicantMatch(v) { applicantFilter.match = v; renderApplicantsTable(); }
+
+function renderApplicantsTable() {
+  const card = document.getElementById('applicantsCard');
+  const list = getFilteredApplicants();
+  if (!list.length) {
+    card.innerHTML = `<div class="scan-empty"><p>No applicants match this filter.</p></div>`;
+    return;
+  }
+  card.innerHTML = `<table class="leads-table"><thead><tr>
+    <th>Applicant</th><th>Looking For</th><th>Move-in</th><th>Best Match</th><th>Stage</th><th>Applied</th><th>Action</th>
+  </tr></thead><tbody>` + list.map(a => {
+    const want = [a.beds_wanted && a.beds_wanted !== 'Any' ? a.beds_wanted+' BR' : 'Any beds',
+                  a.budget ? '$'+parseInt(a.budget).toLocaleString()+'/mo' : null,
+                  a.neighbourhood && a.neighbourhood !== 'Any' ? a.neighbourhood : null].filter(Boolean).join(' · ');
+    const apps = (a.applications||[]).slice().sort((x,y)=>(y.match_score||0)-(x.match_score||0));
+    const best = apps[0];
+    let matchCell = '<span style="color:var(--gray);font-size:12px">No match yet</span>';
+    if (best) {
+      const u = best.units || {};
+      const s = best.match_score || 0;
+      const cls = scoreClass(s);
+      const unitDesc = [u.beds!=null?u.beds+'BR':'', u.type].filter(Boolean).join(' ') || 'unit';
+      matchCell = `<div class="score-bar-wrap"><div class="score-bar"><div class="score-fill ${cls}" style="width:${s}%"></div></div><span class="score-num ${cls}">${s}</span></div>
+                   <div style="font-size:11px;color:var(--gray)">${escapeHtml(unitDesc)}${u.neighbourhood?` · ${escapeHtml(u.neighbourhood)}`:''}</div>`;
+    }
+    const moveIn = a.move_in ? new Date(a.move_in+'T12:00:00').toLocaleDateString('en-CA',{month:'short',day:'numeric'}) : '—';
+    const applied = new Date(a.created_at).toLocaleDateString('en-CA',{month:'short',day:'numeric'});
+    const firstName = encodeURIComponent((a.name||'').split(' ')[0]);
+    const subj = encodeURIComponent('Your Ottawa rental application — Ottawa Rental Plug');
+    return `<tr>
+      <td><div style="font-weight:600;color:var(--navy)">${escapeHtml(a.name||'—')}</div>
+          <div style="font-size:11px;color:var(--gray)">${escapeHtml(a.email||'')}</div></td>
+      <td>${escapeHtml(want||'—')}</td>
+      <td>${moveIn}</td>
+      <td>${matchCell}</td>
+      <td>${escapeHtml(APPLICANT_STAGE_LABEL[a.stage]||a.stage||'New')}</td>
+      <td>${applied}</td>
+      <td style="white-space:nowrap">
+        ${a.email?`<a href="mailto:${encodeURIComponent(a.email)}?subject=${subj}&body=Hi ${firstName},%0A%0AThanks for applying with Ottawa Rental Plug...%0A%0A— Cyril%0A(613) 601-3005" class="contact-btn">Email</a>`:'—'}
+        ${a.phone?`<a href="tel:${encodeURIComponent(a.phone)}" class="contact-btn" style="margin-left:4px">Call</a>`:''}
+      </td>
+    </tr>`;
+  }).join('') + `</tbody></table>`;
 }
 
 // Publish the dashboard's vacancies into the cloud `units` table so incoming
