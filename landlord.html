@@ -250,6 +250,69 @@
     }
     @keyframes spin { to { transform:rotate(360deg); } }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+    /* ── Applicant drawer (comms hub) ───────────────────────────────── */
+    .drawer-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:800; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .drawer-backdrop.open { opacity:1; pointer-events:all; }
+    .drawer { position:fixed; top:0; right:0; bottom:0; width:min(520px,100vw); background:var(--white); box-shadow:-8px 0 40px rgba(0,0,0,.12); z-index:801; transform:translateX(100%); transition:transform .25s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; overflow:hidden; }
+    .drawer.open { transform:none; }
+    .drawer-head { padding:20px 24px 16px; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .drawer-name { font-size:18px; font-weight:700; color:var(--navy); }
+    .drawer-meta { font-size:12px; color:var(--gray); margin-top:3px; }
+    .drawer-close { background:none; border:none; cursor:pointer; color:var(--gray); padding:4px; border-radius:6px; flex-shrink:0; }
+    .drawer-close:hover { background:var(--border); color:var(--navy); }
+    .drawer-body { flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:20px; }
+    .drawer-section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--gray); margin-bottom:10px; }
+    /* Quick actions */
+    .qa-grid { display:flex; flex-wrap:wrap; gap:8px; }
+    .qa-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; border:1px solid var(--border); background:var(--white); color:var(--navy); text-decoration:none; transition:background .15s; }
+    .qa-btn:hover { background:var(--bg); }
+    .qa-btn.primary { background:var(--blue); color:#fff; border-color:var(--blue); }
+    .qa-btn.primary:hover { background:#0060c7; }
+    .qa-btn svg { flex-shrink:0; }
+    /* Activity log */
+    .act-log-form { background:var(--bg); border-radius:12px; padding:14px; }
+    .act-log-type { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+    .act-log-type button { padding:5px 12px; border-radius:999px; border:1px solid var(--border); background:var(--white); font-size:12px; font-weight:600; font-family:inherit; cursor:pointer; color:var(--gray); transition:all .15s; }
+    .act-log-type button.sel { background:var(--navy); color:#fff; border-color:var(--navy); }
+    .act-log-textarea { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; resize:vertical; min-height:68px; outline:none; transition:border-color .2s; }
+    .act-log-textarea:focus { border-color:var(--blue); }
+    .act-log-submit { margin-top:8px; padding:8px 18px; background:var(--navy); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; }
+    .act-log-submit:disabled { opacity:.5; cursor:not-allowed; }
+    /* Timeline */
+    .timeline { display:flex; flex-direction:column; gap:0; }
+    .tl-item { display:flex; gap:12px; padding-bottom:16px; position:relative; }
+    .tl-item:not(:last-child)::before { content:''; position:absolute; left:15px; top:30px; bottom:0; width:2px; background:var(--border); }
+    .tl-dot { width:32px; height:32px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--blue-light); color:var(--blue); }
+    .tl-dot.note { background:#f0fdf4; color:#16a34a; }
+    .tl-dot.call { background:#fff7ed; color:var(--orange); }
+    .tl-dot.email { background:var(--blue-light); color:var(--blue); }
+    .tl-dot.status_change { background:#faf5ff; color:#7c3aed; }
+    .tl-content { flex:1; padding-top:6px; }
+    .tl-label { font-size:12px; font-weight:700; color:var(--navy); }
+    .tl-body { font-size:12.5px; color:#374151; margin-top:3px; white-space:pre-wrap; line-height:1.5; }
+    .tl-time { font-size:11px; color:var(--gray); margin-top:3px; }
+
+    /* ── Print / Tenant Summary PDF ─────────────────────────────────── */
+    .print-only { display:none; }
+    @media print {
+      body > *:not(#printSheet) { display:none !important; }
+      #printSheet { display:block !important; font-family:'Inter',-apple-system,sans-serif; color:#1d1d1f; padding:40px; max-width:720px; margin:0 auto; }
+      .print-only { display:block; }
+      .ps-logo { font-size:13px; font-weight:800; color:#003a8c; letter-spacing:-.01em; margin-bottom:4px; }
+      .ps-tagline { font-size:11px; color:#6e6e73; margin-bottom:28px; }
+      .ps-title { font-size:22px; font-weight:700; color:#003a8c; margin-bottom:4px; }
+      .ps-sub { font-size:12px; color:#6e6e73; margin-bottom:24px; }
+      .ps-section { margin-bottom:22px; }
+      .ps-section-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#6e6e73; border-bottom:1px solid #e8e8ed; padding-bottom:5px; margin-bottom:12px; }
+      .ps-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; }
+      .ps-field { }
+      .ps-field-label { font-size:10px; font-weight:600; color:#6e6e73; margin-bottom:2px; }
+      .ps-field-value { font-size:13px; color:#1d1d1f; font-weight:500; }
+      .ps-badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; background:#d1fae5; color:#065f46; }
+      .ps-badge.warn { background:#fef3c7; color:#92400e; }
+      .ps-badge.danger { background:#fee2e2; color:#991b1b; }
+      .ps-footer { margin-top:32px; padding-top:14px; border-top:1px solid #e8e8ed; font-size:10px; color:#6e6e73; display:flex; justify-content:space-between; }
+    }
   </style>
 </head>
 <body>
@@ -1687,8 +1750,7 @@ async function loadApplicants() {
         <td>${applied}</td>
         <td>${screenCell}</td>
         <td style="white-space:nowrap">
-          ${a.email?`<a href="mailto:${encodeURIComponent(a.email)}?subject=${subj}&body=Hi ${firstName},%0A%0AThanks for applying with Ottawa Rental Plug...%0A%0A— Ottawa Rental Plug%0A(613) 601-3005" class="contact-btn">Email</a>`:'—'}
-          ${a.phone?`<a href="tel:${encodeURIComponent(a.phone)}" class="contact-btn" style="margin-left:4px">Call</a>`:''}
+          <button class="contact-btn" onclick='openApplicantDrawer(${JSON.stringify(a)})'>Open</button>
           ${actionExtra}
         </td>
       </tr>`;
@@ -2055,6 +2117,255 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   } catch (e) { console.error('Session resume failed', e); }
 });
+
+// ── COMMS HUB (activity log + drawer) ────────────────────────────────
+let _drawerApplicant = null;
+let _actLogType = 'note';
+
+function openApplicantDrawer(applicant) {
+  _drawerApplicant = applicant;
+  const d = document.getElementById('appDrawer');
+  const backdrop = document.getElementById('drawerBackdrop');
+  document.getElementById('drawerName').textContent = applicant.name || '—';
+  const meta = [applicant.email, applicant.phone, APPLICANT_STAGE_LABEL[applicant.stage] || applicant.stage].filter(Boolean).join(' · ');
+  document.getElementById('drawerMeta').textContent = meta;
+
+  // Quick-action email links
+  const firstName = encodeURIComponent((applicant.name||'').split(' ')[0] || 'there');
+  const best = (applicant.applications||[]).slice().sort((a,b)=>(b.match_score||0)-(a.match_score||0))[0];
+  const unitSnap = best && best.unit_snapshot;
+  const unitDesc = unitSnap ? [unitSnap.beds === 0 ? 'Studio' : (unitSnap.beds != null ? unitSnap.beds+'BR' : ''), unitSnap.type].filter(Boolean).join(' ') : '';
+  const subj = encodeURIComponent('Your Ottawa Rental Plug application');
+  const followUpBody = encodeURIComponent(`Hi ${decodeURIComponent(firstName)},\n\nJust following up on your ${unitDesc ? unitDesc + ' application' : 'rental application'} with Ottawa Rental Plug. Do you have any questions or updates on your situation?\n\n— Ottawa Rental Plug\n(613) 601-3005`);
+  const approvedBody = encodeURIComponent(`Hi ${decodeURIComponent(firstName)},\n\nGreat news — you've been approved${unitDesc ? ' for the ' + unitDesc : ''}! I'll be in touch shortly with next steps.\n\n— Ottawa Rental Plug\n(613) 601-3005`);
+  const declinedBody = encodeURIComponent(`Hi ${decodeURIComponent(firstName)},\n\nThank you for applying with Ottawa Rental Plug. Unfortunately we've moved forward with another applicant for this unit. I'll keep your file on hand for future availability.\n\n— Ottawa Rental Plug\n(613) 601-3005`);
+
+  document.getElementById('drawerQA').innerHTML = [
+    applicant.email ? `<a href="mailto:${encodeURIComponent(applicant.email)}?subject=${subj}&body=${followUpBody}" class="qa-btn" onclick="logQuick('email','Follow-up email sent')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>Follow-up</a>` : '',
+    applicant.email ? `<a href="mailto:${encodeURIComponent(applicant.email)}?subject=${encodeURIComponent('You\'ve been approved — Ottawa Rental Plug')}&body=${approvedBody}" class="qa-btn primary" onclick="logQuick('email','Approval email sent')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Send Approval</a>` : '',
+    applicant.email ? `<a href="mailto:${encodeURIComponent(applicant.email)}?subject=${subj}&body=${declinedBody}" class="qa-btn" onclick="logQuick('email','Decline email sent')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Decline</a>` : '',
+    applicant.phone ? `<a href="tel:${encodeURIComponent(applicant.phone)}" class="qa-btn" onclick="logQuick('call','Outbound call')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>Call</a>` : '',
+    `<button class="qa-btn" onclick="printTenantSummary()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Tenant Summary PDF</button>`,
+  ].filter(Boolean).join('');
+
+  setActLogType('note');
+  loadActivityTimeline(applicant.id);
+  backdrop.classList.add('open');
+  d.classList.add('open');
+}
+
+function closeApplicantDrawer() {
+  document.getElementById('appDrawer').classList.remove('open');
+  document.getElementById('drawerBackdrop').classList.remove('open');
+  _drawerApplicant = null;
+}
+
+function setActLogType(t) {
+  _actLogType = t;
+  document.querySelectorAll('.act-log-type button').forEach(b => b.classList.toggle('sel', b.dataset.type === t));
+}
+
+async function submitActivity() {
+  if (!_drawerApplicant) return;
+  const ta = document.getElementById('actLogBody');
+  const body = ta.value.trim();
+  if (!body) { ta.focus(); return; }
+  const btn = document.getElementById('actLogSubmit');
+  btn.disabled = true;
+  try {
+    const { error } = await sb.from('activities').insert({ applicant_id: _drawerApplicant.id, type: _actLogType, body });
+    if (error) throw error;
+    ta.value = '';
+    await loadActivityTimeline(_drawerApplicant.id);
+  } catch (e) {
+    alert('Could not save: ' + (e.message || e));
+  } finally { btn.disabled = false; }
+}
+
+async function logQuick(type, body) {
+  if (!_drawerApplicant) return;
+  try { await sb.from('activities').insert({ applicant_id: _drawerApplicant.id, type, body }); } catch (_) {}
+  setTimeout(() => loadActivityTimeline(_drawerApplicant && _drawerApplicant.id), 800);
+}
+
+async function loadActivityTimeline(applicantId) {
+  const el = document.getElementById('actTimeline');
+  if (!el || !applicantId) return;
+  el.innerHTML = '<div style="font-size:12px;color:var(--gray)">Loading…</div>';
+  try {
+    const { data, error } = await sb.from('activities').select('*').eq('applicant_id', applicantId).order('created_at', { ascending: false });
+    if (error) throw error;
+    const items = data || [];
+    if (!items.length) { el.innerHTML = '<div style="font-size:12px;color:var(--gray)">No activity yet — log a note above.</div>'; return; }
+    const ICONS = {
+      note: '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+      call: '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>',
+      email: '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>',
+      status_change: '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>',
+    };
+    const LABEL = { note:'Note', call:'Call', email:'Email', status_change:'Stage change' };
+    el.innerHTML = '<div class="timeline">' + items.map(it => `
+      <div class="tl-item">
+        <div class="tl-dot ${it.type}">${ICONS[it.type] || ICONS.note}</div>
+        <div class="tl-content">
+          <div class="tl-label">${escapeHtml(LABEL[it.type] || it.type)}</div>
+          ${it.body ? `<div class="tl-body">${escapeHtml(it.body)}</div>` : ''}
+          <div class="tl-time">${new Date(it.created_at).toLocaleString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+      </div>`).join('') + '</div>';
+  } catch (e) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--red)">Couldn't load activity: ${escapeHtml(e.message||String(e))}</div>`;
+  }
+}
+
+// ── TENANT SUMMARY PDF ────────────────────────────────────────────────
+function printTenantSummary() {
+  if (!_drawerApplicant) return;
+  const a = _drawerApplicant;
+  const best = (a.applications||[]).slice().sort((x,y)=>(y.match_score||0)-(x.match_score||0))[0];
+  const u = (best && best.unit_snapshot) || (best && best.units) || {};
+  const screenings = (a.screenings||[]).slice().sort((x,y)=>new Date(y.requested_at)-new Date(x.requested_at));
+  const screen = screenings[0];
+  const rentBasis = u.price || Number(a.budget) || null;
+  const ratio = a.monthly_income && rentBasis ? (a.monthly_income / rentBasis) : null;
+  const ratioClass = ratio ? (ratio >= 3 ? '' : ratio >= 2.5 ? 'warn' : 'danger') : 'warn';
+  const field = (label, value) => value ? `<div class="ps-field"><div class="ps-field-label">${label}</div><div class="ps-field-value">${escapeHtml(String(value))}</div></div>` : '';
+  const EMPLOYMENT_LABEL = { full_time:'Full-time', part_time:'Part-time', self_employed:'Self-employed', student:'Student', retired:'Retired', unemployed:'Unemployed', other:'Other' };
+  const ah = a.address_history && a.address_history.current;
+
+  document.getElementById('printSheet').innerHTML = `
+    <div class="ps-logo">Ottawa Rental Plug</div>
+    <div class="ps-tagline">Licensed Leasing Agent · Ottawa, ON · (613) 601-3005</div>
+    <div class="ps-title">Tenant Summary</div>
+    <div class="ps-sub">Prepared ${new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'})} · Confidential — agent use only</div>
+
+    <div class="ps-section">
+      <div class="ps-section-title">Applicant</div>
+      <div class="ps-grid">
+        ${field('Full name', a.name)}
+        ${field('Email', a.email)}
+        ${field('Phone', a.phone)}
+        ${field('Stage', APPLICANT_STAGE_LABEL[a.stage] || a.stage)}
+        ${field('Move-in requested', a.move_in ? new Date(a.move_in+'T12:00:00').toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}) : null)}
+        ${field('Neighbourhood preference', a.neighbourhood && a.neighbourhood !== 'Any' ? a.neighbourhood : null)}
+        ${field('Occupants', a.occupants)}
+        ${field('Pets', a.has_pets ? (a.pets_detail || 'Yes') : (a.has_pets === false ? 'No' : null))}
+        ${field('Smoker', a.is_smoker === true ? 'Yes' : a.is_smoker === false ? 'No' : null)}
+      </div>
+    </div>
+
+    ${u.type || u.beds != null ? `<div class="ps-section">
+      <div class="ps-section-title">Unit Applied For</div>
+      <div class="ps-grid">
+        ${field('Unit', [u.beds === 0 ? 'Studio' : (u.beds != null ? u.beds+'BR' : ''), u.type].filter(Boolean).join(' '))}
+        ${field('Address', u.address)}
+        ${field('Neighbourhood', u.neighbourhood)}
+        ${field('Rent', u.price ? '$'+Math.round(u.price).toLocaleString()+'/mo' : null)}
+      </div>
+    </div>` : ''}
+
+    <div class="ps-section">
+      <div class="ps-section-title">Employment & Income</div>
+      <div class="ps-grid">
+        ${field('Status', a.employment_status ? (EMPLOYMENT_LABEL[a.employment_status] || a.employment_status) : null)}
+        ${field('Employer', a.employer)}
+        ${field('Job title', a.job_title)}
+        ${field('Time at job', a.employment_length)}
+        ${field('Monthly income (self-reported)', a.monthly_income ? '$'+Math.round(a.monthly_income).toLocaleString() : null)}
+        ${rentBasis && ratio ? `<div class="ps-field"><div class="ps-field-label">Income-to-rent ratio</div><div class="ps-field-value"><span class="ps-badge ${ratioClass}">${ratio.toFixed(1)}x${ratio >= 3 ? ' — Qualifies' : ratio >= 2.5 ? ' — Borderline' : ' — Below 2.5x'}</span></div></div>` : ''}
+        ${a.additional_income && a.additional_income.source ? field('Additional income', a.additional_income.source + (a.additional_income.amount ? ' · $'+a.additional_income.amount+'/mo' : '')) : ''}
+      </div>
+    </div>
+
+    ${ah ? `<div class="ps-section">
+      <div class="ps-section-title">Address History</div>
+      <div class="ps-grid">
+        ${field('Current address', [ah.address, ah.city, ah.postal].filter(Boolean).join(', '))}
+        ${field('Time there', ah.time_there)}
+        ${field('Current rent', ah.monthly_rent ? '$'+ah.monthly_rent+'/mo' : null)}
+        ${field('Current landlord', ah.landlord_name)}
+        ${field('Landlord phone', ah.landlord_phone)}
+        ${field('Reason for leaving', ah.reason_leaving)}
+      </div>
+    </div>` : ''}
+
+    ${a.emergency_contact && a.emergency_contact.name ? `<div class="ps-section">
+      <div class="ps-section-title">Emergency Contact</div>
+      <div class="ps-grid">
+        ${field('Name', a.emergency_contact.name)}
+        ${field('Phone', a.emergency_contact.phone)}
+        ${field('Relationship', a.emergency_contact.relationship)}
+      </div>
+    </div>` : ''}
+
+    ${Array.isArray(a.personal_references) && a.personal_references.length ? `<div class="ps-section">
+      <div class="ps-section-title">References</div>
+      <div class="ps-grid">
+        ${a.personal_references.map((r,i) => [field(`Reference ${i+1}`, r.name), field('Phone', r.phone)].join('')).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="ps-section">
+      <div class="ps-section-title">Screening</div>
+      <div class="ps-grid">
+        ${field('Screening consent', a.consent_screening_at ? 'Yes — '+new Date(a.consent_screening_at).toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}) : 'Not yet given')}
+        ${screen ? field('SingleKey status', screen.status === 'completed' ? (screen.result_summary || 'Completed') : screen.status) : field('SingleKey status', 'Not requested')}
+        ${screen && screen.report_url ? field('Report', screen.report_url) : ''}
+      </div>
+    </div>
+
+    <div class="ps-footer">
+      <span>Ottawa Rental Plug · Cyril · (613) 601-3005 · ottawarentalplug.com</span>
+      <span>Generated ${new Date().toLocaleString('en-CA',{dateStyle:'medium',timeStyle:'short'})}</span>
+    </div>`;
+
+  window.print();
+}
 </script>
+
+<!-- Applicant drawer (comms hub) -->
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeApplicantDrawer()"></div>
+<div class="drawer" id="appDrawer" role="dialog" aria-modal="true">
+  <div class="drawer-head">
+    <div>
+      <div class="drawer-name" id="drawerName"></div>
+      <div class="drawer-meta" id="drawerMeta"></div>
+    </div>
+    <button class="drawer-close" onclick="closeApplicantDrawer()" aria-label="Close">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body">
+    <div>
+      <div class="drawer-section-title">Quick Actions</div>
+      <div class="qa-grid" id="drawerQA"></div>
+    </div>
+    <div>
+      <div class="drawer-section-title">Log Activity</div>
+      <div class="act-log-form">
+        <div class="act-log-type">
+          <button data-type="note" class="sel" onclick="setActLogType('note')">Note</button>
+          <button data-type="email" onclick="setActLogType('email')">Email sent</button>
+          <button data-type="call" onclick="setActLogType('call')">Call</button>
+        </div>
+        <textarea id="actLogBody" class="act-log-textarea" placeholder="Add a note, log what was discussed, or record what you sent…"></textarea>
+        <button id="actLogSubmit" class="act-log-submit" onclick="submitActivity()">Save</button>
+      </div>
+    </div>
+    <div>
+      <div class="drawer-section-title">Activity Timeline</div>
+      <div id="actTimeline"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Print-only tenant summary sheet -->
+<div id="printSheet" class="print-only"></div>
+
 </body>
 </html>
