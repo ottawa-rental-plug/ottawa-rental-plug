@@ -7,9 +7,14 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# Keep the private landlord dashboard out of search engines.
+# Keep the private landlord dashboard and owner portal out of search engines.
 [[headers]]
   for = "/landlord.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/client-portal.html"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
 

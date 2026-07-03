@@ -58,8 +58,10 @@ function unitFromVacancy(v) {
     baths: v.baths != null ? parseFloat(v.baths) : null,
     type: v.type || null,
     price: v.price != null ? parseFloat(v.price) : null,
+    neighbourhood: v.neighbourhood || null,
     listed_at: v.listed || null,
     status: 'available',
+    landlord_id: v.landlordId || null,   // Phase 5: scopes the unit into a landlord's portal view
   };
 }
 // Replace the units table with the dashboard's current vacancies.
@@ -156,4 +158,53 @@ async function orpSetFollowUp(applicantId, followUpAt, note) {
   await orpAddActivity(applicantId, 'note', followUpAt
     ? `Follow-up set for ${new Date(followUpAt).toLocaleDateString('en-CA')}${note ? ' — ' + note : ''}`
     : 'Follow-up cleared');
+}
+
+// ── Landlord accounts (Phase 5: client portal) ────────────────────────
+// Admin-only (RLS: is_admin()). Manages the `landlords` table and which units
+// belong to which landlord, so the portal (client-portal.html) can scope a
+// landlord's view to their own data.
+async function orpLoadLandlords() {
+  const { data, error } = await sb.from('landlords').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+async function orpSaveLandlord({ id, name, email, phone }) {
+  const row = { name: name || null, email: (email || '').toLowerCase() || null, phone: phone || null };
+  if (id) {
+    const { error } = await sb.from('landlords').update(row).eq('id', id);
+    if (error) throw error;
+    return id;
+  }
+  const { data, error } = await sb.from('landlords').insert(row).select('id').single();
+  if (error) throw error;
+  return data.id;
+}
+async function orpDeleteLandlord(id) {
+  const { error } = await sb.from('landlords').delete().eq('id', id);
+  if (error) throw error;
+}
+// Assign (or unassign, pass null) a cloud `units` row to a landlord.
+async function orpAssignUnitLandlord(unitId, landlordId) {
+  const { error } = await sb.from('units').update({ landlord_id: landlordId }).eq('id', unitId);
+  if (error) throw error;
+}
+async function orpLoadUnits() {
+  const { data, error } = await sb.from('units').select('id,beds,baths,type,price,address,neighbourhood,status,landlord_id').order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+// Sends the landlord a portal invite email via the Netlify function (uses the
+// service-role key server-side; the browser only ever holds the session token).
+async function orpInviteLandlord(landlordId, email) {
+  const session = await orpSession();
+  if (!session) throw new Error('Not signed in');
+  const res = await fetch('/.netlify/functions/landlord-invite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ landlordId, email }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
 }
