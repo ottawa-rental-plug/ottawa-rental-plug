@@ -152,6 +152,36 @@
     .tab { padding:7px 14px; font-size:13px; font-weight:500; border-radius:8px; cursor:pointer; border:none; background:none; font-family:inherit; color:var(--gray); transition:all .15s; }
     .tab.active { background:var(--blue); color:#fff; }
     .tab:hover:not(.active) { background:var(--border); color:var(--navy); }
+    .tab .cnt { opacity:.5; font-weight:700; margin-left:5px; }
+    .tab.active .cnt { opacity:.85; }
+    /* Future Buyers */
+    .fb-filterbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+    .fb-band { display:inline-block; font-size:11px; font-weight:700; border-radius:999px; padding:2px 9px; white-space:nowrap; }
+    .fb-band.strong   { background:#fbf1d3; color:#8a6d1a; }
+    .fb-band.moderate { background:var(--blue-light); color:var(--blue); }
+    .fb-band.building { background:var(--border); color:var(--gray); }
+    /* Today action center */
+    .act-item { display:flex; align-items:center; gap:14px; background:var(--white); border:1px solid var(--border); border-left:3px solid var(--blue); border-radius:12px; padding:14px 16px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+    .act-item.urgent { border-left-color:var(--orange); }
+    .act-item.hot { border-left-color:var(--red); }
+    .act-icon { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:var(--blue-light); color:var(--blue); }
+    .act-item.urgent .act-icon { background:#fffbeb; color:var(--orange); }
+    .act-item.hot .act-icon { background:#fff1f2; color:var(--red); }
+    .act-body { flex:1; min-width:0; }
+    .act-title { font-size:13px; font-weight:700; color:var(--navy); }
+    .act-sub { font-size:12px; color:var(--gray); margin-top:2px; }
+    .today-empty { text-align:center; padding:48px 20px; color:var(--gray); }
+    /* Analytics funnel + source bars */
+    .funnel-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+    .funnel-label { flex:0 0 130px; font-size:13px; font-weight:600; color:var(--navy); }
+    .funnel-track { flex:1; background:var(--bg); border-radius:8px; height:30px; overflow:hidden; }
+    .funnel-fill { height:100%; border-radius:8px; background:linear-gradient(135deg,#0284c7,#38bdf8); display:flex; align-items:center; padding:0 10px; color:#fff; font-size:12px; font-weight:700; min-width:34px; transition:width .5s cubic-bezier(.4,0,.2,1); }
+    .funnel-conv { flex:0 0 88px; text-align:right; font-size:12px; color:var(--gray); }
+    .src-row { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+    .src-label { flex:0 0 120px; font-size:12px; font-weight:600; color:var(--navy); text-transform:capitalize; }
+    .src-track { flex:1; background:var(--bg); border-radius:6px; height:20px; overflow:hidden; }
+    .src-fill { height:100%; background:linear-gradient(135deg,#c9a84c,#e0be72); border-radius:6px; transition:width .5s ease; }
+    .src-count { flex:0 0 40px; text-align:right; font-size:12px; font-weight:700; color:var(--navy); }
 
     /* TEMPLATES */
     .template-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
@@ -249,6 +279,15 @@
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Overview
     </button>
+    <button class="nav-item" onclick="showPanel('today')" id="nav-today">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      Today
+      <span class="nav-badge" id="todayBadge" style="display:none">0</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('analytics')" id="nav-analytics">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg>
+      Analytics
+    </button>
     <button class="nav-item" onclick="showPanel('vacancies')">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       Vacancies
@@ -328,6 +367,33 @@
         <div class="scan-card" id="overviewLeads"></div>
       </div>
     </div>
+
+    <!-- TODAY -->
+    <div id="panel-today" class="panel">
+      <div class="section-header" style="margin-bottom:16px">
+        <div class="section-title">Today — What Needs You</div>
+        <button class="btn-top secondary" onclick="loadToday()" style="padding:7px 12px">Refresh</button>
+      </div>
+      <div id="todayList"><div class="scan-empty">Loading…</div></div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div id="panel-analytics" class="panel">
+      <div class="section-header" style="margin-bottom:16px">
+        <div class="section-title">Pipeline — Apply → Place → Buy</div>
+        <button class="btn-top secondary" onclick="loadAnalytics()" style="padding:7px 12px">Refresh</button>
+      </div>
+      <div class="stats-row" id="anKpis"></div>
+      <div class="section">
+        <div class="section-header"><div class="section-title">Conversion Funnel</div></div>
+        <div class="card" style="padding:18px 20px"><div id="anFunnel"><div class="scan-empty">Loading…</div></div></div>
+      </div>
+      <div class="section">
+        <div class="section-header"><div class="section-title">Applicants by Source</div></div>
+        <div class="card" style="padding:18px 20px"><div id="anSources"></div></div>
+      </div>
+    </div>
+
 
     <!-- VACANCIES -->
     <div id="panel-vacancies" class="panel">
@@ -1535,8 +1601,285 @@ async function publishUnits() {
 }
 
 // ── PANEL NAV ─────────────────────────────────────────────────────────
-const PANELS = ['overview','vacancies','leads','applicants','scanner','landlords','templates','shortcuts','settings'];
-const TITLES  = { overview:'Overview', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', templates:'Post Templates', shortcuts:'Quick Scan Links', settings:'Settings' };
+// ── FUTURE BUYERS (tenant → mortgage, GDS/TDS pre-qualification) ──────
+// Reuses js/prequal.js. Uses the applicant's income when present; otherwise
+// estimates income from their budget (rent ≈ 30% of income) so the tracker
+// still ranks people before income data is collected.
+function fbMoney(n) { return '$' + Math.round(n).toLocaleString(); }
+function buyerPrequal(a) {
+  let income = Number(a.income) || 0;
+  let estimated = false;
+  if (!income) { const b = parseFloat(a.budget) || 0; if (b) { income = Math.round(b * 40); estimated = true; } }
+  if (!income || !window.ORPPrequal) return null;
+  const pq = ORPPrequal.prequalify({ income: income, downPayment: Number(a.down_payment) || 0 });
+  if (pq) { pq.income = income; pq.estimated = estimated; }
+  return pq;
+}
+function fbLease(a) {
+  if (!a.move_in) return { end: null, days: null };
+  const end = new Date(a.move_in + 'T12:00:00');
+  end.setFullYear(end.getFullYear() + 1);           // default: 12-month lease from move-in
+  return { end, days: Math.round((end - new Date()) / 86400000) };
+}
+function fbDue(lease) { return lease.days != null && lease.days <= 90 && lease.days >= -60; }
+function fbGetNurtured() { try { return JSON.parse(localStorage.getItem('orpNurtured') || '{}'); } catch(e) { return {}; } }
+function fbMarkNurtured(id) { const n = fbGetNurtured(); n[id] = new Date().toISOString(); localStorage.setItem('orpNurtured', JSON.stringify(n)); }
+
+function sendNurture(id) {
+  const b = fbBuyersCache.find(x => x.id === id);
+  if (!b) return;
+  const first = (b.name || '').split(' ')[0] || 'there';
+  const subj = encodeURIComponent('Thinking about buying in Ottawa? — Cyril, Ottawa Rental Plug');
+  const body = encodeURIComponent(
+`Hi ${first},
+
+Hope you're settling in well! With your lease renewal coming up, I wanted to reach out — a lot of renters don't realise they may already qualify to buy.
+
+I'm a licensed mortgage agent here in Ottawa and I'd be glad to run a quick, no-obligation pre-qualification so you know your options — no pressure either way.
+
+Worth a 10-minute chat?
+
+— Cyril
+Ottawa Rental Plug
+(613) 601-3005`);
+  const a = document.createElement('a');
+  a.href = `mailto:${encodeURIComponent(b.email || '')}?subject=${subj}&body=${body}`;
+  a.click();
+  fbMarkNurtured(id);
+  renderFutureBuyers();
+}
+
+let fbBuyersCache = [];
+let fbFilter = 'all'; // all | due | strong
+
+async function loadFutureBuyers() {
+  const bar = document.getElementById('fbFilterBar');
+  const card = document.getElementById('futureBuyersCard');
+  bar.style.display = 'none';
+  card.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading future buyers…</div>`;
+  try {
+    // Try selecting income/down_payment; fall back if the columns aren't added yet.
+    let sel = 'id,name,email,phone,budget,move_in,neighbourhood,stage,created_at,income,down_payment';
+    let { data, error } = await sb.from('applicants').select(sel).order('created_at', { ascending: false });
+    if (error) {
+      ({ data, error } = await sb.from('applicants')
+        .select('id,name,email,phone,budget,move_in,neighbourhood,stage,created_at')
+        .order('created_at', { ascending: false }));
+    }
+    if (error) throw error;
+
+    const settled = (data || []).filter(a => ['placed','nurture','future_buyer','approved'].includes(a.stage || ''));
+    fbBuyersCache = settled
+      .map(a => ({ ...a, _pq: buyerPrequal(a), _lease: fbLease(a) }))
+      .sort((x, y) => ((y._pq && y._pq.maxMortgage) || 0) - ((x._pq && x._pq.maxMortgage) || 0));
+
+    const dueCount = fbBuyersCache.filter(b => fbDue(b._lease)).length;
+    const badge = document.getElementById('buyerBadge');
+    if (dueCount > 0) { badge.style.display = ''; badge.textContent = dueCount; } else badge.style.display = 'none';
+
+    if (!fbBuyersCache.length) {
+      card.innerHTML = `<div class="scan-empty"><p>No placed tenants yet. Mark applicants as <strong>Placed</strong> in the Applicants tab and your future-buyer prospects appear here.</p></div>`;
+      return;
+    }
+    fbFilter = 'all';
+    bar.style.display = '';
+    bar.innerHTML = `<div class="tabs" id="fbPills"></div>`;
+    renderFbPills();
+    renderFutureBuyers();
+  } catch (e) {
+    bar.style.display = 'none';
+    card.innerHTML = `<div class="scan-empty"><p style="color:var(--red)">Couldn't load future buyers: ${escapeHtml(e.message||String(e))}</p>
+      <p style="margin-top:6px;font-size:12px">If this is the first run, make sure <strong>db/schema.sql</strong> has been run in Supabase.</p></div>`;
+  }
+}
+function fbBand(pq) { return pq ? pq.band.toLowerCase() : 'building'; }
+function renderFbPills() {
+  const due    = fbBuyersCache.filter(b => fbDue(b._lease)).length;
+  const strong = fbBuyersCache.filter(b => b._pq && b._pq.band === 'Strong').length;
+  const pills = [['all','All',fbBuyersCache.length],['due','Due for nurture',due],['strong','Strong pre-qual',strong]];
+  document.getElementById('fbPills').innerHTML = pills
+    .map(([k,label,n]) => `<button class="tab ${fbFilter===k?'active':''}" onclick="setFbFilter('${k}')">${label}<span class="cnt">${n}</span></button>`)
+    .join('');
+}
+function setFbFilter(f) { fbFilter = f; renderFbPills(); renderFutureBuyers(); }
+
+function renderFutureBuyers() {
+  const card = document.getElementById('futureBuyersCard');
+  let list = fbBuyersCache.slice();
+  if (fbFilter === 'due')    list = list.filter(b => fbDue(b._lease));
+  if (fbFilter === 'strong') list = list.filter(b => b._pq && b._pq.band === 'Strong');
+  if (!list.length) { card.innerHTML = `<div class="scan-empty"><p>No tenants in this view.</p></div>`; return; }
+  const nurtured = fbGetNurtured();
+  card.innerHTML = `<table class="leads-table"><thead><tr>
+    <th>Tenant</th><th>Pre-Qualified For</th><th>Buying Power</th><th>Lease Ends</th><th>Nurture</th><th>Action</th>
+  </tr></thead><tbody>` + list.map(b => {
+    const pq = b._pq, lt = b._lease;
+    const prequalCell = pq
+      ? `<span class="fb-band ${fbBand(pq)}">${pq.band}</span> <span style="font-size:11px;color:var(--gray)">~${fbMoney(pq.maxMortgage)} mortgage</span>`
+      : '<span style="color:var(--gray);font-size:12px">Add income</span>';
+    const powerCell = pq
+      ? `<div style="font-weight:600;color:var(--navy)">~${fbMoney(pq.maxPurchase)} <span style="font-weight:400;color:var(--gray)">home</span></div>
+         <div style="font-size:11px;color:var(--gray)">on ~${fbMoney(pq.income)}/yr${pq.estimated?' (est.)':''}</div>`
+      : '<span style="color:var(--gray);font-size:12px">—</span>';
+    const leaseCell = lt.days == null ? '<span style="color:var(--gray);font-size:12px">—</span>'
+      : `<div>${lt.end.toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'})}</div>` +
+        (lt.days < 0 ? `<span class="dom-badge dom-stale">ended ${-lt.days}d ago</span>`
+         : lt.days <= 90 ? `<span class="dom-badge dom-normal">${lt.days}d left</span>`
+         : `<span class="dom-badge dom-fresh">${lt.days}d left</span>`);
+    const sent = nurtured[b.id];
+    const nurtureCell = sent
+      ? `<span style="font-size:12px;color:var(--green);font-weight:600">Sent ${new Date(sent).toLocaleDateString('en-CA',{month:'short',day:'numeric'})}</span>`
+      : fbDue(lt) ? `<span style="font-size:12px;color:var(--orange);font-weight:700">Due now</span>`
+        : `<span style="font-size:12px;color:var(--gray)">Not yet</span>`;
+    return `<tr>
+      <td><div style="font-weight:600;color:var(--navy)">${escapeHtml(b.name||'—')}</div>
+          <div style="font-size:11px;color:var(--gray)">${escapeHtml(b.email||'')}${b.neighbourhood&&b.neighbourhood!=='Any'?' · '+escapeHtml(b.neighbourhood):''}</div></td>
+      <td>${prequalCell}</td>
+      <td>${powerCell}</td>
+      <td>${leaseCell}</td>
+      <td>${nurtureCell}</td>
+      <td style="white-space:nowrap">${b.email?`<button class="contact-btn" onclick="sendNurture('${b.id}')">${sent?'Send again':'Send nurture'}</button>`:'—'}</td>
+    </tr>`;
+  }).join('') + `</tbody></table>`;
+}
+
+// ── TODAY (unified daily action center) ──────────────────────────────
+const TODAY_ICONS = {
+  bell: '<svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1"/></svg>',
+  user: '<svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 7a4 4 0 108 0 4 4 0 00-8 0M19 8v6M22 11h-6"/></svg>',
+  home: '<svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>',
+  tag:  '<svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M3 5v6l9 9 6-6-9-9H3z"/></svg>',
+};
+async function loadToday() {
+  const el = document.getElementById('todayList');
+  el.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading…</div>`;
+  try {
+    let sel = 'id,name,email,phone,stage,follow_up_at,move_in,budget,income,down_payment,neighbourhood,created_at';
+    let { data, error } = await sb.from('applicants').select(sel).order('created_at', { ascending: false });
+    if (error) ({ data, error } = await sb.from('applicants').select('id,name,email,stage,move_in,budget,neighbourhood,created_at').order('created_at', { ascending: false }));
+    if (error) throw error;
+    const A = data || [];
+    const now = new Date();
+    const items = [];
+
+    A.filter(a => a.follow_up_at && new Date(a.follow_up_at) <= now && !['placed','declined','lost'].includes(a.stage || ''))
+     .forEach(a => items.push({ prio:1, cls:'urgent', icon:'bell',
+        title:`Follow up with ${a.name || 'applicant'}`,
+        sub:`Follow-up due ${new Date(a.follow_up_at).toLocaleDateString('en-CA',{month:'short',day:'numeric'})} · ${APPLICANT_STAGE_LABEL[a.stage] || a.stage || 'New'}`,
+        panel:'applicants', label:'Open' }));
+
+    A.filter(a => (a.stage || 'new') === 'new')
+     .forEach(a => items.push({ prio:2, cls:'', icon:'user',
+        title:`New application — ${a.name || 'applicant'}`,
+        sub:`${a.budget ? '$'+parseInt(a.budget).toLocaleString()+'/mo · ' : ''}${a.neighbourhood && a.neighbourhood!=='Any' ? a.neighbourhood+' · ' : ''}applied ${new Date(a.created_at).toLocaleDateString('en-CA',{month:'short',day:'numeric'})}`,
+        panel:'applicants', label:'Review' }));
+
+    A.filter(a => ['placed','nurture','future_buyer'].includes(a.stage || '')).forEach(a => {
+      const lt = fbLease(a);
+      if (fbDue(lt)) {
+        const pq = buyerPrequal(a);
+        items.push({ prio:3, cls:'', icon:'home',
+          title:`Nurture ${a.name || 'tenant'} toward buying`,
+          sub:`Lease ends ${lt.end ? lt.end.toLocaleDateString('en-CA',{month:'short',day:'numeric'}) : 'soon'}${pq ? ' · pre-qual ~$'+Math.round(pq.maxMortgage/1000)+'k' : ''}`,
+          panel:'futurebuyers', label:'Open' });
+      }
+    });
+
+    getVacancies().forEach(v => {
+      const d = Math.round((now - new Date(v.listed)) / 86400000);
+      if (d >= 30) items.push({ prio: d >= 45 ? 1 : 2, cls: d >= 45 ? 'hot' : 'urgent', icon:'tag',
+        title:`${v.beds}BR ${v.type} — ${d} days on market`,
+        sub:`$${parseInt(v.price).toLocaleString()}/mo · consider a price adjustment`,
+        panel:'vacancies', label:'Open' });
+    });
+
+    items.sort((a, b) => a.prio - b.prio);
+    const badge = document.getElementById('todayBadge');
+    if (items.length) { badge.style.display = ''; badge.textContent = items.length; } else badge.style.display = 'none';
+
+    if (!items.length) {
+      el.innerHTML = `<div class="today-empty"><div style="font-size:34px">🎉</div><p style="font-weight:700;color:var(--navy);margin-top:8px">You're all caught up</p><p style="font-size:13px">Nothing needs you right now.</p></div>`;
+      return;
+    }
+    el.innerHTML = items.map(it => `
+      <div class="act-item ${it.cls}">
+        <div class="act-icon">${TODAY_ICONS[it.icon]}</div>
+        <div class="act-body"><div class="act-title">${escapeHtml(it.title)}</div><div class="act-sub">${escapeHtml(it.sub)}</div></div>
+        <div class="act-action"><button class="btn-top secondary" onclick="showPanel('${it.panel}')" style="padding:6px 12px">${it.label}</button></div>
+      </div>`).join('');
+  } catch (e) {
+    el.innerHTML = `<div class="scan-empty"><p style="color:var(--red)">Couldn't load today's actions: ${escapeHtml(e.message||String(e))}</p></div>`;
+  }
+}
+
+// ── ANALYTICS (leasing → mortgage funnel) ────────────────────────────
+const ANALYTICS_ORDER = ['new','matched','screening','approved','placed','nurture','future_buyer'];
+async function loadAnalytics() {
+  const kpis = document.getElementById('anKpis');
+  const funnelEl = document.getElementById('anFunnel');
+  const sourcesEl = document.getElementById('anSources');
+  funnelEl.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading…</div>`;
+  try {
+    let sel = 'id,name,stage,source,budget,income,down_payment,created_at';
+    let { data, error } = await sb.from('applicants').select(sel).order('created_at', { ascending: false });
+    if (error) ({ data, error } = await sb.from('applicants').select('id,name,stage,source,budget,created_at').order('created_at', { ascending: false }));
+    if (error) throw error;
+    const A = data || [];
+
+    if (!A.length) {
+      kpis.innerHTML = '';
+      funnelEl.innerHTML = `<div class="scan-empty"><p>No applicants yet. Once applications come in at <strong>/apply</strong>, your pipeline analytics appear here.</p></div>`;
+      sourcesEl.innerHTML = '';
+      return;
+    }
+
+    const idx = (a) => ANALYTICS_ORDER.indexOf(a.stage || 'new');   // declined/lost → -1
+    const atOrPast = (i) => A.filter(a => idx(a) >= i).length;
+    const total = A.length;
+    const nMatched = atOrPast(1), nScreen = atOrPast(2), nApproved = atOrPast(3), nPlaced = atOrPast(4), nBuyer = atOrPast(6);
+    const pct = (n) => total ? Math.round(n / total * 100) : 0;
+
+    // Future-buyer pipeline value (combined buying power from pre-qual).
+    const settled = A.filter(a => ['placed','nurture','future_buyer'].includes(a.stage || ''));
+    let pipeline = 0, buyerCount = 0;
+    settled.forEach(a => { const pq = buyerPrequal(a); if (pq && pq.maxPurchase) { pipeline += pq.maxPurchase; buyerCount++; } });
+
+    const money = (n) => n >= 1e6 ? '$' + (n / 1e6).toFixed(1) + 'M' : '$' + Math.round(n / 1000) + 'k';
+    kpis.innerHTML = `
+      <div class="stat-card"><div class="stat-label">Total Applicants</div><div class="stat-value">${total}</div><div class="stat-sub">in the pipeline</div></div>
+      <div class="stat-card good"><div class="stat-label">Placement Rate</div><div class="stat-value">${pct(nPlaced)}%</div><div class="stat-sub">${nPlaced} placed of ${total}</div></div>
+      <div class="stat-card"><div class="stat-label">Future Buyers</div><div class="stat-value">${buyerCount}</div><div class="stat-sub">settled tenants to nurture</div></div>
+      <div class="stat-card alert"><div class="stat-label">Mortgage Pipeline</div><div class="stat-value">${pipeline ? money(pipeline) : '—'}</div><div class="stat-sub">combined buying power</div></div>`;
+
+    const steps = [['Applied', total], ['Matched', nMatched], ['Screening', nScreen], ['Approved', nApproved], ['Placed', nPlaced], ['Future buyer', nBuyer]];
+    funnelEl.innerHTML = steps.map(([label, n]) => {
+      const w = total ? Math.max(4, Math.round(n / total * 100)) : 0;
+      return `<div class="funnel-row">
+        <div class="funnel-label">${label}</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:${w}%">${n}</div></div>
+        <div class="funnel-conv">${pct(n)}% of applied</div>
+      </div>`;
+    }).join('');
+
+    // Sources
+    const bySource = {};
+    A.forEach(a => { const s = (a.source || 'other'); bySource[s] = (bySource[s] || 0) + 1; });
+    const srcEntries = Object.entries(bySource).sort((x, y) => y[1] - x[1]);
+    const maxSrc = srcEntries.length ? srcEntries[0][1] : 1;
+    const SRC_LABEL = { apply: 'Apply page', orp: 'ORP website', referral: 'Referral', kijiji: 'Kijiji', facebook: 'Facebook', reddit: 'Reddit', direct: 'Direct', other: 'Other' };
+    sourcesEl.innerHTML = srcEntries.map(([s, n]) => `
+      <div class="src-row">
+        <div class="src-label">${escapeHtml(SRC_LABEL[s] || s)}</div>
+        <div class="src-track"><div class="src-fill" style="width:${Math.round(n / maxSrc * 100)}%"></div></div>
+        <div class="src-count">${n}</div>
+      </div>`).join('');
+  } catch (e) {
+    funnelEl.innerHTML = `<div class="scan-empty"><p style="color:var(--red)">Couldn't load analytics: ${escapeHtml(e.message||String(e))}</p></div>`;
+  }
+}
+
+const PANELS = ['overview','today','analytics','vacancies','leads','applicants','scanner','landlords','futurebuyers','templates','shortcuts','settings'];
+const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', futurebuyers:'Future Buyers', templates:'Post Templates', shortcuts:'Quick Scan Links', settings:'Settings' };
 function showPanel(name) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1550,6 +1893,9 @@ function showPanel(name) {
   if (name==='vacancies') { closeVacancyForm(); renderVacanciesPanel(); }
   if (name==='landlords') loadLandlordLeads();
   if (name==='applicants') loadApplicants();
+  if (name==='futurebuyers') loadFutureBuyers();
+  if (name==='analytics') loadAnalytics();
+  if (name==='today') loadToday();
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────
