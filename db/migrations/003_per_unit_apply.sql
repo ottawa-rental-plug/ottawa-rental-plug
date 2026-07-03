@@ -8,7 +8,7 @@
 -- Safe to re-run (IF NOT EXISTS guards).
 
 alter table units add column if not exists client_id text;
-create unique index if not exists units_client_id_idx on units(client_id) where client_id is not null;
+alter table units add constraint units_client_id_unique unique (client_id) deferrable initially deferred;
 alter table units add column if not exists address     text;
 alter table units add column if not exists description text;
 
