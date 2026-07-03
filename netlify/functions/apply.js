@@ -103,7 +103,10 @@ exports.handler = async (event) => {
   if (!name)         return json(400, { error: 'Name is required.' });
   if (!isEmail(email)) return json(400, { error: 'A valid email is required.' });
 
-  const budgetNum = parseFloat(String(body.budget).replace(/[^\d.]/g, ''));
+  const num = (v) => { const n = parseFloat(String(v == null ? '' : v).replace(/[^\d.]/g, '')); return Number.isFinite(n) ? n : null; };
+  const budgetNum = num(body.budget);
+  const incomeNum = num(body.income);
+  const downNum   = num(body.downPayment);
   const moveIn    = /^\d{4}-\d{2}-\d{2}$/.test(body.moveIn || '') ? body.moveIn : null;
   const consented = body.consentScreening === true || body.consentScreening === 'on';
   const ip = (event.headers['x-nf-client-connection-ip']
@@ -115,7 +118,7 @@ exports.handler = async (event) => {
     email,
     phone:         clean(body.phone, 40),
     beds_wanted:   clean(body.beds, 10) || 'Any',
-    budget:        Number.isFinite(budgetNum) ? budgetNum : null,
+    budget:        budgetNum,
     move_in:       moveIn,
     neighbourhood: clean(body.neighbourhood, 80) || 'Any',
     source:        'apply',
@@ -123,17 +126,30 @@ exports.handler = async (event) => {
     consent_screening_at: consented ? new Date().toISOString() : null,
     consent_ip:    consented ? ip : null,
   };
+  // Optional columns (added by db/prequal.sql). Sent separately so we can retry
+  // without them if the migration hasn't been run — the form never breaks.
+  const extras = { income: incomeNum, down_payment: downNum };
 
   try {
-    // 1) Insert the applicant.
-    const insRes = await sbFetch('applicants', {
+    // 1) Insert the applicant — try with the pre-qual columns, fall back without.
+    let insRes = await sbFetch('applicants', {
       method: 'POST',
       headers: { Prefer: 'return=representation' },
-      body: JSON.stringify(applicant),
+      body: JSON.stringify({ ...applicant, ...extras }),
     });
     if (!insRes.ok) {
       const detail = await insRes.text();
-      return json(502, { error: 'Could not save application', detail });
+      if (/income|down_payment|column|schema cache|PGRST/i.test(detail)) {
+        insRes = await sbFetch('applicants', {
+          method: 'POST',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify(applicant),
+        });
+      }
+      if (!insRes.ok) {
+        const d2 = await insRes.text();
+        return json(502, { error: 'Could not save application', detail: d2 });
+      }
     }
     const [saved] = await insRes.json();
 
