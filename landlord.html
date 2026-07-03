@@ -920,7 +920,7 @@ function renderVacancy(v, leads, editable) {
   return `<div class="vacancy-card ${cls}">
     <div class="vacancy-header">
       <div class="vacancy-type">${v.beds} BR ${v.type}</div>
-      <div class="vacancy-price">$${v.price.toLocaleString()}/mo</div>
+      <div class="vacancy-price">${v.price != null ? '$'+v.price.toLocaleString()+'/mo' : 'Price TBD'}</div>
     </div>
     <div class="vacancy-body">
       <div class="vacancy-detail">
@@ -964,7 +964,7 @@ function renderLeads(filter) {
     const scoreBar = `<div class="score-bar-wrap"><div class="score-bar"><div class="score-fill ${cls}" style="width:${score}%"></div></div><span class="score-num ${cls}">${score}</span></div>`;
     const srcBadge = `<span class="source-badge source-${lead.source||'orp'}">${escapeHtml(lead.source||'ORP')}</span>`;
     const matchCell = vacancy && score >= 50
-      ? `<div style="font-size:12px;font-weight:600;color:var(--navy)">${vacancy.beds}BR ${vacancy.type}</div><div style="font-size:11px;color:var(--gray)">$${vacancy.price.toLocaleString()}/mo</div>`
+      ? `<div style="font-size:12px;font-weight:600;color:var(--navy)">${vacancy.beds}BR ${vacancy.type}</div><div style="font-size:11px;color:var(--gray)">${vacancy.price != null ? '$'+vacancy.price.toLocaleString()+'/mo' : ''}</div>`
       : `<span style="font-size:12px;color:var(--gray)">—</span>`;
     const firstName = encodeURIComponent((lead.name||'').split(' ')[0]);
     return `<tr>
@@ -1462,7 +1462,7 @@ function renderOverview() {
           <div style="flex:1;margin-left:4px">
             <div class="scan-title">${escapeHtml(lead.name||'Anonymous')} — ${escapeHtml(String(lead.beds||'Any'))} BR, $${parseInt(lead.budget||0).toLocaleString()}/mo</div>
             <div class="scan-meta">${escapeHtml(lead.email||'')} · ${new Date(lead.added).toLocaleDateString('en-CA',{month:'short',day:'numeric'})}</div>
-            ${vacancy&&score>=50?`<div style="font-size:11px;margin-top:3px;color:var(--blue);font-weight:600">→ ${vacancy.beds}BR ${vacancy.type} $${vacancy.price.toLocaleString()}/mo</div>`:''}
+            ${vacancy&&score>=50?`<div style="font-size:11px;margin-top:3px;color:var(--blue);font-weight:600">→ ${vacancy.beds}BR ${vacancy.type}${vacancy.price != null ? ' $'+vacancy.price.toLocaleString()+'/mo' : ''}</div>`:''}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
             <div class="score-bar-wrap"><div class="score-bar"><div class="score-fill ${cls}" style="width:${score}%"></div></div><span class="score-num ${cls}">${score}</span></div>
