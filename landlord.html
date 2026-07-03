@@ -160,6 +160,17 @@
     .fb-band.strong   { background:#fbf1d3; color:#8a6d1a; }
     .fb-band.moderate { background:var(--blue-light); color:var(--blue); }
     .fb-band.building { background:var(--border); color:var(--gray); }
+    /* Analytics funnel + source bars */
+    .funnel-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+    .funnel-label { flex:0 0 130px; font-size:13px; font-weight:600; color:var(--navy); }
+    .funnel-track { flex:1; background:var(--bg); border-radius:8px; height:30px; overflow:hidden; }
+    .funnel-fill { height:100%; border-radius:8px; background:linear-gradient(135deg,#0284c7,#38bdf8); display:flex; align-items:center; padding:0 10px; color:#fff; font-size:12px; font-weight:700; min-width:34px; transition:width .5s cubic-bezier(.4,0,.2,1); }
+    .funnel-conv { flex:0 0 88px; text-align:right; font-size:12px; color:var(--gray); }
+    .src-row { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+    .src-label { flex:0 0 120px; font-size:12px; font-weight:600; color:var(--navy); text-transform:capitalize; }
+    .src-track { flex:1; background:var(--bg); border-radius:6px; height:20px; overflow:hidden; }
+    .src-fill { height:100%; background:linear-gradient(135deg,#c9a84c,#e0be72); border-radius:6px; transition:width .5s ease; }
+    .src-count { flex:0 0 40px; text-align:right; font-size:12px; font-weight:700; color:var(--navy); }
 
     /* TEMPLATES */
     .template-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
@@ -277,6 +288,10 @@
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Overview
     </button>
+    <button class="nav-item" onclick="showPanel('analytics')" id="nav-analytics">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg>
+      Analytics
+    </button>
     <button class="nav-item" onclick="showPanel('vacancies')">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       Vacancies
@@ -360,6 +375,23 @@
           <button class="section-action" onclick="showPanel('leads')">View all</button>
         </div>
         <div class="scan-card" id="overviewLeads"></div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div id="panel-analytics" class="panel">
+      <div class="section-header" style="margin-bottom:16px">
+        <div class="section-title">Pipeline — Apply → Place → Buy</div>
+        <button class="btn-top secondary" onclick="loadAnalytics()" style="padding:7px 12px">Refresh</button>
+      </div>
+      <div class="stats-row" id="anKpis"></div>
+      <div class="section">
+        <div class="section-header"><div class="section-title">Conversion Funnel</div></div>
+        <div class="card" style="padding:18px 20px"><div id="anFunnel"><div class="scan-empty">Loading…</div></div></div>
+      </div>
+      <div class="section">
+        <div class="section-header"><div class="section-title">Applicants by Source</div></div>
+        <div class="card" style="padding:18px 20px"><div id="anSources"></div></div>
       </div>
     </div>
 
@@ -2002,8 +2034,74 @@ function renderFutureBuyers() {
   }).join('') + `</tbody></table>`;
 }
 
-const PANELS = ['overview','vacancies','leads','applicants','scanner','landlords','futurebuyers','templates','shortcuts','settings'];
-const TITLES  = { overview:'Overview', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', futurebuyers:'Future Buyers', templates:'Post Templates', shortcuts:'Quick Scan Links', settings:'Settings' };
+// ── ANALYTICS (leasing → mortgage funnel) ────────────────────────────
+const ANALYTICS_ORDER = ['new','matched','screening','approved','placed','nurture','future_buyer'];
+async function loadAnalytics() {
+  const kpis = document.getElementById('anKpis');
+  const funnelEl = document.getElementById('anFunnel');
+  const sourcesEl = document.getElementById('anSources');
+  funnelEl.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading…</div>`;
+  try {
+    let sel = 'id,name,stage,source,budget,income,down_payment,created_at';
+    let { data, error } = await sb.from('applicants').select(sel).order('created_at', { ascending: false });
+    if (error) ({ data, error } = await sb.from('applicants').select('id,name,stage,source,budget,created_at').order('created_at', { ascending: false }));
+    if (error) throw error;
+    const A = data || [];
+
+    if (!A.length) {
+      kpis.innerHTML = '';
+      funnelEl.innerHTML = `<div class="scan-empty"><p>No applicants yet. Once applications come in at <strong>/apply</strong>, your pipeline analytics appear here.</p></div>`;
+      sourcesEl.innerHTML = '';
+      return;
+    }
+
+    const idx = (a) => ANALYTICS_ORDER.indexOf(a.stage || 'new');   // declined/lost → -1
+    const atOrPast = (i) => A.filter(a => idx(a) >= i).length;
+    const total = A.length;
+    const nMatched = atOrPast(1), nScreen = atOrPast(2), nApproved = atOrPast(3), nPlaced = atOrPast(4), nBuyer = atOrPast(6);
+    const pct = (n) => total ? Math.round(n / total * 100) : 0;
+
+    // Future-buyer pipeline value (combined buying power from pre-qual).
+    const settled = A.filter(a => ['placed','nurture','future_buyer'].includes(a.stage || ''));
+    let pipeline = 0, buyerCount = 0;
+    settled.forEach(a => { const pq = buyerPrequal(a); if (pq && pq.maxPurchase) { pipeline += pq.maxPurchase; buyerCount++; } });
+
+    const money = (n) => n >= 1e6 ? '$' + (n / 1e6).toFixed(1) + 'M' : '$' + Math.round(n / 1000) + 'k';
+    kpis.innerHTML = `
+      <div class="stat-card"><div class="stat-label">Total Applicants</div><div class="stat-value">${total}</div><div class="stat-sub">in the pipeline</div></div>
+      <div class="stat-card good"><div class="stat-label">Placement Rate</div><div class="stat-value">${pct(nPlaced)}%</div><div class="stat-sub">${nPlaced} placed of ${total}</div></div>
+      <div class="stat-card"><div class="stat-label">Future Buyers</div><div class="stat-value">${buyerCount}</div><div class="stat-sub">settled tenants to nurture</div></div>
+      <div class="stat-card alert"><div class="stat-label">Mortgage Pipeline</div><div class="stat-value">${pipeline ? money(pipeline) : '—'}</div><div class="stat-sub">combined buying power</div></div>`;
+
+    const steps = [['Applied', total], ['Matched', nMatched], ['Screening', nScreen], ['Approved', nApproved], ['Placed', nPlaced], ['Future buyer', nBuyer]];
+    funnelEl.innerHTML = steps.map(([label, n]) => {
+      const w = total ? Math.max(4, Math.round(n / total * 100)) : 0;
+      return `<div class="funnel-row">
+        <div class="funnel-label">${label}</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:${w}%">${n}</div></div>
+        <div class="funnel-conv">${pct(n)}% of applied</div>
+      </div>`;
+    }).join('');
+
+    // Sources
+    const bySource = {};
+    A.forEach(a => { const s = (a.source || 'other'); bySource[s] = (bySource[s] || 0) + 1; });
+    const srcEntries = Object.entries(bySource).sort((x, y) => y[1] - x[1]);
+    const maxSrc = srcEntries.length ? srcEntries[0][1] : 1;
+    const SRC_LABEL = { apply: 'Apply page', orp: 'ORP website', referral: 'Referral', kijiji: 'Kijiji', facebook: 'Facebook', reddit: 'Reddit', direct: 'Direct', other: 'Other' };
+    sourcesEl.innerHTML = srcEntries.map(([s, n]) => `
+      <div class="src-row">
+        <div class="src-label">${escapeHtml(SRC_LABEL[s] || s)}</div>
+        <div class="src-track"><div class="src-fill" style="width:${Math.round(n / maxSrc * 100)}%"></div></div>
+        <div class="src-count">${n}</div>
+      </div>`).join('');
+  } catch (e) {
+    funnelEl.innerHTML = `<div class="scan-empty"><p style="color:var(--red)">Couldn't load analytics: ${escapeHtml(e.message||String(e))}</p></div>`;
+  }
+}
+
+const PANELS = ['overview','analytics','vacancies','leads','applicants','scanner','landlords','futurebuyers','templates','shortcuts','settings'];
+const TITLES  = { overview:'Overview', analytics:'Analytics', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', futurebuyers:'Future Buyers', templates:'Post Templates', shortcuts:'Quick Scan Links', settings:'Settings' };
 function showPanel(name) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2018,6 +2116,7 @@ function showPanel(name) {
   if (name==='landlords') loadLandlordLeads();
   if (name==='applicants') loadApplicants();
   if (name==='futurebuyers') loadFutureBuyers();
+  if (name==='analytics') loadAnalytics();
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────
