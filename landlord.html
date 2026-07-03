@@ -369,6 +369,7 @@
             <div class="form-field"><label>Type</label><select id="vc-type"><option>Apartment</option><option>Townhouse</option><option>House</option><option>Condo</option><option>Basement</option><option>Room</option></select></div>
             <div class="form-field"><label>Price ($/mo)</label><input id="vc-price" type="number" min="0" placeholder="1650"></div>
             <div class="form-field"><label>Date Listed</label><input id="vc-listed" type="date"></div>
+            <div class="form-field"><label>Owner (portal access)</label><select id="vc-landlord"><option value="">— Unassigned —</option></select></div>
           </div>
           <div style="display:flex;gap:8px">
             <button onclick="saveVacancy()" style="padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save Vacancy</button>
@@ -465,6 +466,29 @@
         </div>
         <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Landlords who requested a free rent analysis at <strong>ottawarentalplug.com/rental-estimate</strong>. Each one is a potential placement — or a managed door. Reply fast.</p>
         <div class="card" id="landlordCard"><div class="scan-empty">Loading…</div></div>
+      </div>
+
+      <!-- Client portal accounts (Phase 5) -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Client Portal Accounts</div>
+          <button class="section-action" onclick="openLandlordAccountForm()" style="font-weight:600">+ Add Landlord</button>
+        </div>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Give a landlord their own login to see their units and applicant status — never raw contact info, so you stay the single point of contact. Assign a landlord to a vacancy in the <a href="#" onclick="showPanel('vacancies');return false" style="color:var(--blue)">Vacancies</a> tab, then invite them here.</p>
+        <div class="add-lead-form" id="landlordAccountForm">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px" id="landlordAccountFormTitle">Add Landlord</div>
+          <input type="hidden" id="la-id">
+          <div class="form-grid-2">
+            <div class="form-field"><label>Name</label><input id="la-name" placeholder="Jane Smith"></div>
+            <div class="form-field"><label>Email</label><input id="la-email" type="email" placeholder="jane@email.com"></div>
+            <div class="form-field"><label>Phone</label><input id="la-phone" placeholder="(613) 000-0000"></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="saveLandlordAccount()" style="padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save</button>
+            <button onclick="closeLandlordAccountForm()" style="padding:9px 16px;background:var(--border);color:var(--navy);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+          </div>
+        </div>
+        <div class="card" id="landlordAccountsCard"><div class="scan-empty">Loading…</div></div>
       </div>
     </div>
 
@@ -781,6 +805,10 @@ function renderVacancy(v, leads, editable) {
   const sug = priceSuggestion(d, v.price);
   const cls = d >= 45 ? 'stale' : d >= 30 ? 'aging' : '';
   const matched = leads.filter(l => bestMatch(l).score >= 50 && (l.beds === 'Any' || parseInt(l.beds) === v.beds)).length;
+  const owner = v.landlordId ? (_landlords || []).find(l => l.id === v.landlordId) : null;
+  const ownerLine = owner
+    ? `<div style="font-size:11px;color:var(--gray);margin-top:2px">Owner: ${escapeHtml(owner.name || owner.email || 'Unnamed')}</div>`
+    : '';
   return `<div class="vacancy-card ${cls}">
     <div class="vacancy-header">
       <div class="vacancy-type">${v.beds} BR ${v.type}</div>
@@ -791,6 +819,7 @@ function renderVacancy(v, leads, editable) {
         <span>${v.baths} bath</span>
         <span>Listed ${new Date(v.listed).toLocaleDateString('en-CA',{month:'short',day:'numeric'})}</span>
       </div>
+      ${ownerLine}
       ${domBadge(d)}
       ${sug ? `<div class="price-suggestion">Suggested price: $${sug.suggested.toLocaleString()}/mo (−${sug.pct}%)</div>` : ''}
       <div class="vacancy-matches"><span class="match-count">${matched}</span> lead${matched!==1?'s':''} matching this unit</div>
@@ -949,10 +978,24 @@ function renderVacanciesPanel() {
     : `<div class="scan-empty" style="grid-column:1/-1">No vacancies yet. Click "+ Add Vacancy" to add one.</div>`;
   renderAgingAlerts('agingAlerts2');
 }
-function openVacancyForm(id) {
+// Landlord accounts (Phase 5), cached for the vacancy-owner dropdown + the
+// Landlords admin panel. Loaded lazily so pages that don't touch it stay fast.
+let _landlords = null;
+async function ensureLandlordsLoaded() {
+  if (_landlords) return _landlords;
+  try { _landlords = await orpLoadLandlords(); } catch (e) { console.error('Load landlords failed', e); _landlords = []; }
+  return _landlords;
+}
+function populateLandlordSelect(selectEl, selectedId) {
+  const opts = ['<option value="">— Unassigned —</option>']
+    .concat((_landlords || []).map(l => `<option value="${l.id}" ${l.id === selectedId ? 'selected' : ''}>${escapeHtml(l.name || l.email || 'Unnamed landlord')}</option>`));
+  selectEl.innerHTML = opts.join('');
+}
+async function openVacancyForm(id) {
   const form = document.getElementById('vacancyForm');
   form.style.display = 'block';
   const title = document.getElementById('vacancyFormTitle');
+  await ensureLandlordsLoaded();
   if (id != null) {
     const v = getVacancies().find(x => x.id === id);
     if (!v) return;
@@ -963,12 +1006,14 @@ function openVacancyForm(id) {
     document.getElementById('vc-type').value = v.type;
     document.getElementById('vc-price').value = v.price;
     document.getElementById('vc-listed').value = v.listed;
+    populateLandlordSelect(document.getElementById('vc-landlord'), v.landlordId || '');
   } else {
     title.textContent = 'Add Vacancy';
     document.getElementById('vc-id').value = '';
     ['vc-beds','vc-baths','vc-price'].forEach(i => document.getElementById(i).value = '');
     document.getElementById('vc-type').value = 'Apartment';
     document.getElementById('vc-listed').value = new Date().toISOString().slice(0,10);
+    populateLandlordSelect(document.getElementById('vc-landlord'), '');
   }
   form.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
@@ -979,14 +1024,15 @@ function saveVacancy() {
   const price  = parseInt(document.getElementById('vc-price').value);
   const type   = document.getElementById('vc-type').value;
   const listed = document.getElementById('vc-listed').value;
+  const landlordId = document.getElementById('vc-landlord').value || null;
   if (!(beds >= 0) || !(price > 0) || !listed) { alert('Enter bedrooms, a price, and a listed date.'); return; }
   const idVal = document.getElementById('vc-id').value;
   const vacancies = getVacancies();
   if (idVal) {
     const v = vacancies.find(x => x.id === Number(idVal));
-    if (v) Object.assign(v, { beds, baths: baths || 0, type, price, listed });
+    if (v) Object.assign(v, { beds, baths: baths || 0, type, price, listed, landlordId });
   } else {
-    vacancies.push({ id: nextVacancyId(), beds, baths: baths || 0, type, price, listed });
+    vacancies.push({ id: nextVacancyId(), beds, baths: baths || 0, type, price, listed, landlordId });
   }
   saveVacancyList(vacancies);
   closeVacancyForm();
@@ -1358,6 +1404,115 @@ async function loadLandlordLeads() {
     }).join('') + `</tbody></table>`;
   } catch (e) {
     card.innerHTML = `<div class="scan-empty"><p style="color:var(--red)">Couldn't load landlord leads: ${escapeHtml(e.message)}</p></div>`;
+  }
+}
+
+// ── CLIENT PORTAL ACCOUNTS (Phase 5) ─────────────────────────────────
+// Manages the `landlords` table: who has portal access, and (via the
+// Vacancies tab) which units are assigned to them. Invites are sent through a
+// Netlify function that holds the service-role key server-side.
+function openLandlordAccountForm(id) {
+  const form = document.getElementById('landlordAccountForm');
+  form.style.display = 'block';
+  const title = document.getElementById('landlordAccountFormTitle');
+  if (id) {
+    const l = (_landlords || []).find(x => x.id === id);
+    if (!l) return;
+    title.textContent = `Edit ${l.name || l.email || 'Landlord'}`;
+    document.getElementById('la-id').value = l.id;
+    document.getElementById('la-name').value = l.name || '';
+    document.getElementById('la-email').value = l.email || '';
+    document.getElementById('la-phone').value = l.phone || '';
+  } else {
+    title.textContent = 'Add Landlord';
+    ['la-id','la-name','la-email','la-phone'].forEach(i => document.getElementById(i).value = '');
+  }
+  form.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+function closeLandlordAccountForm() { document.getElementById('landlordAccountForm').style.display = 'none'; }
+async function saveLandlordAccount() {
+  const id    = document.getElementById('la-id').value || null;
+  const name  = document.getElementById('la-name').value.trim();
+  const email = document.getElementById('la-email').value.trim();
+  const phone = document.getElementById('la-phone').value.trim();
+  if (!name && !email) { alert('Enter at least a name or email.'); return; }
+  try {
+    await orpSaveLandlord({ id, name, email, phone });
+    _landlords = null;               // force a fresh load (also feeds the vacancy-owner dropdown)
+    await ensureLandlordsLoaded();
+    closeLandlordAccountForm();
+    renderLandlordAccounts();
+    renderVacanciesPanel();
+  } catch (e) {
+    alert('Could not save landlord: ' + (e.message || e));
+  }
+}
+async function deleteLandlordAccount(id) {
+  const l = (_landlords || []).find(x => x.id === id);
+  if (!confirm(`Remove ${l ? (l.name || l.email) : 'this landlord'}? This does not delete their units, just unassigns them and revokes portal access.`)) return;
+  try {
+    await orpDeleteLandlord(id);
+    _landlords = null;
+    await ensureLandlordsLoaded();
+    renderLandlordAccounts();
+    renderVacanciesPanel();
+  } catch (e) {
+    alert('Could not remove landlord: ' + (e.message || e));
+  }
+}
+async function inviteLandlordAccount(id, btn) {
+  const l = (_landlords || []).find(x => x.id === id);
+  if (!l) return;
+  const email = l.email || prompt('Enter the email to send the portal invite to:', '');
+  if (!email) return;
+  const original = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await orpInviteLandlord(id, email);
+    alert(`Portal invite sent to ${email}. They'll get an email to set their password and sign in at client-portal.html.`);
+    _landlords = null;
+    await ensureLandlordsLoaded();
+    renderLandlordAccounts();
+  } catch (e) {
+    alert('Could not send invite: ' + (e.message || e));
+  } finally {
+    btn.disabled = false; btn.textContent = original;
+  }
+}
+async function renderLandlordAccounts() {
+  const card = document.getElementById('landlordAccountsCard');
+  card.innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Loading…</div>`;
+  try {
+    await ensureLandlordsLoaded();
+    const landlords = _landlords || [];
+    if (!landlords.length) {
+      card.innerHTML = `<div class="scan-empty"><p>No landlord accounts yet. Add one, then assign them to a vacancy and send a portal invite.</p></div>`;
+      return;
+    }
+    const units = getVacancies().filter(v => v.landlordId);
+    card.innerHTML = `<table class="leads-table"><thead><tr>
+      <th>Landlord</th><th>Contact</th><th>Units</th><th>Portal</th><th>Action</th>
+    </tr></thead><tbody>` + landlords.map(l => {
+      const unitCount = units.filter(v => v.landlordId === l.id).length;
+      const portalStatus = l.auth_user_id
+        ? `<span style="color:#047857;font-size:12px;font-weight:600">Active</span>`
+        : l.invited_at
+          ? `<span style="color:#c2410c;font-size:12px;font-weight:600">Invited</span>`
+          : `<span style="color:var(--gray);font-size:12px">Not invited</span>`;
+      return `<tr>
+        <td style="font-weight:600;color:var(--navy)">${escapeHtml(l.name||'—')}</td>
+        <td><div style="font-size:12px">${escapeHtml(l.email||'—')}</div><div style="font-size:11px;color:var(--gray)">${escapeHtml(l.phone||'')}</div></td>
+        <td>${unitCount}</td>
+        <td>${portalStatus}</td>
+        <td style="white-space:nowrap">
+          <button class="contact-btn" onclick="inviteLandlordAccount('${l.id}', this)">${l.auth_user_id ? 'Re-invite' : 'Invite'}</button>
+          <button class="contact-btn" style="margin-left:4px" onclick="openLandlordAccountForm('${l.id}')">Edit</button>
+          <button class="contact-btn" style="margin-left:4px;color:var(--red)" onclick="deleteLandlordAccount('${l.id}')">Remove</button>
+        </td>
+      </tr>`;
+    }).join('') + `</tbody></table>`;
+  } catch (e) {
+    card.innerHTML = `<div class="scan-empty"><p style="color:var(--red)">Couldn't load landlord accounts: ${escapeHtml(e.message||String(e))}</p></div>`;
   }
 }
 
@@ -1821,6 +1976,7 @@ async function publishUnits() {
         neighbourhood: v.neighbourhood || null,
         status: 'available',
         listed_at: v.listed || null,
+        landlord_id: v.landlordId || null,   // Phase 5: scopes the unit into a landlord's portal view
       }));
       const ins = await sb.from('units').insert(rows);
       if (ins.error) throw ins.error;
@@ -1845,7 +2001,7 @@ function showPanel(name) {
   if (name==='templates') buildTemplates();
   if (name==='shortcuts') buildShortcuts();
   if (name==='vacancies') { closeVacancyForm(); renderVacanciesPanel(); }
-  if (name==='landlords') loadLandlordLeads();
+  if (name==='landlords') { loadLandlordLeads(); closeLandlordAccountForm(); renderLandlordAccounts(); }
   if (name==='applicants') loadApplicants();
 }
 
@@ -1859,6 +2015,9 @@ async function init() {
   renderOverview();
   // Initial leads were already merged during login (checkPass). The "Sync Leads"
   // button re-pulls on demand via the secure function.
+  // Preload landlord accounts (Phase 5) so vacancy cards can show the assigned
+  // owner without an extra round-trip when a panel first renders.
+  ensureLandlordsLoaded().then(() => { renderVacanciesPanel(); });
 }
 
 // Resume an existing Supabase session on reload so you stay logged in.

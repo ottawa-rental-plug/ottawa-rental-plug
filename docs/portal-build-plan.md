@@ -3,22 +3,26 @@
 The portal (`landlord.html`) evolves from a localStorage lead viewer into a
 Supabase-backed tenant-placement operating system. Screening via SingleKey.
 
-## Status: core build complete, deployed
+## Status: core build + landlord portal complete
 
-Phases 0–4 are built, merged to `main`, and live. The whole planned pipeline
-works end to end: **Apply → Match → Screen → Approved → Nurture**. What's left
-is not code — it's account setup only you can do:
+Phases 0–5 are built. The whole planned pipeline works end to end: **Apply →
+Match → Screen → Approved → Nurture**, plus a landlord-facing client portal.
+What's left is not code — it's account setup / a security-relevant DB step
+only you can do:
 
-1. **(Optional, recommended) Run `db/phase4-followups.sql`** in Supabase → SQL
+1. **Run `db/phase5-landlord-portal.sql`** in Supabase → SQL Editor before
+   inviting any landlord — it replaces the old "any login sees everything"
+   policy with per-landlord scoping. See [`phase5-landlord-portal.md`](phase5-landlord-portal.md).
+2. **(Optional, recommended) Run `db/phase4-followups.sql`** in Supabase → SQL
    Editor, if you haven't already — enables follow-up reminders. Everything
    else works without it.
-2. **(Optional) SingleKey API token** — screening already works today in manual
+3. **(Optional) SingleKey API token** — screening already works today in manual
    mode via your existing SingleKey account. Getting a token from SingleKey
    (info@singlekey.com) upgrades it to the live embedded flow + auto webhook.
    See [`phase2-setup.md`](phase2-setup.md).
-3. **Later bucket** (not started — each needs an external account/decision
-   before it's worth building): SMS/email comms hub, Stripe payments, a
-   landlord client portal (RLS logins), OREA Form 410 mapping.
+4. **Later bucket** (not started — each needs an external account/decision
+   before it's worth building): SMS/email comms hub, Stripe payments, OREA
+   Form 410 mapping.
 
 ## Flow (locked)
 
@@ -75,7 +79,8 @@ summary + link, never the raw credit/background report.
 - **Phase 2 — Screen + place.** ✅ Consent-gated SingleKey screening from the Applicants tab (agent-token auth); `screenings` rows store summary + link only. Ships with a **manual mode** that works today via your SingleKey account; flips to the live embedded flow + webhook once `SINGLEKEY_API_TOKEN` is set. See [`phase2-setup.md`](phase2-setup.md).
 - **Phase 3 — Approved.** ✅ Fixed criteria checklist (Human Rights Code defensible), approve/decline decision → `approvals`, "Approved by Cyril" badge, and a one-click Tenant Summary PDF. See [`phase3-approved.md`](phase3-approved.md).
 - **Phase 4 — Nurture / CRM.** ✅ Per-applicant timeline (`activities`): notes/comms logs + automatic status-change entries; manual stage control across the full pipeline; follow-up reminders with a "due" view; and Applicants-tab filters (follow-ups due / future buyers / approved). See [`phase4-crm.md`](phase4-crm.md). *Later: SMS/email comms hub.*
-- **Later.** Comms hub (SMS/email), payments (Stripe), landlord client portal (RLS), compliant form mapping, mortgage affordability triggers.
+- **Phase 5 — Landlord client portal.** ✅ Per-landlord Supabase Auth login (`client-portal.html`), RLS-scoped to their own units + a PII-minimized applicant view (no email/phone — you stay the point of contact). Dashboard: add/invite landlords, assign a vacancy to an owner. See [`phase5-landlord-portal.md`](phase5-landlord-portal.md).
+- **Later.** Comms hub (SMS/email), payments (Stripe), compliant form mapping, mortgage affordability triggers.
 
 ## Cost
 
