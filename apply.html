@@ -215,6 +215,27 @@
               </div>
             </div>
 
+            <hr style="border-color:rgba(255,255,255,.08)"/>
+
+            <!-- Income / down payment — powers an instant buy-vs-rent pre-qual -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Annual household income <span class="text-gray-500 normal-case font-normal">(optional)</span></label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg font-semibold">$</span>
+                  <input type="number" id="income" min="0" step="1000" placeholder="75,000" class="field-input w-full border border-plug-border rounded-xl pl-9 pr-4 py-4 text-white text-base transition-all"/>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-plug-blueLight font-bold uppercase tracking-widest mb-2">Down payment saved <span class="text-gray-500 normal-case font-normal">(optional)</span></label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg font-semibold">$</span>
+                  <input type="number" id="downPayment" min="0" step="1000" placeholder="20,000" class="field-input w-full border border-plug-border rounded-xl pl-9 pr-4 py-4 text-white text-base transition-all"/>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 -mt-2">Add your income and we'll instantly show whether you might <strong class="text-plug-blueLight">qualify to buy</strong> instead of rent — no obligation.</p>
+
             <!-- Screening consent -->
             <label class="flex items-start gap-3 text-sm text-gray-300 leading-relaxed cursor-pointer">
               <input type="checkbox" id="consentScreening" class="mt-1 w-4 h-4 flex-shrink-0"/>
@@ -240,6 +261,17 @@
           <p id="successMsg" class="text-gray-300 leading-relaxed max-w-md mx-auto mb-6">
             Thanks — we've got your details and we're matching you to available Ottawa units now. We'll reach out shortly, usually <strong class="text-white">within one business day</strong>.
           </p>
+
+          <!-- Instant pre-qualification result (shown when income was provided) -->
+          <div id="prequalBox" class="hidden max-w-md mx-auto mb-6 rounded-2xl p-5 text-left" style="background:rgba(201,168,76,.10);border:1px solid rgba(201,168,76,.35);">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="w-5 h-5" style="color:#c9a84c" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>
+              <span class="text-xs font-bold tracking-widest uppercase" style="color:#e0be72">Have you considered buying?</span>
+            </div>
+            <p id="prequalText" class="text-sm text-gray-200 leading-relaxed"></p>
+            <p class="text-[11px] text-gray-500 mt-2">Rough estimate based on GDS/TDS guidelines — a licensed mortgage agent can confirm your exact pre-approval, no obligation.</p>
+          </div>
+
           <a href="search-rentals.html" class="text-plug-blueLight hover:text-white text-sm font-semibold">Browse available rentals →</a>
         </div>
       </div>
@@ -261,6 +293,7 @@
     </div>
   </footer>
 
+  <script src="js/prequal.js"></script>
   <script>
     const form = document.getElementById('applyForm');
     const errEl = document.getElementById('formError');
@@ -280,6 +313,8 @@
         phone:            document.getElementById('phone').value.trim(),
         beds:             document.getElementById('beds').value,
         budget:           document.getElementById('budget').value,
+        income:           document.getElementById('income').value,
+        downPayment:      document.getElementById('downPayment').value,
         moveIn:           document.getElementById('moveIn').value,
         neighbourhood:    document.getElementById('neighbourhood').value,
         consentScreening: document.getElementById('consentScreening').checked,
@@ -304,9 +339,15 @@
             name: payload.name, email: payload.email, phone: payload.phone,
             bedrooms: payload.beds, budget: payload.budget, moveIn: payload.moveIn,
             neighbourhood: payload.neighbourhood, consentScreening: payload.consentScreening,
+            income: payload.income, downPayment: payload.downPayment,
           }),
         }).catch(() => {});
       } catch (_) {}
+
+      // Instant pre-qualification (client-side) when income is provided.
+      const pq = (window.ORPPrequal && payload.income)
+        ? ORPPrequal.prequalify({ income: payload.income, downPayment: payload.downPayment })
+        : null;
 
       // Try the Supabase function (stores + auto-matches). If it isn't configured
       // yet, we still show success because Formspree captured the lead above.
@@ -324,6 +365,12 @@
       if (matched > 0) {
         document.getElementById('successMsg').innerHTML =
           `Thanks — we matched you to <strong class="text-white">${matched} available ${matched === 1 ? 'unit' : 'units'}</strong>. We'll reach out shortly, usually <strong class="text-white">within one business day</strong>.`;
+      }
+      if (pq && pq.maxMortgage > 0) {
+        const fmt = (n) => '$' + Math.round(n).toLocaleString();
+        document.getElementById('prequalText').innerHTML =
+          `Based on the income you shared, you may pre-qualify for a mortgage around <strong class="text-white">${fmt(pq.maxMortgage)}</strong> — roughly a <strong class="text-white">${fmt(pq.maxPurchase)}</strong> home in Ottawa. Renting for now is totally fine, but if buying's on your radar, Cyril can map it out for you.`;
+        document.getElementById('prequalBox').classList.remove('hidden');
       }
       document.getElementById('stepForm').classList.add('hidden');
       document.getElementById('stepSuccess').classList.remove('hidden');
