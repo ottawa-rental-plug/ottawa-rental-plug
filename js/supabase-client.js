@@ -107,15 +107,15 @@ async function orpRequestScreening(applicantId) {
   return data;
 }
 
-// ── SMS (Phase 4: Twilio notifications) ───────────────────────────
-async function orpSendSMS(toPhone, message) {
+// ── Notifications (Phase 4: ntfy push alerts) ─────────────────────
+async function orpSendNotification(title, message, tags = '') {
   const session = await orpSession();
   if (!session) throw new Error('Not signed in');
 
-  const res = await fetch('/.netlify/functions/send-sms', {
+  const res = await fetch('/.netlify/functions/send-notification', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-    body: JSON.stringify({ toPhone, message }),
+    body: JSON.stringify({ title, message, tags }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);

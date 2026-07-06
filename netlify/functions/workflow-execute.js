@@ -72,26 +72,28 @@ exports.handler = async (event) => {
           });
 
           executed++;
-        } else if (workflow.action_type === 'send_sms') {
-          // Get applicant phone
-          const aRes = await sbFetch(`applicants?id=eq.${applicantId}&select=phone,name`);
+        } else if (workflow.action_type === 'send_notification') {
+          // Get applicant name
+          const aRes = await sbFetch(`applicants?id=eq.${applicantId}&select=name`);
           const [applicant] = aRes.ok ? await aRes.json() : [null];
-          if (!applicant?.phone) continue;
+          if (!applicant?.name) continue;
 
-          // SMS templates
+          // Notification templates
           const templates = {
-            screening: `Hi ${applicant.name}, your application is under review. We'll contact you within 24 hours. — Ottawa Rental Plug`,
-            approved: `Great news ${applicant.name}! Your application has been approved. Check your email for next steps. — Ottawa Rental Plug`,
-            scheduled: `Hi ${applicant.name}, we have a viewing scheduled. Confirm here or reply STOP. — Ottawa Rental Plug`
+            screening: `${applicant.name}'s application is under review`,
+            approved: `${applicant.name} has been approved!`,
+            scheduled: `Viewing scheduled for ${applicant.name}`,
+            matched: `Strong match found: ${applicant.name}`
           };
-          const msgText = action.template && templates[action.template] ? templates[action.template] : action.message || 'Update from Ottawa Rental Plug';
+          const title = templates[action.template] || 'Application Update';
+          const msgBody = action.message || `Update for ${applicant.name}`;
 
-          // Send SMS
-          await fetch('/.netlify/functions/send-sms', {
+          // Send notification via ntfy
+          await fetch('/.netlify/functions/send-notification', {
             method: 'POST',
-            body: JSON.stringify({ toPhone: applicant.phone, message: msgText }),
+            body: JSON.stringify({ title, message: msgBody, tags: 'envelope' }),
             headers: { 'Content-Type': 'application/json' }
-          }).catch(e => console.error('SMS send error:', e));
+          }).catch(e => console.error('Notification send error:', e));
 
           // Log activity
           await sbFetch('activities', {
@@ -99,7 +101,7 @@ exports.handler = async (event) => {
             body: JSON.stringify({
               applicant_id: applicantId,
               type: 'status_change',
-              body: `Automated SMS sent: ${action.template || 'custom'}`
+              body: `Automated notification: ${action.template || 'custom'}`
             })
           });
 
