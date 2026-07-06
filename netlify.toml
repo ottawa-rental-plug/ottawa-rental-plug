@@ -14,6 +14,11 @@
     X-Robots-Tag = "noindex, nofollow"
 
 [[headers]]
+  for = "/landlord-portal.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
   for = "/client-portal.html"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
