@@ -664,6 +664,15 @@
       </div>
     </div>
 
+    <!-- WORKFLOWS -->
+    <div id="panel-workflows" class="panel">
+      <div class="section">
+        <div class="section-header"><div class="section-title">Automation Rules</div></div>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Auto-send emails, create follow-up tasks, and advance applicants based on pipeline stage changes.</p>
+        <div id="workflowsList" style="display:grid;gap:12px"></div>
+      </div>
+    </div>
+
     <!-- SHORTCUTS -->
     <div id="panel-shortcuts" class="panel">
       <div class="section">
@@ -2168,8 +2177,8 @@ async function loadAnalytics() {
   }
 }
 
-const PANELS = ['overview','today','analytics','pipeline','vacancies','leads','applicants','scanner','landlords','futurebuyers','templates','shortcuts','settings'];
-const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', pipeline:'Pipeline', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', futurebuyers:'Future Buyers', templates:'Post Templates', shortcuts:'Quick Scan Links', settings:'Settings' };
+const PANELS = ['overview','today','analytics','pipeline','vacancies','leads','applicants','scanner','landlords','futurebuyers','templates','workflows','shortcuts','settings'];
+const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', pipeline:'Pipeline', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', futurebuyers:'Future Buyers', templates:'Post Templates', workflows:'Automation', shortcuts:'Quick Scan Links', settings:'Settings' };
 function showPanel(name) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2182,6 +2191,7 @@ function showPanel(name) {
   if (name==='pipeline')  loadPipeline();
   if (name==='leads')     renderLeads(currentFilter);
   if (name==='templates') buildTemplates();
+  if (name==='workflows') loadWorkflows();
   if (name==='shortcuts') buildShortcuts();
   if (name==='vacancies') { closeVacancyForm(); renderVacanciesPanel(); }
   if (name==='landlords') loadLandlordLeads();
@@ -2382,6 +2392,14 @@ async function loadPipeline() {
 
         // Update in Supabase
         await sb.from('applicants').update({ stage: newStage }).eq('id', appId);
+
+        // Trigger workflows (Phase 2)
+        try {
+          await orpTriggerWorkflows(appId, 'stage_change', newStage);
+        } catch (e) {
+          console.error('Workflow trigger error:', e);
+        }
+
         await loadPipeline();
       });
 
@@ -2389,6 +2407,52 @@ async function loadPipeline() {
     });
   } catch (e) {
     board.innerHTML = `<div style="color:var(--red);padding:20px">Error loading pipeline: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+// ── WORKFLOWS (Phase 2: automation management) ──────────────────────
+async function loadWorkflows() {
+  const list = document.getElementById('workflowsList');
+  list.innerHTML = '<div style="color:var(--gray);font-size:13px;padding:12px">Loading...</div>';
+
+  try {
+    const workflows = await orpLoadWorkflows();
+    if (!workflows.length) {
+      list.innerHTML = '<div style="color:var(--gray);font-size:13px;padding:12px">No automation rules set up yet. Workflows trigger automatically when applicants move through the pipeline.</div>';
+      return;
+    }
+
+    list.innerHTML = workflows.map(w => {
+      const actionLabel = {
+        send_email: `📧 Email: ${w.action_data?.template || 'custom'}`,
+        create_task: `✓ Task: ${w.action_data?.title || 'Follow up'}`,
+        advance_stage: `⏭ Advance to: ${w.action_data?.next_stage || 'next'}`
+      }[w.action_type] || w.action_type;
+
+      const triggerLabel = `${w.trigger_type === 'stage_change' ? 'When moved to' : 'On'} ${w.trigger_stage || 'any'}`;
+
+      return `<div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px;display:grid;gap:8px">
+        <div style="font-weight:600;color:var(--navy);font-size:13px">${escapeHtml(w.name)}</div>
+        <div style="font-size:12px;color:var(--gray)">
+          <div>Trigger: ${triggerLabel}</div>
+          <div>Action: ${actionLabel}</div>
+        </div>
+        <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:4px">
+          <button onclick="toggleWorkflow('${w.id}',${!w.enabled})" style="padding:6px 12px;background:${w.enabled ? 'var(--red)' : 'var(--green)'};color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600">${w.enabled ? 'Disable' : 'Enable'}</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--red);font-size:12px;padding:12px">Error: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function toggleWorkflow(workflowId, enabled) {
+  try {
+    await orpSaveWorkflow({ id: workflowId, enabled });
+    await loadWorkflows();
+  } catch (e) {
+    alert('Error: ' + e.message);
   }
 }
 

@@ -107,6 +107,41 @@ async function orpRequestScreening(applicantId) {
   return data;
 }
 
+// ── Workflows (Phase 2: automation) ────────────────────────────────
+async function orpLoadWorkflows() {
+  const { data, error } = await sb.from('workflows').select('*').eq('enabled', true).order('created_at');
+  if (error) throw error;
+  return data || [];
+}
+async function orpSaveWorkflow(workflow) {
+  const session = await orpSession();
+  if (!session) throw new Error('Not signed in');
+  if (workflow.id) {
+    const { error } = await sb.from('workflows').update(workflow).eq('id', workflow.id);
+    if (error) throw error;
+    return workflow.id;
+  }
+  const { data, error } = await sb.from('workflows').insert(workflow).select('id').single();
+  if (error) throw error;
+  return data.id;
+}
+async function orpDeleteWorkflow(id) {
+  const { error } = await sb.from('workflows').delete().eq('id', id);
+  if (error) throw error;
+}
+async function orpTriggerWorkflows(applicantId, triggerType, triggerStage) {
+  const session = await orpSession();
+  if (!session) throw new Error('Not signed in');
+  const res = await fetch('/.netlify/functions/workflow-execute', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ applicantId, triggerType, triggerStage }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}
+
 // ── Tasks (Phase 1: kanban pipeline) ────────────────────────────────
 async function orpLoadTasks(applicantId) {
   const { data, error } = await sb.from('tasks').select('*').eq('applicant_id', applicantId).order('due_at', { ascending: true });
