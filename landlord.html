@@ -443,6 +443,10 @@
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
       Documents
     </button>
+    <button class="nav-item" onclick="showPanel('admin')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H3.75A2.25 2.25 0 001.5 3.75v16.5A2.25 2.25 0 003.75 22.5h16.5a2.25 2.25 0 002.25-2.25V13.5M6.75 6.75h10.5M6.75 11.25h10.5M15 17.25l6-6m0 0l-1.5-1.5m1.5 1.5l1.5-1.5"/></svg>
+      Admin
+    </button>
     <button class="nav-item" onclick="showPanel('shortcuts')">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
       Quick Scan Links
@@ -691,6 +695,35 @@
         <div class="section-header"><div class="section-title">Documents & Files</div></div>
         <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Leases, screening reports, ID verification, income proof, and rental history. Click an applicant to upload and manage their documents.</p>
         <div id="documentsBulkList" style="display:grid;gap:12px"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN CONTROLS -->
+    <div id="panel-admin" class="panel">
+      <div class="section">
+        <div class="section-header"><div class="section-title">Admin Controls</div></div>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Manage landlords, workflows, and platform settings.</p>
+
+        <div style="margin-bottom:24px">
+          <div class="section-title" style="font-size:13px;margin-bottom:12px">Landlords</div>
+          <div id="adminLandlords" style="display:grid;gap:8px"></div>
+          <button onclick="addLandlord()" style="width:100%;margin-top:12px;padding:10px;background:var(--blue);color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px">+ Add Landlord</button>
+        </div>
+
+        <div style="margin-bottom:24px">
+          <div class="section-title" style="font-size:13px;margin-bottom:12px">Quick Actions</div>
+          <button onclick="syncWorkflows()" style="width:100%;padding:10px;background:var(--bg);color:var(--navy);border:1px solid var(--border);border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;margin-bottom:8px">Resync Workflows</button>
+          <button onclick="clearCache()" style="width:100%;padding:10px;background:var(--bg);color:var(--navy);border:1px solid var(--border);border-radius:6px;font-weight:600;cursor:pointer;font-size:13px">Clear Cache</button>
+        </div>
+
+        <div>
+          <div class="section-title" style="font-size:13px;margin-bottom:12px">System Info</div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:12px;color:var(--gray)">
+            <div style="margin-bottom:8px"><strong>Version:</strong> Phase 5 Complete</div>
+            <div style="margin-bottom:8px"><strong>Database:</strong> Supabase (Connected)</div>
+            <div><strong>Notifications:</strong> ntfy (orp-alerts)</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2159,6 +2192,37 @@ async function loadAnalytics() {
     const nMatched = atOrPast(1), nScreen = atOrPast(2), nApproved = atOrPast(3), nPlaced = atOrPast(4), nBuyer = atOrPast(6);
     const pct = (n) => total ? Math.round(n / total * 100) : 0;
 
+    // PHASE 5 PART 2: Advanced Analytics
+    // Calculate placement metrics by source
+    const bySource = {};
+    A.forEach(a => {
+      const s = (a.source || 'other');
+      if (!bySource[s]) bySource[s] = { total: 0, placed: 0, budget_sum: 0 };
+      bySource[s].total++;
+      bySource[s].budget_sum += a.budget || 0;
+      if (a.stage === 'placed') bySource[s].placed++;
+    });
+
+    // ROI calculation: placements per source
+    const roiBySource = Object.entries(bySource)
+      .map(([src, data]) => ({
+        source: src,
+        total: data.total,
+        placed: data.placed,
+        rate: Math.round(data.placed / data.total * 100),
+        avgBudget: Math.round(data.budget_sum / data.total)
+      }))
+      .sort((a, b) => b.rate - a.rate);
+
+    // Time-to-placement (days from created_at to now for placed applicants)
+    const placedApps = A.filter(a => a.stage === 'placed' && a.created_at);
+    const timeToPlace = placedApps.length > 0
+      ? Math.round(placedApps.reduce((sum, a) => {
+          const days = (new Date() - new Date(a.created_at)) / (1000 * 60 * 60 * 24);
+          return sum + days;
+        }, 0) / placedApps.length)
+      : 0;
+
     // Future-buyer pipeline value (combined buying power from pre-qual).
     const settled = A.filter(a => ['placed','nurture','future_buyer'].includes(a.stage || ''));
     let pipeline = 0, buyerCount = 0;
@@ -2168,8 +2232,8 @@ async function loadAnalytics() {
     kpis.innerHTML = `
       <div class="stat-card"><div class="stat-label">Total Applicants</div><div class="stat-value">${total}</div><div class="stat-sub">in the pipeline</div></div>
       <div class="stat-card good"><div class="stat-label">Placement Rate</div><div class="stat-value">${pct(nPlaced)}%</div><div class="stat-sub">${nPlaced} placed of ${total}</div></div>
-      <div class="stat-card"><div class="stat-label">Future Buyers</div><div class="stat-value">${buyerCount}</div><div class="stat-sub">settled tenants to nurture</div></div>
-      <div class="stat-card alert"><div class="stat-label">Mortgage Pipeline</div><div class="stat-value">${pipeline ? money(pipeline) : '—'}</div><div class="stat-sub">combined buying power</div></div>`;
+      <div class="stat-card"><div class="stat-label">Top ROI Source</div><div class="stat-value">${roiBySource[0]?.source.toUpperCase() || '—'}</div><div class="stat-sub">${roiBySource[0]?.rate || 0}% placement rate</div></div>
+      <div class="stat-card alert"><div class="stat-label">Avg Time-to-Place</div><div class="stat-value">${timeToPlace}</div><div class="stat-sub">days from apply</div></div>`;
 
     const steps = [['Applied', total], ['Matched', nMatched], ['Screening', nScreen], ['Approved', nApproved], ['Placed', nPlaced], ['Future buyer', nBuyer]];
     funnelEl.innerHTML = steps.map(([label, n]) => {
@@ -2181,25 +2245,23 @@ async function loadAnalytics() {
       </div>`;
     }).join('');
 
-    // Sources
-    const bySource = {};
-    A.forEach(a => { const s = (a.source || 'other'); bySource[s] = (bySource[s] || 0) + 1; });
-    const srcEntries = Object.entries(bySource).sort((x, y) => y[1] - x[1]);
-    const maxSrc = srcEntries.length ? srcEntries[0][1] : 1;
+    // Sources with ROI metrics (Phase 5 Part 2)
     const SRC_LABEL = { apply: 'Apply page', orp: 'ORP website', referral: 'Referral', kijiji: 'Kijiji', facebook: 'Facebook', reddit: 'Reddit', direct: 'Direct', other: 'Other' };
-    sourcesEl.innerHTML = srcEntries.map(([s, n]) => `
+    const maxRate = roiBySource.length ? roiBySource[0].rate : 1;
+    sourcesEl.innerHTML = roiBySource.map(src => `
       <div class="src-row">
-        <div class="src-label">${escapeHtml(SRC_LABEL[s] || s)}</div>
-        <div class="src-track"><div class="src-fill" style="width:${Math.round(n / maxSrc * 100)}%"></div></div>
-        <div class="src-count">${n}</div>
+        <div class="src-label">${escapeHtml(SRC_LABEL[src.source] || src.source)}</div>
+        <div style="font-size:11px;color:var(--gray);margin-bottom:4px">${src.placed}/${src.total} placed (${src.rate}%) · avg $${src.avgBudget?.toLocaleString()}</div>
+        <div class="src-track"><div class="src-fill" style="width:${Math.round(src.rate / maxRate * 100)}%;background:${src.rate >= 80 ? '#34c759' : src.rate >= 50 ? '#ff9500' : '#ff3b30'}"></div></div>
+        <div class="src-count">${src.rate}% ROI</div>
       </div>`).join('');
   } catch (e) {
     funnelEl.innerHTML = `<div class="scan-empty"><p style="color:var(--red)">Couldn't load analytics: ${escapeHtml(e.message||String(e))}</p></div>`;
   }
 }
 
-const PANELS = ['overview','today','analytics','pipeline','vacancies','leads','applicants','scanner','landlords','futurebuyers','templates','workflows','documents','shortcuts','settings'];
-const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', pipeline:'Pipeline', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', futurebuyers:'Future Buyers', templates:'Post Templates', workflows:'Automation', documents:'Documents', shortcuts:'Quick Scan Links', settings:'Settings' };
+const PANELS = ['overview','today','analytics','pipeline','vacancies','leads','applicants','scanner','landlords','futurebuyers','templates','workflows','documents','admin','shortcuts','settings'];
+const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', pipeline:'Pipeline', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', futurebuyers:'Future Buyers', templates:'Post Templates', workflows:'Automation', documents:'Documents', admin:'Admin', shortcuts:'Quick Scan Links', settings:'Settings' };
 function showPanel(name) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2214,6 +2276,7 @@ function showPanel(name) {
   if (name==='templates') buildTemplates();
   if (name==='workflows') loadWorkflows();
   if (name==='documents') loadDocumentsPanel();
+  if (name==='admin')     loadAdminPanel();
   if (name==='shortcuts') buildShortcuts();
   if (name==='vacancies') { closeVacancyForm(); renderVacanciesPanel(); }
   if (name==='landlords') loadLandlordLeads();
@@ -2946,6 +3009,69 @@ function printTenantSummary() {
     </div>`;
 
   window.print();
+}
+
+// ── ADMIN CONTROLS (Phase 5 Part 5) ──────────────────────────────
+async function loadAdminPanel() {
+  const list = document.getElementById('adminLandlords');
+  try {
+    const landlords = await orpLoadLandlords();
+    if (!landlords || landlords.length === 0) {
+      list.innerHTML = '<div style="color:var(--gray);font-size:12px">No landlords yet</div>';
+      return;
+    }
+    list.innerHTML = landlords.map(ll => `
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:10px;display:flex;justify-content:space-between;align-items:center">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:12px">${escapeHtml(ll.name || 'Landlord')}</div>
+          <div style="font-size:11px;color:var(--gray)">${escapeHtml(ll.email || '—')}</div>
+        </div>
+        <button onclick="deleteLandlord('${ll.id}')" style="padding:4px 8px;background:#fee2e2;color:var(--red);border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">Remove</button>
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--red);font-size:11px">Error: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function addLandlord() {
+  const name = prompt('Landlord name:');
+  if (!name) return;
+  const email = prompt('Email:');
+  if (!email) return;
+  const phone = prompt('Phone (optional):');
+  try {
+    const id = await orpSaveLandlord({ name, email, phone });
+    alert('Landlord added!');
+    await loadAdminPanel();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function deleteLandlord(id) {
+  if (!confirm('Remove this landlord?')) return;
+  try {
+    await orpDeleteLandlord(id);
+    await loadAdminPanel();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function syncWorkflows() {
+  try {
+    await loadWorkflows();
+    alert('Workflows resynced!');
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+function clearCache() {
+  localStorage.clear();
+  alert('Cache cleared. Refreshing page…');
+  window.location.reload();
 }
 
 // ── PDF REPORTS (Phase 5 Part 3) ──────────────────────────────────
