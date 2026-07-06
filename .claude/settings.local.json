@@ -123,7 +123,10 @@
       "Bash(curl -s 'https://lvmsajsvkmwejggecehp.supabase.co/rest/v1/applicants?select=id,name,email,phone,budget,beds_wanted,match_score,move_in&order=created_at.desc&limit=1' -H 'apikey: sb_publishable_ktgQ1_bHcK4J5rpAEZ-l_w_dqC9N144')",
       "Bash(curl -s 'https://lvmsajsvkmwejggecehp.supabase.co/rest/v1/applicants?select=id,name,email,phone&order=created_at.desc&limit=5' -H 'apikey: sb_publishable_ktgQ1_bHcK4J5rpAEZ-l_w_dqC9N144')",
       "Bash(curl -s 'https://lvmsajsvkmwejggecehp.supabase.co/rest/v1/applications?select=*&order=created_at.desc&limit=5' -H 'apikey: sb_publishable_ktgQ1_bHcK4J5rpAEZ-l_w_dqC9N144')",
-      "Bash(curl -s 'https://lvmsajsvkmwejggecehp.supabase.co/rest/v1/units?id=eq.0340654c-3e7e-4037-9efe-a9e7084da37a&select=id,beds,status,price' -H 'apikey: sb_publishable_ktgQ1_bHcK4J5rpAEZ-l_w_dqC9N144')"
+      "Bash(curl -s 'https://lvmsajsvkmwejggecehp.supabase.co/rest/v1/units?id=eq.0340654c-3e7e-4037-9efe-a9e7084da37a&select=id,beds,status,price' -H 'apikey: sb_publishable_ktgQ1_bHcK4J5rpAEZ-l_w_dqC9N144')",
+      "Bash(curl -s \"https://www.ontario.ca/document/form-410-residential-tenancy-agreement\")",
+      "Bash(curl -s \"https://www.ontario.ca/search?search=form+410\")",
+      "Bash(curl -sI \"https://www.ontario.ca/files/2023-05/o-form-410-e.pdf\")"
     ]
   }
 }
