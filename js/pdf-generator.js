@@ -117,70 +117,144 @@ async function generateLeaseAgreement(applicant, property, startDate) {
   const pageHeight = doc.internal.pageSize.getHeight();
   let y = 40;
 
-  addHeader(doc, 'RESIDENTIAL LEASE AGREEMENT');
+  addHeader(doc, 'FORM 410 — RESIDENTIAL TENANCY AGREEMENT');
 
-  // Property Section
-  y = addSection(doc, y, 'PROPERTY INFORMATION');
-  y = addField(doc, y, 'Address:', property?.address || 'To be determined');
-  y = addField(doc, y, 'Rent:', `$${property?.price?.toLocaleString() || 'TBD'} per month`);
-  y = addField(doc, y, 'Bedrooms / Bathrooms:', `${property?.beds || '—'} BR / ${property?.baths || '—'} BA`);
+  // PARTIES
+  y = addSection(doc, y, '1. PARTIES AND PROPERTY');
+  y = addField(doc, y, 'Landlord:', 'Ottawa Rental Plug / Cyril Babalola');
+  y = addField(doc, y, 'Tenant:', applicant?.name || 'To be determined');
+  y = addField(doc, y, 'Rental Unit Address:', property?.address || 'To be determined');
+  y = addField(doc, y, 'Unit Type:', `${property?.beds || '—'} BR / ${property?.baths || '—'} BA ${property?.type || 'Unit'}`);
   y += 5;
 
-  // Tenant Section
-  y = addSection(doc, y, 'TENANT INFORMATION');
-  y = addField(doc, y, 'Name:', applicant?.name || '—');
-  y = addField(doc, y, 'Email:', applicant?.email || '—');
-  y = addField(doc, y, 'Phone:', applicant?.phone || '—');
-  y = addField(doc, y, 'Move-in Date:', startDate ? new Date(startDate).toLocaleDateString('en-CA') : 'To be determined');
+  // RENT
+  y = addSection(doc, y, '2. RENT AND PAYMENT');
+  y = addField(doc, y, 'Monthly Rent:', `$${property?.price?.toLocaleString() || 'TBD'}`);
+  y = addField(doc, y, 'Rent Payment Due Date:', '1st day of each month');
+  y = addField(doc, y, 'Payment Address:', 'As directed by Landlord');
+  y = addField(doc, y, 'Security Deposit:', `$${property?.price?.toLocaleString() || 'TBD'} (one month\'s rent)`);
   y += 5;
 
-  // Terms Section
-  y = addSection(doc, y, 'LEASE TERMS');
+  // LEASE TERM
+  y = addSection(doc, y, '3. LEASE TERM');
+  const endDate = startDate ? new Date(new Date(startDate).getTime() + 365 * 24 * 60 * 60 * 1000) : null;
+  y = addField(doc, y, 'Commencement Date:', startDate ? new Date(startDate).toLocaleDateString('en-CA') : 'To be determined');
+  y = addField(doc, y, 'End Date:', endDate ? endDate.toLocaleDateString('en-CA') : 'One year from commencement');
+  y = addField(doc, y, 'Lease Duration:', '12 months (fixed term)');
+  y += 5;
+
+  if (y > pageHeight - 30) {
+    addFooter(doc, doc.internal.pages.length - 1);
+    doc.addPage();
+    y = 20;
+    addHeader(doc, 'FORM 410 — RESIDENTIAL TENANCY AGREEMENT (continued)');
+    y = 40;
+  }
+
+  // KEY TERMS
+  y = addSection(doc, y, '4. TENANT OBLIGATIONS');
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...BRAND.text);
 
-  const terms = [
-    { num: '1', title: 'Lease Term', text: 'This lease is for a period of twelve (12) months, commencing on the Move-in Date and ending on the same day in the following year, unless terminated earlier per the terms herein.' },
-    { num: '2', title: 'Rent', text: 'Tenant agrees to pay rent in the amount stated above, due on the first day of each month.' },
-    { num: '3', title: 'Security Deposit', text: 'A security deposit equal to one month\'s rent is required before occupancy.' },
-    { num: '4', title: 'Maintenance', text: 'Landlord shall maintain the property in habitable condition. Tenant is responsible for minor repairs and general housekeeping.' },
-    { num: '5', title: 'Utilities', text: 'Tenant is responsible for utilities as outlined in the lease addendum. Landlord is responsible for property maintenance.' },
-    { num: '6', title: 'No Subletting', text: 'Tenant shall not sublet or assign the lease without written consent from Landlord.' },
+  const obligations = [
+    'Pay rent in full and on time on the 1st of each month',
+    'Keep the rental unit clean and in a state of good repair',
+    'Do not damage the rental unit beyond normal wear and tear',
+    'Comply with all applicable laws and regulations',
+    'Not engage in illegal activity on the premises',
+    'Respect other tenants\' right to quiet enjoyment',
+    'Do not sublet or assign the lease without written consent',
   ];
 
-  for (const term of terms) {
-    if (y > pageHeight - 30) {
-      addFooter(doc, doc.internal.pages.length - 1);
-      doc.addPage();
-      y = 20;
-      addHeader(doc, 'RESIDENTIAL LEASE AGREEMENT (continued)');
-      y = 40;
-    }
-
-    doc.setFont('Helvetica', 'bold');
-    doc.text(`${term.num}. ${term.title}`, 20, y);
-
-    doc.setFont('Helvetica', 'normal');
-    const lines = doc.splitTextToSize(term.text, pageWidth - 40);
-    y += 4;
-    doc.text(lines, 24, y);
-    y += (lines.length * 4) + 3;
+  for (const obl of obligations) {
+    const lines = doc.splitTextToSize(`• ${obl}`, pageWidth - 40);
+    doc.text(lines, 20, y);
+    y += (lines.length * 4) + 1;
   }
 
-  y += 8;
+  y += 5;
 
-  // Signatures Section
-  y = addSection(doc, y, 'SIGNATURES');
-  y += 8;
+  if (y > pageHeight - 30) {
+    addFooter(doc, doc.internal.pages.length - 1);
+    doc.addPage();
+    y = 20;
+    addHeader(doc, 'FORM 410 — RESIDENTIAL TENANCY AGREEMENT (continued)');
+    y = 40;
+  }
+
+  // LANDLORD OBLIGATIONS
+  y = addSection(doc, y, '5. LANDLORD OBLIGATIONS');
+  const landlordObl = [
+    'Maintain the rental unit in a habitable condition',
+    'Keep common areas clean, safe, and in good repair',
+    'Provide heat, hot water, and other essential services',
+    'Respond to maintenance requests in a timely manner',
+    'Respect the tenant\'s right to privacy',
+    'Provide notice before entering the rental unit (except emergencies)',
+  ];
+
+  for (const obl of landlordObl) {
+    const lines = doc.splitTextToSize(`• ${obl}`, pageWidth - 40);
+    doc.text(lines, 20, y);
+    y += (lines.length * 4) + 1;
+  }
+
+  y += 5;
+
+  // UTILITIES & SERVICES
+  y = addSection(doc, y, '6. UTILITIES & SERVICES');
+  y = addField(doc, y, 'Hydro/Electricity:', 'Tenant responsibility');
+  y = addField(doc, y, 'Water & Sewage:', 'Included in rent / Tenant responsibility');
+  y = addField(doc, y, 'Heat:', 'Included in rent');
+  y = addField(doc, y, 'Internet/Cable:', 'Tenant responsibility');
+  y += 5;
+
+  if (y > pageHeight - 30) {
+    addFooter(doc, doc.internal.pages.length - 1);
+    doc.addPage();
+    y = 20;
+    addHeader(doc, 'FORM 410 — RESIDENTIAL TENANCY AGREEMENT (continued)');
+    y = 40;
+  }
+
+  // SPECIAL PROVISIONS
+  y = addSection(doc, y, '7. SPECIAL PROVISIONS & RULES');
+  y = addField(doc, y, 'Pets:', 'No pets without written consent from Landlord');
+  y = addField(doc, y, 'Smoking:', 'Smoking is strictly prohibited on the premises');
+  y = addField(doc, y, 'Overnight Guests:', 'Occasional overnight guests permitted');
+  y += 5;
+
+  // TERMINATION
+  y = addSection(doc, y, '8. TERMINATION');
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(9);
-  doc.text('Landlord (Print): ________________________    Signature: ________________________    Date: _________', 20, y);
+  const termText = 'Either party may terminate this agreement with 60 days\' written notice, in accordance with the Residential Tenancies Act, 2006 (Ontario). Security deposit will be returned within 30 days of move-out, less any legitimate deductions.';
+  const termLines = doc.splitTextToSize(termText, pageWidth - 40);
+  doc.text(termLines, 20, y);
+  y += (termLines.length * 4) + 8;
+
+  // SIGNATURES
+  y = addSection(doc, y, '9. SIGNATURES');
+  y += 6;
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('By signing below, both parties agree to the terms of this Residential Tenancy Agreement.', 20, y);
+  y += 8;
+
+  doc.text('Landlord: ________________________    Signature: ________________________    Date: _________', 20, y);
   y += 10;
-  doc.text('Tenant (Print): ________________________    Signature: ________________________    Date: _________', 20, y);
+  doc.text('Tenant: ________________________    Signature: ________________________    Date: _________', 20, y);
+  y += 10;
+  doc.text('Witness: ________________________    Signature: ________________________    Date: _________', 20, y);
+
+  y += 10;
+  doc.setFontSize(8);
+  doc.setTextColor(...BRAND.gray);
+  doc.text('This form complies with Ontario Regulation 516/06 under the Residential Tenancies Act, 2006.', 20, y);
 
   addFooter(doc, doc.internal.pages.length - 1);
-  doc.save(`Lease_Agreement_${applicant?.name?.replace(/\s+/g, '_') || 'Applicant'}.pdf`);
+  doc.save(`Form_410_Agreement_${applicant?.name?.replace(/\s+/g, '_') || 'Applicant'}.pdf`);
 }
 
 async function generateScreeningReport(applicant) {
