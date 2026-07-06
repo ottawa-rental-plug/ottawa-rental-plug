@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORP Landlord Portal</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy:#003a8c; --blue:#0071e3; --blue-light:#e8f0fd;
+      --green:#34c759; --orange:#ff9500; --red:#ff3b30;
+      --gray:#6e6e73; --border:#e8e8ed; --bg:#f0f2f5;
+      --white:#fff; --sidebar:#1a2332; --sidebar-hover:#243044;
+    }
+    body { font-family:'Inter',-apple-system,sans-serif; background:var(--bg); color:#1d1d1f; -webkit-font-smoothing:antialiased; min-height:100vh; display:flex; flex-direction:column; }
+
+    /* LOGIN */
+    #loginGate { position:fixed; inset:0; background:linear-gradient(135deg,#16273a 0%,#0e3a5f 55%,#0369a1 100%); display:flex; align-items:center; justify-content:center; z-index:9999; }
+    .login-card { background:#fff; border-radius:20px; padding:48px 40px; width:360px; text-align:center; box-shadow:0 24px 64px rgba(0,0,0,.25); }
+    .login-logo { font-size:15px; font-weight:800; color:var(--navy); margin-bottom:8px; }
+    .login-title { font-size:22px; font-weight:700; color:var(--navy); margin-bottom:6px; }
+    .login-sub { font-size:13px; color:var(--gray); margin-bottom:28px; }
+    .login-input { width:100%; padding:13px 16px; border:1.5px solid var(--border); border-radius:10px; font-size:15px; font-family:inherit; margin-bottom:14px; outline:none; transition:border-color .2s; }
+    .login-input:focus { border-color:var(--blue); }
+    .login-btn { width:100%; padding:13px; background:var(--navy); color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; }
+    .login-btn:hover { background:#002a6e; }
+    .login-error { color:var(--red); font-size:13px; margin-top:10px; display:none; }
+
+    /* HEADER */
+    .header { background:var(--white); border-bottom:1px solid var(--border); padding:20px 28px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+    .header-brand { font-size:14px; font-weight:700; color:var(--navy); }
+    .header-right { display:flex; align-items:center; gap:16px; }
+    .header-link { font-size:13px; color:var(--blue); cursor:pointer; text-decoration:none; font-weight:600; }
+    .header-link:hover { opacity:.8; }
+
+    /* MAIN */
+    .container { flex:1; max-width:1200px; margin:0 auto; width:100%; padding:28px; }
+
+    /* GRID */
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-bottom:28px; }
+
+    /* CARDS */
+    .card { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,.04); transition:transform .2s, box-shadow .2s; }
+    .card:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,.12); }
+
+    .card-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+    .card-title { font-size:14px; font-weight:700; color:var(--navy); }
+    .card-badge { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; background:var(--blue-light); color:var(--blue); }
+    .card-badge.approved { background:#dcfce7; color:var(--green); }
+    .card-badge.pending { background:#fef3c7; color:var(--orange); }
+    .card-badge.declined { background:#fee2e2; color:var(--red); }
+
+    .card-meta { font-size:12px; color:var(--gray); line-height:1.5; margin-bottom:14px; }
+    .card-meta-row { display:flex; justify-content:space-between; }
+
+    .card-actions { display:flex; gap:8px; }
+    .btn-small { padding:6px 12px; font-size:12px; font-weight:600; border:none; border-radius:6px; cursor:pointer; transition:opacity .2s; }
+    .btn-small.primary { background:var(--blue); color:#fff; }
+    .btn-small.primary:hover { opacity:.9; }
+    .btn-small.secondary { background:var(--bg); color:var(--navy); border:1px solid var(--border); }
+    .btn-small.secondary:hover { background:var(--border); }
+
+    /* SECTIONS */
+    .section { margin-bottom:32px; }
+    .section-title { font-size:18px; font-weight:700; color:var(--navy); margin-bottom:16px; }
+    .section-subtitle { font-size:13px; color:var(--gray); margin-bottom:16px; line-height:1.6; }
+
+    /* MODAL */
+    .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:9998; }
+    .modal-backdrop.open { display:flex; }
+    .modal { background:var(--white); border-radius:14px; padding:28px; width:90%; max-width:500px; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+    .modal-title { font-size:16px; font-weight:700; color:var(--navy); margin-bottom:16px; }
+    .modal-body { margin-bottom:20px; }
+    .modal-body p { font-size:13px; color:var(--gray); line-height:1.6; margin-bottom:12px; }
+    .modal-footer { display:flex; gap:8px; justify-content:flex-end; }
+
+    /* EMPTY STATE */
+    .empty-state { text-align:center; padding:40px 20px; color:var(--gray); }
+    .empty-state svg { width:60px; height:60px; margin-bottom:16px; opacity:.5; }
+    .empty-state-title { font-size:14px; font-weight:600; color:var(--navy); margin-bottom:8px; }
+    .empty-state-text { font-size:12px; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .container { padding:16px; }
+      .grid { grid-template-columns:1fr; }
+      .header { flex-direction:column; gap:16px; }
+      .modal { width:95%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN GATE -->
+<div id="loginGate">
+  <div class="login-card">
+    <div class="login-logo">ORP</div>
+    <div class="login-title">Landlord Portal</div>
+    <div class="login-sub">View your matched applicants</div>
+    <input type="email" id="emailInput" class="login-input" placeholder="Email" autocomplete="username">
+    <input type="password" id="passInput" class="login-input" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')checkPass()">
+    <button onclick="checkPass()" class="login-btn">Sign In</button>
+    <div id="passError" class="login-error"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-brand">ORP Landlord Portal</div>
+  <div class="header-right">
+    <span id="userEmail" style="font-size:12px;color:var(--gray)"></span>
+    <a href="#" onclick="logout()" class="header-link">Sign Out</a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container" id="mainContent" style="display:none">
+
+  <!-- SUMMARY -->
+  <div class="section">
+    <div class="section-title">Your Properties</div>
+    <div class="grid" id="propertiesGrid"></div>
+  </div>
+
+  <!-- APPLICANTS -->
+  <div class="section">
+    <div class="section-title">Matched Applicants</div>
+    <div class="section-subtitle" id="applicantSubtitle"></div>
+    <div class="grid" id="applicantsGrid"></div>
+  </div>
+
+</div>
+
+<!-- APPLICANT DETAIL MODAL -->
+<div class="modal-backdrop" id="applicantModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button onclick="closeModal()" class="btn-small secondary">Close</button>
+      <button onclick="approveApplicant()" id="approveBtn" class="btn-small primary">Approve</button>
+      <button onclick="declineApplicant()" id="declineBtn" class="btn-small" style="background:#fee2e2;color:var(--red)">Decline</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+
+<script>
+let _currentApplicant = null;
+let _landlordId = null;
+
+async function checkPass() {
+  const email = document.getElementById('emailInput').value.trim();
+  const pass = document.getElementById('passInput').value;
+  const btn = document.querySelector('.login-btn');
+  const err = document.getElementById('passError');
+  err.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  try {
+    await orpSignIn(email, pass);
+    const session = await orpSession();
+    if (!session) throw new Error('No session');
+
+    _landlordId = session.user.id;
+    document.getElementById('userEmail').textContent = session.user.email;
+    document.getElementById('loginGate').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+
+    loadPortal();
+  } catch (e) {
+    err.textContent = /invalid|credential/i.test(e.message) ? 'Incorrect credentials' : e.message;
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+async function loadPortal() {
+  try {
+    // Load properties (units assigned to this landlord)
+    const { data: properties, error: propError } = await sb
+      .from('units')
+      .select('id, address, beds, baths, type, price, status')
+      .eq('landlord_id', _landlordId)
+      .order('created_at', { ascending: false });
+    if (propError) throw propError;
+
+    // Render properties
+    const propsGrid = document.getElementById('propertiesGrid');
+    if (!properties || properties.length === 0) {
+      propsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-title">No properties yet</div></div>';
+    } else {
+      propsGrid.innerHTML = properties.map(p => `
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">${escapeHtml(p.address || 'Property')}</div>
+            <div class="card-badge" style="background:#e0f2fe;color:var(--blue)">${p.status}</div>
+          </div>
+          <div class="card-meta">
+            <div>${p.beds}BR, ${p.baths}BA · ${p.type}</div>
+            <div style="font-weight:600;color:var(--navy);margin-top:4px">$${p.price?.toLocaleString()}/mo</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Load matched applicants for this landlord's properties
+    const { data: applications, error: appError } = await sb
+      .from('applications')
+      .select('*,applicants(id,name,email,phone,stage,budget,beds_wanted,move_in),units(id,address)')
+      .eq('units.landlord_id', _landlordId)
+      .gte('match_score', 70)
+      .order('match_score', { ascending: false });
+    if (appError) throw appError;
+
+    // Render applicants
+    const appsGrid = document.getElementById('applicantsGrid');
+    if (!applications || applications.length === 0) {
+      appsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg><div class="empty-state-title">No strong matches yet</div><div class="empty-state-text">Matches with 70+ score will appear here</div></div>';
+    } else {
+      appsGrid.innerHTML = applications.map(app => {
+        const a = app.applicants;
+        const match = Math.round(app.match_score || 0);
+        const status = { new: 'pending', matched: 'pending', screening: 'pending', approved: 'approved', placed: 'approved', declined: 'declined' }[a?.stage] || 'pending';
+        return `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">${escapeHtml(a?.name || 'Applicant')}</div>
+              <div class="card-badge ${status}">${match}% match</div>
+            </div>
+            <div class="card-meta">
+              <div class="card-meta-row"><span>Wants:</span><span>${a?.beds_wanted || 'Any'}BR</span></div>
+              <div class="card-meta-row"><span>Budget:</span><span>$${a?.budget?.toLocaleString() || '?'}</span></div>
+              <div class="card-meta-row"><span>Status:</span><span>${status.toUpperCase()}</span></div>
+            </div>
+            <div class="card-actions">
+              <button onclick="showApplicant(${JSON.stringify(app).replace(/"/g, '&quot;')})" class="btn-small primary">View</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    document.getElementById('applicantSubtitle').textContent = `${applications?.length || 0} strong matches for your properties`;
+  } catch (e) {
+    console.error('Portal load error:', e);
+    alert('Error loading portal: ' + e.message);
+  }
+}
+
+function showApplicant(application) {
+  _currentApplicant = application;
+  const a = application.applicants;
+  document.getElementById('modalTitle').textContent = a.name || 'Applicant';
+  document.getElementById('modalBody').innerHTML = `
+    <p><strong>Email:</strong> ${escapeHtml(a.email || '—')}</p>
+    <p><strong>Phone:</strong> ${escapeHtml(a.phone || '—')}</p>
+    <p><strong>Looking for:</strong> ${a.beds_wanted || 'Any'} BR, $${a.budget?.toLocaleString() || '?'}/mo</p>
+    <p><strong>Move-in:</strong> ${a.move_in ? new Date(a.move_in).toLocaleDateString() : '—'}</p>
+    <p><strong>Match score:</strong> ${Math.round(application.match_score || 0)}%</p>
+    <p style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><strong>Status:</strong> <span style="color:var(--blue);font-weight:600">${a.stage?.toUpperCase() || 'NEW'}</span></p>
+  `;
+  document.getElementById('applicantModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('applicantModal').classList.remove('open');
+  _currentApplicant = null;
+}
+
+async function approveApplicant() {
+  if (!_currentApplicant) return;
+  try {
+    const { error } = await sb
+      .from('applications')
+      .update({ status: 'approved' })
+      .eq('id', _currentApplicant.id);
+    if (error) throw error;
+    alert('Applicant approved!');
+    closeModal();
+    loadPortal();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function declineApplicant() {
+  if (!_currentApplicant) return;
+  if (!confirm('Decline this applicant?')) return;
+  try {
+    const { error } = await sb
+      .from('applications')
+      .update({ status: 'declined' })
+      .eq('id', _currentApplicant.id);
+    if (error) throw error;
+    alert('Applicant declined');
+    closeModal();
+    loadPortal();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function logout() {
+  try {
+    await orpSignOut();
+    document.getElementById('loginGate').style.display = 'flex';
+    document.getElementById('mainContent').style.display = 'none';
+    document.getElementById('emailInput').value = '';
+    document.getElementById('passInput').value = '';
+  } catch (e) {
+    alert('Error signing out: ' + e.message);
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+
+</body>
+</html>
