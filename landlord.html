@@ -2632,6 +2632,84 @@ async function deleteDocument(docId, filePath) {
   }
 }
 
+// ── SMS (Phase 4: Twilio) ────────────────────────────────────────────
+async function openSMSForm(templateType) {
+  if (!_drawerApplicant || !_drawerApplicant.phone) {
+    alert('No phone number on file');
+    return;
+  }
+
+  const smsModal = document.getElementById('smsModal') || createSMSModal();
+  document.getElementById('smsPhone').textContent = _drawerApplicant.phone;
+  document.getElementById('smsName').textContent = _drawerApplicant.name || 'there';
+  document.getElementById('smsTemplate').value = templateType || 'screening';
+  document.getElementById('smsBody').value = '';
+  smsModal.style.display = 'flex';
+}
+
+function createSMSModal() {
+  const modal = document.createElement('div');
+  modal.id = 'smsModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:9998';
+  modal.innerHTML = `
+    <div style="background:var(--white);border-radius:14px;padding:24px;width:90%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px">Send SMS to <span id="smsPhone"></span></div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:600;color:var(--gray);display:block;margin-bottom:6px">Template</label>
+        <select id="smsTemplate" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+          <option value="screening">Screening Update</option>
+          <option value="approved">Approval Notification</option>
+          <option value="scheduled">Viewing Scheduled</option>
+          <option value="custom">Custom Message</option>
+        </select>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:600;color:var(--gray);display:block;margin-bottom:6px">Message</label>
+        <textarea id="smsBody" placeholder="Hi {{name}}, ..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;min-height:80px;resize:vertical"></textarea>
+        <div style="font-size:11px;color:var(--gray);margin-top:4px">Use {{name}} to insert applicant name</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="document.getElementById('smsModal').style.display='none'" style="padding:8px 16px;background:var(--bg);color:var(--gray);border:none;border-radius:6px;cursor:pointer;font-weight:600">Cancel</button>
+        <button onclick="sendSMS()" style="padding:8px 16px;background:var(--blue);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600">Send</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  return modal;
+}
+
+async function sendSMS() {
+  if (!_drawerApplicant || !_drawerApplicant.phone) {
+    alert('No phone number');
+    return;
+  }
+
+  let message = document.getElementById('smsBody').value.trim();
+  if (!message) {
+    alert('Enter a message');
+    return;
+  }
+
+  message = message.replace(/{{name}}/g, _drawerApplicant.name || 'there');
+
+  const btn = event.target;
+  btn.disabled = true;
+  const origText = btn.textContent;
+  btn.textContent = 'Sending…';
+
+  try {
+    await orpSendSMS(_drawerApplicant.phone, message);
+    alert('SMS sent!');
+    document.getElementById('smsModal').style.display = 'none';
+    logQuick('sms', 'SMS sent');
+  } catch (e) {
+    alert('Error sending SMS: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
+}
+
 function openApplicantDrawer(applicant) {
   _drawerApplicant = applicant;
   const d = document.getElementById('appDrawer');
@@ -2661,6 +2739,8 @@ function openApplicantDrawer(applicant) {
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Decline</a>` : '',
     applicant.phone ? `<a href="tel:${encodeURIComponent(applicant.phone)}" class="qa-btn" onclick="logQuick('call','Outbound call')">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>Call</a>` : '',
+    applicant.phone ? `<button class="qa-btn" onclick="openSMSForm('screening')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>SMS</button>` : '',
     `<button class="qa-btn" onclick="printTenantSummary()">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Tenant Summary PDF</button>`,
   ].filter(Boolean).join('');

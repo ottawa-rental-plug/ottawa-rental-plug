@@ -72,6 +72,38 @@ exports.handler = async (event) => {
           });
 
           executed++;
+        } else if (workflow.action_type === 'send_sms') {
+          // Get applicant phone
+          const aRes = await sbFetch(`applicants?id=eq.${applicantId}&select=phone,name`);
+          const [applicant] = aRes.ok ? await aRes.json() : [null];
+          if (!applicant?.phone) continue;
+
+          // SMS templates
+          const templates = {
+            screening: `Hi ${applicant.name}, your application is under review. We'll contact you within 24 hours. — Ottawa Rental Plug`,
+            approved: `Great news ${applicant.name}! Your application has been approved. Check your email for next steps. — Ottawa Rental Plug`,
+            scheduled: `Hi ${applicant.name}, we have a viewing scheduled. Confirm here or reply STOP. — Ottawa Rental Plug`
+          };
+          const msgText = action.template && templates[action.template] ? templates[action.template] : action.message || 'Update from Ottawa Rental Plug';
+
+          // Send SMS
+          await fetch('/.netlify/functions/send-sms', {
+            method: 'POST',
+            body: JSON.stringify({ toPhone: applicant.phone, message: msgText }),
+            headers: { 'Content-Type': 'application/json' }
+          }).catch(e => console.error('SMS send error:', e));
+
+          // Log activity
+          await sbFetch('activities', {
+            method: 'POST',
+            body: JSON.stringify({
+              applicant_id: applicantId,
+              type: 'status_change',
+              body: `Automated SMS sent: ${action.template || 'custom'}`
+            })
+          });
+
+          executed++;
         } else if (workflow.action_type === 'create_task') {
           // Create task with optional delay
           const delayHours = action.delay_hours || 0;
