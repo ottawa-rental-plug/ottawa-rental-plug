@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ORP Landlord Dashboard</title>
+  <title>Leasing Agent Dashboard</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -11,10 +11,11 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --navy:#003a8c; --blue:#0071e3; --blue-light:#e8f0fd;
-      --green:#34c759; --orange:#ff9500; --red:#ff3b30;
-      --gray:#6e6e73; --border:#e8e8ed; --bg:#f0f2f5;
-      --white:#fff; --sidebar:#1a2332; --sidebar-hover:#243044;
+      --navy:#1a365d; --blue:#2563eb; --blue-light:#eff6ff;
+      --green:#059669; --orange:#d97706; --red:#dc2626;
+      --gray:#6b7280; --border:#e5e7eb; --bg:#f9fafb;
+      --white:#fff; --sidebar:#111827; --sidebar-hover:#1f2937;
+      --text-primary:#111827; --text-secondary:#6b7280;
     }
     body { font-family:'Inter',-apple-system,sans-serif; background:var(--bg); color:#1d1d1f; -webkit-font-smoothing:antialiased; display:flex; min-height:100vh; }
 
@@ -31,27 +32,27 @@
     .login-error { color:var(--red); font-size:13px; margin-top:10px; display:none; }
 
     /* SIDEBAR */
-    .sidebar { width:220px; background:linear-gradient(180deg,#1d2736 0%,#141c28 100%); flex-shrink:0; display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto; }
-    .sidebar-brand { padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,.08); }
-    .sidebar-brand-name { font-size:13px; font-weight:800; color:#fff; }
-    .sidebar-brand-sub  { font-size:11px; color:rgba(255,255,255,.45); margin-top:2px; }
+    .sidebar { width:220px; background:#111827; flex-shrink:0; display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto; }
+    .sidebar-brand { padding:20px 16px; border-bottom:1px solid rgba(255,255,255,.08); }
+    .sidebar-brand-name { font-size:14px; font-weight:700; color:#fff; letter-spacing:-0.3px; }
+    .sidebar-brand-sub  { font-size:11px; color:rgba(255,255,255,.6); margin-top:4px; font-weight:400; }
     .sidebar-nav { padding:16px 10px; flex:1; }
     .nav-section-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:rgba(255,255,255,.3); padding:8px 12px 4px; }
     .nav-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; font-size:13px; font-weight:500; color:rgba(255,255,255,.6); cursor:pointer; transition:all .15s; margin-bottom:2px; border:none; background:none; width:100%; text-align:left; }
     .nav-item:hover { background:var(--sidebar-hover); color:#fff; }
-    .nav-item.active { background:linear-gradient(135deg,#0284c7,#38bdf8); color:#fff; box-shadow:0 4px 12px rgba(56,189,248,.28); }
+    .nav-item.active { background:var(--blue); color:#fff; box-shadow:0 2px 8px rgba(37,99,235,.3); }
     .nav-badge { margin-left:auto; background:var(--red); color:#fff; font-size:10px; font-weight:700; border-radius:999px; padding:1px 6px; }
     .sidebar-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,.08); font-size:11px; color:rgba(255,255,255,.35); }
 
     /* MAIN */
     .main { flex:1; overflow-y:auto; }
-    .topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 28px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; gap:12px; box-shadow:0 2px 12px rgba(16,39,58,.04); }
-    .topbar-title { font-size:16px; font-weight:700; color:var(--navy); }
+    .topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 28px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; gap:12px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+    .topbar-title { font-size:18px; font-weight:600; color:var(--navy); letter-spacing:-0.5px; }
     .topbar-right { display:flex; align-items:center; gap:10px; }
     .topbar-date { font-size:12px; color:var(--gray); }
     .btn-top { display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; border:none; transition:opacity .2s; }
     .btn-top:hover { opacity:.85; }
-    .btn-top.primary { background:linear-gradient(135deg,#0284c7,#38bdf8); color:#fff; box-shadow:0 4px 12px rgba(56,189,248,.25); }
+    .btn-top.primary { background:var(--blue); color:#fff; box-shadow:0 2px 8px rgba(37,99,235,.2); }
     .btn-top.secondary { background:var(--bg); color:var(--navy); border:1px solid var(--border); }
     .btn-top:disabled { opacity:.45; cursor:default; }
 
@@ -70,8 +71,8 @@
 
     /* STATS */
     .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
-    .stat-card { position:relative; background:var(--white); border-radius:14px; border:1px solid var(--border); padding:18px 20px; box-shadow:0 2px 8px rgba(0,0,0,.04); transition:transform .2s ease, box-shadow .2s ease; overflow:hidden; }
-    .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#0284c7,#38bdf8); opacity:.9; }
+    .stat-card { position:relative; background:var(--white); border-radius:12px; border:1px solid var(--border); padding:20px 24px; box-shadow:0 1px 2px rgba(0,0,0,.05); transition:transform .2s ease, box-shadow .2s ease; overflow:hidden; }
+    .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--blue); opacity:.8; }
     .stat-card.alert::before  { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
     .stat-card.good::before   { background:linear-gradient(90deg,#16a34a,#4ade80); }
     .stat-card.danger::before { background:linear-gradient(90deg,#dc2626,#f87171); }
@@ -86,12 +87,13 @@
     /* SECTION */
     .section { margin-bottom:24px; }
     .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-    .section-title { font-size:14px; font-weight:700; color:var(--navy); }
+    .section-title { font-size:15px; font-weight:700; color:var(--navy); letter-spacing:-0.3px; }
     .section-action { font-size:12px; color:var(--blue); cursor:pointer; font-weight:500; background:none; border:none; font-family:inherit; }
 
     /* VACANCIES */
     .vacancy-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:12px; }
-    .vacancy-card { background:var(--white); border-radius:14px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.04); overflow:hidden; }
+    .vacancy-card { background:var(--white); border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 2px rgba(0,0,0,.05); overflow:hidden; transition:box-shadow .2s ease; }
+    .vacancy-card:hover { box-shadow:0 4px 6px rgba(0,0,0,.07); }
     .vacancy-card.stale  { border-color:#fecdd3; }
     .vacancy-card.aging  { border-color:#fde68a; }
     .vacancy-header { padding:13px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
@@ -175,12 +177,12 @@
     .funnel-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
     .funnel-label { flex:0 0 130px; font-size:13px; font-weight:600; color:var(--navy); }
     .funnel-track { flex:1; background:var(--bg); border-radius:8px; height:30px; overflow:hidden; }
-    .funnel-fill { height:100%; border-radius:8px; background:linear-gradient(135deg,#0284c7,#38bdf8); display:flex; align-items:center; padding:0 10px; color:#fff; font-size:12px; font-weight:700; min-width:34px; transition:width .5s cubic-bezier(.4,0,.2,1); }
+    .funnel-fill { height:100%; border-radius:8px; background:var(--blue); display:flex; align-items:center; padding:0 10px; color:#fff; font-size:12px; font-weight:700; min-width:34px; transition:width .5s cubic-bezier(.4,0,.2,1); }
     .funnel-conv { flex:0 0 88px; text-align:right; font-size:12px; color:var(--gray); }
     .src-row { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
     .src-label { flex:0 0 120px; font-size:12px; font-weight:600; color:var(--navy); text-transform:capitalize; }
     .src-track { flex:1; background:var(--bg); border-radius:6px; height:20px; overflow:hidden; }
-    .src-fill { height:100%; background:linear-gradient(135deg,#c9a84c,#e0be72); border-radius:6px; transition:width .5s ease; }
+    .src-fill { height:100%; background:#d97706; border-radius:6px; transition:width .5s ease; }
     .src-count { flex:0 0 40px; text-align:right; font-size:12px; font-weight:700; color:var(--navy); }
 
     /* TEMPLATES */
@@ -317,7 +319,7 @@
     /* ── KANBAN BOARD ────────────────────────────────────────────────── */
     .pipeline-container { display:flex; gap:16px; overflow-x:auto; padding:20px 0; height:calc(100vh - 200px); }
     .kanban-column { flex:0 0 320px; background:var(--white); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
-    .kanban-header { background:linear-gradient(135deg,#f3f4f6,#e5e7eb); padding:12px 16px; font-weight:600; font-size:13px; color:var(--navy); display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); }
+    .kanban-header { background:#f9fafb; padding:12px 16px; font-weight:600; font-size:13px; color:var(--navy); display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); }
     .kanban-count { background:var(--blue); color:white; border-radius:9999px; padding:2px 8px; font-size:12px; font-weight:600; }
     .kanban-cards { flex:1; overflow-y:auto; padding:12px; gap:8px; display:flex; flex-direction:column; }
     .kanban-card { background:white; border:1px solid var(--border); border-radius:8px; padding:12px; cursor:move; transition:all 0.2s; user-select:none; }
@@ -372,7 +374,7 @@
 <div id="loginGate">
   <div class="login-card">
     <div class="login-logo">Ottawa Rental Plug</div>
-    <div class="login-title">Landlord Dashboard</div>
+    <div class="login-title">Leasing Agent Dashboard</div>
     <div class="login-sub">Private — Cyril</div>
     <input type="email" id="emailInput" value="cyrilrentsottawa@gmail.com" autocomplete="username" style="display:none">
     <input type="password" id="passInput" class="login-input" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')checkPass()">
@@ -384,8 +386,8 @@
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-brand">
-    <div class="sidebar-brand-name">Ottawa Rental Plug</div>
-    <div class="sidebar-brand-sub">Landlord Command Centre</div>
+    <div class="sidebar-brand-name">Leasing Dashboard</div>
+    <div class="sidebar-brand-sub">Tenant Pipeline & Lead Management</div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section-label">Overview</div>
@@ -2310,12 +2312,12 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 // ── KANBAN PIPELINE ────────────────────────────────────────────────────
 const PIPELINE_STAGES = [
-  { id: 'new', label: 'New', icon: '📋' },
-  { id: 'matched', label: 'Matched', icon: '🎯' },
-  { id: 'screening', label: 'Screening', icon: '🔍' },
-  { id: 'approved', label: 'Approved', icon: '✓' },
-  { id: 'placed', label: 'Placed', icon: '✅' },
-  { id: 'nurture', label: 'Prospects', icon: '💼' },
+  { id: 'new', label: 'New', icon: '○' },
+  { id: 'matched', label: 'Matched', icon: '◐' },
+  { id: 'screening', label: 'Screening', icon: '●' },
+  { id: 'approved', label: 'Approved', icon: '◉' },
+  { id: 'placed', label: 'Placed', icon: '✓' },
+  { id: 'nurture', label: 'Prospects', icon: '◆' },
   { id: 'declined', label: 'Declined', icon: '✕' }
 ];
 let _selectedCards = new Set();
@@ -2517,9 +2519,9 @@ async function loadWorkflows() {
 
     list.innerHTML = workflows.map(w => {
       const actionLabel = {
-        send_email: `📧 Email: ${w.action_data?.template || 'custom'}`,
-        create_task: `✓ Task: ${w.action_data?.title || 'Follow up'}`,
-        advance_stage: `⏭ Advance to: ${w.action_data?.next_stage || 'next'}`
+        send_email: `Email: ${w.action_data?.template || 'custom'}`,
+        create_task: `Task: ${w.action_data?.title || 'Follow up'}`,
+        advance_stage: `Advance to: ${w.action_data?.next_stage || 'next'}`
       }[w.action_type] || w.action_type;
 
       const triggerLabel = `${w.trigger_type === 'stage_change' ? 'When moved to' : 'On'} ${w.trigger_stage || 'any'}`;
