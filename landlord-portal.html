@@ -138,6 +138,10 @@
   <div class="modal">
     <div class="modal-title" id="modalTitle"></div>
     <div class="modal-body" id="modalBody"></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <button onclick="downloadPortalReport('summary')" class="btn-small secondary" style="flex:1">Download Summary</button>
+      <button onclick="downloadPortalReport('screening')" class="btn-small secondary" style="flex:1">Screening Report</button>
+    </div>
     <div class="modal-footer">
       <button onclick="closeModal()" class="btn-small secondary">Close</button>
       <button onclick="approveApplicant()" id="approveBtn" class="btn-small primary">Approve</button>
@@ -324,6 +328,36 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// PDF Report Generation (Phase 5 Part 3)
+async function downloadPortalReport(type) {
+  if (!_currentApplicant) {
+    alert('No applicant selected');
+    return;
+  }
+
+  try {
+    // Load PDF generator library
+    const script = document.createElement('script');
+    script.src = 'js/pdf-generator.js';
+    await new Promise(resolve => {
+      script.onload = resolve;
+      document.head.appendChild(script);
+    });
+
+    const applicant = _currentApplicant.applicants;
+    const property = _currentApplicant.units;
+
+    if (type === 'summary') {
+      await generateApplicantSummary(applicant, [_currentApplicant]);
+    } else if (type === 'screening') {
+      await generateScreeningReport(applicant);
+    }
+  } catch (e) {
+    console.error('Report error:', e);
+    alert('Error generating report: ' + e.message);
+  }
 }
 </script>
 
