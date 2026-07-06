@@ -329,6 +329,41 @@
     .kanban-card-actions { display:flex; gap:4px; margin-top:8px; }
     .kanban-action-btn { flex:1; padding:4px 8px; background:var(--blue-light); color:var(--blue); border:none; border-radius:4px; font-size:11px; font-weight:600; cursor:pointer; transition:background 0.2s; }
     .kanban-action-btn:hover { background:var(--blue); color:white; }
+
+    /* ── MOBILE RESPONSIVE ──────────────────────────────────────────────── */
+    @media (max-width:768px) {
+      .sidebar { width:60px; padding:12px 0; }
+      .sidebar-label { display:none; }
+      .nav-item { padding:12px; justify-content:center; }
+      .nav-item svg { width:24px; height:24px; }
+      .topbar-title { font-size:16px; }
+      .main { margin-left:60px; }
+      .content { padding:16px; }
+      .panel { padding:16px; }
+      .pipeline-container { height:calc(100vh - 150px); gap:12px; }
+      .kanban-column { flex:0 0 280px; }
+      .kanban-header { padding:10px 12px; font-size:12px; }
+      .kanban-card { padding:10px; font-size:12px; }
+      .kanban-card-title { font-size:12px; }
+      .kanban-card-meta { font-size:10px; }
+      .drawer { width:100%; max-width:100%; }
+      .drawer-body { padding:16px 20px; }
+      #bulkToolbar { padding:10px 16px; gap:8px; margin:16px 0; }
+      .bulk-count { font-size:12px; }
+      #bulkTemplate { font-size:11px; padding:4px 8px; }
+    }
+    @media (max-width:480px) {
+      .sidebar { width:50px; padding:8px 0; }
+      .main { margin-left:50px; }
+      .topbar { padding:12px 8px; gap:8px; }
+      .topbar-title { font-size:14px; }
+      .topbar-right { gap:4px; }
+      .btn-top { padding:6px 10px; font-size:11px; }
+      .kanban-column { flex:0 0 240px; }
+      .pipeline-container { gap:8px; }
+      .drawer { border-radius:12px 12px 0 0; }
+      .act-log-textarea { font-size:13px; }
+    }
   </style>
 </head>
 <body>
