@@ -25,6 +25,11 @@
 
 # Long-cache static assets (filenames change when content changes)
 [[headers]]
+  for = "/js/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
   for = "/*.css"
   [headers.values]
     Cache-Control = "public, max-age=86400"
