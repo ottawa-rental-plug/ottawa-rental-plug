@@ -107,6 +107,59 @@ async function orpRequestScreening(applicantId) {
   return data;
 }
 
+// ── Documents (Phase 3: document management) ──────────────────────
+async function orpUploadDocument(applicantId, file, docType) {
+  const session = await orpSession();
+  if (!session) throw new Error('Not signed in');
+
+  // Generate unique file path
+  const ext = file.name.split('.').pop();
+  const fileName = `${applicantId}/${docType}/${Date.now()}-${file.name}`;
+
+  // Upload to Supabase Storage
+  const { data, error: uploadError } = await sb.storage
+    .from('orp-documents')
+    .upload(fileName, file);
+  if (uploadError) throw uploadError;
+
+  // Record metadata in documents table
+  const { error: dbError } = await sb.from('documents').insert({
+    applicant_id: applicantId,
+    type: docType,
+    file_name: file.name,
+    file_path: data.path,
+    file_size: file.size,
+    mime_type: file.type,
+    uploaded_by: session.user.email
+  });
+  if (dbError) throw dbError;
+
+  return { path: data.path, fileName: file.name };
+}
+async function orpLoadDocuments(applicantId) {
+  const { data, error } = await sb.from('documents')
+    .select('*')
+    .eq('applicant_id', applicantId)
+    .order('uploaded_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+async function orpGetDocumentUrl(filePath) {
+  const { data } = sb.storage.from('orp-documents').getPublicUrl(filePath);
+  return data.publicUrl;
+}
+async function orpDeleteDocument(documentId, filePath) {
+  // Delete from storage
+  const { error: storageError } = await sb.storage
+    .from('orp-documents')
+    .remove([filePath]);
+  if (storageError) console.error('Storage delete error:', storageError);
+
+  // Delete from database
+  const { error: dbError } = await sb.from('documents').delete().eq('id', documentId);
+  if (dbError) throw dbError;
+}
+
 // ── Workflows (Phase 2: automation) ────────────────────────────────
 async function orpLoadWorkflows() {
   const { data, error } = await sb.from('workflows').select('*').eq('enabled', true).order('created_at');

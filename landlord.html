@@ -435,6 +435,10 @@
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="12" cy="19" r="1"/><circle cx="5" cy="12" r="1"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m6-6l-4.24 4.24m-6-4.24L6.24 12M12 18v-6m6 6l-4.24-4.24m-6 4.24L6.24 12"/></svg>
       Automation
     </button>
+    <button class="nav-item" onclick="showPanel('documents')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Documents
+    </button>
     <button class="nav-item" onclick="showPanel('shortcuts')">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
       Quick Scan Links
@@ -674,6 +678,15 @@
         <div class="section-header"><div class="section-title">Automation Rules</div></div>
         <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Auto-send emails, create follow-up tasks, and advance applicants based on pipeline stage changes.</p>
         <div id="workflowsList" style="display:grid;gap:12px"></div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTS -->
+    <div id="panel-documents" class="panel">
+      <div class="section">
+        <div class="section-header"><div class="section-title">Documents & Files</div></div>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Leases, screening reports, ID verification, income proof, and rental history. Click an applicant to upload and manage their documents.</p>
+        <div id="documentsBulkList" style="display:grid;gap:12px"></div>
       </div>
     </div>
 
@@ -2181,8 +2194,8 @@ async function loadAnalytics() {
   }
 }
 
-const PANELS = ['overview','today','analytics','pipeline','vacancies','leads','applicants','scanner','landlords','futurebuyers','templates','workflows','shortcuts','settings'];
-const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', pipeline:'Pipeline', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', futurebuyers:'Future Buyers', templates:'Post Templates', workflows:'Automation', shortcuts:'Quick Scan Links', settings:'Settings' };
+const PANELS = ['overview','today','analytics','pipeline','vacancies','leads','applicants','scanner','landlords','futurebuyers','templates','workflows','documents','shortcuts','settings'];
+const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', pipeline:'Pipeline', vacancies:'Vacancies', leads:'Inbound Leads', applicants:'Applicants', scanner:'Lead Scanner', landlords:'Landlord Leads', futurebuyers:'Future Buyers', templates:'Post Templates', workflows:'Automation', documents:'Documents', shortcuts:'Quick Scan Links', settings:'Settings' };
 function showPanel(name) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2196,6 +2209,7 @@ function showPanel(name) {
   if (name==='leads')     renderLeads(currentFilter);
   if (name==='templates') buildTemplates();
   if (name==='workflows') loadWorkflows();
+  if (name==='documents') loadDocumentsPanel();
   if (name==='shortcuts') buildShortcuts();
   if (name==='vacancies') { closeVacancyForm(); renderVacanciesPanel(); }
   if (name==='landlords') loadLandlordLeads();
@@ -2460,6 +2474,46 @@ async function toggleWorkflow(workflowId, enabled) {
   }
 }
 
+// ── DOCUMENTS PANEL (Phase 3: bulk document view) ────────────────────
+async function loadDocumentsPanel() {
+  const list = document.getElementById('documentsBulkList');
+  list.innerHTML = '<div style="color:var(--gray);font-size:13px;padding:12px">Loading documents...</div>';
+
+  try {
+    // Get all applicants with document count
+    const { data: applicants, error } = await sb.from('applicants').select('id,name,stage');
+    if (error) throw error;
+
+    if (!applicants || !applicants.length) {
+      list.innerHTML = '<div style="color:var(--gray);font-size:13px;padding:12px">No applicants yet.</div>';
+      return;
+    }
+
+    let html = '';
+    for (const app of applicants) {
+      const docs = await orpLoadDocuments(app.id);
+      const stage = APPLICANT_STAGE_LABEL[app.stage] || app.stage;
+      const docCount = docs.length;
+      const docTypes = [...new Set(docs.map(d => d.type))].join(', ');
+
+      html += `<div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+          <div style="flex:1">
+            <div style="font-weight:600;color:var(--navy);font-size:13px">${escapeHtml(app.name)}</div>
+            <div style="font-size:11px;color:var(--gray)">${stage}</div>
+          </div>
+          <div style="font-weight:600;color:var(--blue);font-size:14px">${docCount}</div>
+        </div>
+        <div style="font-size:11px;color:var(--gray);margin-bottom:10px">${docTypes || 'No documents'}</div>
+        <button onclick="openApplicantDrawer(${JSON.stringify(app).replace(/"/g, '&quot;')})" style="width:100%;padding:8px;background:var(--blue-light);color:var(--blue);border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">Manage</button>
+      </div>`;
+    }
+    list.innerHTML = html;
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--red);font-size:12px;padding:12px">Error: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
 // ── COMMS HUB (activity log + drawer) ────────────────────────────────
 let _drawerApplicant = null;
 let _actLogType = 'note';
@@ -2510,6 +2564,70 @@ async function markTaskComplete(taskId) {
   }
 }
 
+// ── DOCUMENTS (Phase 3: document management) ─────────────────────
+async function loadDocumentList() {
+  if (!_drawerApplicant) return;
+  const list = document.getElementById('documentsList');
+  try {
+    const docs = await orpLoadDocuments(_drawerApplicant.id);
+    if (!docs.length) {
+      list.innerHTML = '<div style="color:var(--gray);font-size:12px">No documents uploaded</div>';
+      return;
+    }
+    list.innerHTML = docs.map(d => {
+      const uploaded = new Date(d.uploaded_at).toLocaleDateString('en-CA', {month:'short', day:'numeric'});
+      const sizeMB = (d.file_size / 1024 / 1024).toFixed(1);
+      const docTypeLabel = { lease: 'Lease', screening: 'Screening', id: 'ID', proof_income: 'Income', rental_history: 'Rental', reference: 'Reference', other: 'Other' }[d.type] || d.type;
+      return `<div style="padding:10px;background:var(--white);border:1px solid var(--border);border-radius:6px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis">${escapeHtml(d.file_name)}</div>
+          <div style="font-size:11px;color:var(--gray)">${docTypeLabel} · ${sizeMB}MB · ${uploaded}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <a href="${orpGetDocumentUrl(d.file_path)}" target="_blank" style="padding:4px 8px;background:var(--blue-light);color:var(--blue);border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;text-decoration:none">View</a>
+          <button onclick="deleteDocument('${d.id}','${d.file_path}')" style="padding:4px 8px;background:#fecdd3;color:var(--red);border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">Del</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--red);font-size:11px">Error: ${escapeHtml(e.message)}</div>`;
+  }
+}
+function triggerDocumentUpload() {
+  document.getElementById('docFileInput').click();
+}
+async function handleDocumentUpload() {
+  if (!_drawerApplicant) return;
+  const file = document.getElementById('docFileInput').files[0];
+  if (!file) return;
+  const docType = document.getElementById('docType').value;
+
+  const btn = event.target;
+  btn.disabled = true;
+  const origText = btn.textContent;
+  btn.textContent = 'Uploading…';
+
+  try {
+    await orpUploadDocument(_drawerApplicant.id, file, docType);
+    document.getElementById('docFileInput').value = '';
+    await loadDocumentList();
+  } catch (e) {
+    alert('Upload failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
+}
+async function deleteDocument(docId, filePath) {
+  if (!confirm('Delete this document?')) return;
+  try {
+    await orpDeleteDocument(docId, filePath);
+    await loadDocumentList();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
 function openApplicantDrawer(applicant) {
   _drawerApplicant = applicant;
   const d = document.getElementById('appDrawer');
@@ -2518,6 +2636,7 @@ function openApplicantDrawer(applicant) {
   const meta = [applicant.email, applicant.phone, APPLICANT_STAGE_LABEL[applicant.stage] || applicant.stage].filter(Boolean).join(' · ');
   document.getElementById('drawerMeta').textContent = meta;
   loadTaskList();
+  loadDocumentList();
 
   // Quick-action email links
   const firstName = encodeURIComponent((applicant.name||'').split(' ')[0] || 'there');
@@ -2754,6 +2873,23 @@ function printTenantSummary() {
         <button onclick="quickAddTask()" style="padding:8px 12px;background:var(--blue);color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px">+</button>
       </div>
       <div id="taskList" style="font-size:12px;color:var(--gray)">No tasks</div>
+    </div>
+    <div>
+      <div class="drawer-section-title">Documents</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <select id="docType" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+          <option value="lease">Lease Agreement</option>
+          <option value="screening">Screening Report</option>
+          <option value="id">ID Verification</option>
+          <option value="proof_income">Proof of Income</option>
+          <option value="rental_history">Rental History</option>
+          <option value="reference">Reference Letter</option>
+          <option value="other">Other</option>
+        </select>
+        <button onclick="triggerDocumentUpload()" style="padding:8px 12px;background:var(--blue);color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px">Upload</button>
+        <input type="file" id="docFileInput" style="display:none" onchange="handleDocumentUpload()">
+      </div>
+      <div id="documentsList" style="font-size:12px;color:var(--gray)">No documents</div>
     </div>
     <div>
       <div class="drawer-section-title">Activity Timeline</div>
