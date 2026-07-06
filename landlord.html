@@ -2316,11 +2316,15 @@ async function bulkSendEmail() {
       if (!a?.email) continue;
 
       // Send via formspree
-      await fetch('https://formspree.io/f/your-form-id', {
+      const res = await fetch('https://formspree.io/f/your-form-id', {
         method: 'POST',
         body: JSON.stringify({ email: a.email, subject: tmpl.subject, message: tmpl.body }),
         headers: { 'Content-Type': 'application/json' }
       });
+      if (!res.ok) {
+        console.error(`Email send failed for ${a.email}: ${res.status}`);
+        continue;
+      }
       sent++;
     }
     alert(`Sent to ${sent} applicants`);
@@ -2413,7 +2417,11 @@ async function loadPipeline() {
         const newStage = cards.dataset.stage;
 
         // Update in Supabase
-        await sb.from('applicants').update({ stage: newStage }).eq('id', appId);
+        const { error } = await sb.from('applicants').update({ stage: newStage }).eq('id', appId);
+        if (error) {
+          alert(`Failed to update stage: ${error.message}`);
+          return;
+        }
 
         // Trigger workflows (Phase 2)
         try {
@@ -2606,7 +2614,8 @@ async function handleDocumentUpload() {
   if (!file) return;
   const docType = document.getElementById('docType').value;
 
-  const btn = event.target;
+  const btn = (event && event.target) || document.querySelector('[onclick*="handleDocumentUpload"]');
+  if (!btn) return;
   btn.disabled = true;
   const origText = btn.textContent;
   btn.textContent = 'Uploading…';
@@ -2787,8 +2796,18 @@ async function submitActivity() {
 
 async function logQuick(type, body) {
   if (!_drawerApplicant) return;
-  try { await sb.from('activities').insert({ applicant_id: _drawerApplicant.id, type, body }); } catch (_) {}
-  setTimeout(() => loadActivityTimeline(_drawerApplicant && _drawerApplicant.id), 800);
+  const applicantId = _drawerApplicant.id;
+  try {
+    await sb.from('activities').insert({ applicant_id: applicantId, type, body });
+  } catch (e) {
+    console.error('Failed to log activity:', e);
+  }
+  // Only reload timeline if drawer is still open for the same applicant
+  setTimeout(() => {
+    if (_drawerApplicant && _drawerApplicant.id === applicantId) {
+      loadActivityTimeline(applicantId);
+    }
+  }, 800);
 }
 
 async function loadActivityTimeline(applicantId) {

@@ -113,7 +113,9 @@
       "Bash(cp /tmp/phase5.md \"C:/Users/cyril/OneDrive/Desktop/Website/docs/phase5-landlord-portal.md\")",
       "Bash(netlify env:list)",
       "Bash(git pull *)",
-      "Bash(git merge *)"
+      "Bash(git merge *)",
+      "Skill(code-review)",
+      "Skill(code-review:*)"
     ]
   }
 }

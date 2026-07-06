@@ -88,11 +88,12 @@ exports.handler = async (event) => {
           const title = templates[action.template] || 'Application Update';
           const msgBody = action.message || `Update for ${applicant.name}`;
 
-          // Send notification via ntfy
-          await fetch('/.netlify/functions/send-notification', {
+          // Send notification via ntfy (direct, not via function)
+          const ntfyUrl = `https://ntfy.sh/${process.env.NTFY_TOPIC || 'orp-alerts'}`;
+          await fetch(ntfyUrl, {
             method: 'POST',
-            body: JSON.stringify({ title, message: msgBody, tags: 'envelope' }),
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Title': title, 'Tags': 'envelope' },
+            body: msgBody
           }).catch(e => console.error('Notification send error:', e));
 
           // Log activity

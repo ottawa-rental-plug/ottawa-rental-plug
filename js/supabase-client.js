@@ -160,7 +160,10 @@ async function orpLoadDocuments(applicantId) {
   return data || [];
 }
 async function orpGetDocumentUrl(filePath) {
-  const { data } = sb.storage.from('orp-documents').getPublicUrl(filePath);
+  const { data, error } = sb.storage.from('orp-documents').getPublicUrl(filePath);
+  if (error || !data?.publicUrl) {
+    throw new Error('Could not generate document URL: ' + (error?.message || 'unknown error'));
+  }
   return data.publicUrl;
 }
 async function orpDeleteDocument(documentId, filePath) {
