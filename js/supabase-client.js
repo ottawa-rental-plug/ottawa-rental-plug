@@ -107,6 +107,43 @@ async function orpRequestScreening(applicantId) {
   return data;
 }
 
+// ── Tasks (Phase 1: kanban pipeline) ────────────────────────────────
+async function orpLoadTasks(applicantId) {
+  const { data, error } = await sb.from('tasks').select('*').eq('applicant_id', applicantId).order('due_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+async function orpSaveTask(task) {
+  const session = await orpSession();
+  if (!session) throw new Error('Not signed in');
+  if (task.id) {
+    const { error } = await sb.from('tasks').update(task).eq('id', task.id);
+    if (error) throw error;
+    return task.id;
+  }
+  const { data, error } = await sb.from('tasks').insert({...task, created_by: session.user.email}).select('id').single();
+  if (error) throw error;
+  return data.id;
+}
+async function orpCompleteTask(taskId) {
+  const { error } = await sb.from('tasks').update({completed_at: new Date().toISOString()}).eq('id', taskId);
+  if (error) throw error;
+}
+async function orpDeleteTask(taskId) {
+  const { error } = await sb.from('tasks').delete().eq('id', taskId);
+  if (error) throw error;
+}
+async function orpTodayTasks() {
+  const tomorrow = new Date(Date.now() + 86400000).toISOString();
+  const { data, error } = await sb.from('tasks')
+    .select('*,applicants(id,name,stage)')
+    .lte('due_at', tomorrow)
+    .is('completed_at', null)
+    .order('due_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
 // ── Landlord accounts (Phase 5: client portal) ────────────────────────
 async function orpLoadLandlords() {
   const { data, error } = await sb.from('landlords').select('*').order('created_at', { ascending: false });

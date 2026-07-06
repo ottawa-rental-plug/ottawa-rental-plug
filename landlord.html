@@ -1990,6 +1990,19 @@ async function loadToday() {
     const now = new Date();
     const items = [];
 
+    // Load tasks due today or overdue
+    try {
+      const tasks = await orpTodayTasks();
+      tasks.forEach(t => {
+        const daysOverdue = Math.floor((now - new Date(t.due_at)) / 86400000);
+        const isOverdue = daysOverdue > 0;
+        items.push({ prio: isOverdue ? 0 : 1, cls: isOverdue ? 'hot' : 'urgent', icon: '✓',
+          title: `${escapeHtml(t.title)} — ${t.applicants?.name || 'applicant'}`,
+          sub: `Due ${new Date(t.due_at).toLocaleDateString('en-CA',{month:'short',day:'numeric'})}${isOverdue ? ' (' + daysOverdue + 'd overdue)' : ''}`,
+          actionId: t.id, action: 'task' });
+      });
+    } catch (e) {}
+
     A.filter(a => a.follow_up_at && new Date(a.follow_up_at) <= now && !['placed','declined','lost'].includes(a.stage || ''))
      .forEach(a => items.push({ prio:1, cls:'urgent', icon:'bell',
         title:`Follow up with ${a.name || 'applicant'}`,
@@ -2255,6 +2268,52 @@ async function loadPipeline() {
 let _drawerApplicant = null;
 let _actLogType = 'note';
 
+async function loadTaskList() {
+  if (!_drawerApplicant) return;
+  const list = document.getElementById('taskList');
+  try {
+    const tasks = await orpLoadTasks(_drawerApplicant.id);
+    if (!tasks.length) {
+      list.innerHTML = '<div style="color:var(--gray);font-size:12px">No tasks</div>';
+      return;
+    }
+    list.innerHTML = tasks.map(t => {
+      const due = t.due_at ? new Date(t.due_at).toLocaleDateString('en-CA',{month:'short',day:'numeric'}) : '';
+      const isOverdue = t.due_at && new Date(t.due_at) < new Date() && !t.completed_at;
+      const style = isOverdue ? 'color:var(--red);font-weight:600' : '';
+      return `<div style="padding:8px;background:var(--white);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;${style}">
+        <div><div style="font-weight:600">${escapeHtml(t.title)}</div><div style="font-size:11px;color:var(--gray)">${due}</div></div>
+        <button onclick="markTaskComplete('${t.id}')" style="padding:4px 8px;background:var(--blue-light);color:var(--blue);border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">Done</button>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--red);font-size:11px">Error: ${escapeHtml(e.message)}</div>`;
+  }
+}
+async function quickAddTask() {
+  if (!_drawerApplicant) return;
+  const title = document.getElementById('taskTitle').value.trim();
+  const dueStr = document.getElementById('taskDue').value;
+  if (!title) return;
+  try {
+    const due_at = dueStr ? new Date(dueStr + 'T23:59:59').toISOString() : null;
+    await orpSaveTask({ applicant_id: _drawerApplicant.id, title, due_at, type: 'followup' });
+    document.getElementById('taskTitle').value = '';
+    document.getElementById('taskDue').value = '';
+    await loadTaskList();
+  } catch (e) {
+    alert('Error adding task: ' + e.message);
+  }
+}
+async function markTaskComplete(taskId) {
+  try {
+    await orpCompleteTask(taskId);
+    await loadTaskList();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
 function openApplicantDrawer(applicant) {
   _drawerApplicant = applicant;
   const d = document.getElementById('appDrawer');
@@ -2262,6 +2321,7 @@ function openApplicantDrawer(applicant) {
   document.getElementById('drawerName').textContent = applicant.name || '—';
   const meta = [applicant.email, applicant.phone, APPLICANT_STAGE_LABEL[applicant.stage] || applicant.stage].filter(Boolean).join(' · ');
   document.getElementById('drawerMeta').textContent = meta;
+  loadTaskList();
 
   // Quick-action email links
   const firstName = encodeURIComponent((applicant.name||'').split(' ')[0] || 'there');
@@ -2489,6 +2549,15 @@ function printTenantSummary() {
         <textarea id="actLogBody" class="act-log-textarea" placeholder="Add a note, log what was discussed, or record what you sent…"></textarea>
         <button id="actLogSubmit" class="act-log-submit" onclick="submitActivity()">Save</button>
       </div>
+    </div>
+    <div>
+      <div class="drawer-section-title">Tasks</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input type="text" id="taskTitle" class="act-log-textarea" placeholder="Add a task..." style="flex:1;height:36px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        <input type="date" id="taskDue" style="width:120px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        <button onclick="quickAddTask()" style="padding:8px 12px;background:var(--blue);color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px">+</button>
+      </div>
+      <div id="taskList" style="font-size:12px;color:var(--gray)">No tasks</div>
     </div>
     <div>
       <div class="drawer-section-title">Activity Timeline</div>
