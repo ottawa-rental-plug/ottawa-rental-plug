@@ -323,6 +323,7 @@
     .kanban-card { background:white; border:1px solid var(--border); border-radius:8px; padding:12px; cursor:move; transition:all 0.2s; user-select:none; }
     .kanban-card:hover { box-shadow:0 4px 12px rgba(0,0,0,0.08); transform:translateY(-2px); }
     .kanban-card.dragging { opacity:0.5; box-shadow:0 8px 16px rgba(3,105,161,0.3); }
+    .kanban-card.selected { background:var(--blue-light); border:2px solid var(--blue); }
     .kanban-card-title { font-weight:600; font-size:13px; color:var(--navy); margin-bottom:4px; }
     .kanban-card-meta { font-size:11px; color:var(--gray); margin-bottom:8px; }
     .kanban-card-actions { display:flex; gap:4px; margin-top:8px; }
@@ -639,6 +640,19 @@
 
     <!-- PIPELINE KANBAN -->
     <div id="panel-pipeline" class="panel">
+      <div id="bulkToolbar" style="display:none;position:sticky;top:0;background:var(--blue);color:white;padding:12px 20px;border-radius:8px;margin:20px 0;gap:12px;align-items:center;z-index:10">
+        <span class="bulk-count" style="font-weight:600;flex:1">0 selected</span>
+        <select id="bulkTemplate" style="padding:6px 12px;border:none;border-radius:4px;font-size:12px">
+          <option value="">— Email Template —</option>
+          <option value="followup">Follow-up</option>
+          <option value="schedule">Schedule Viewing</option>
+          <option value="screening">Screening Ready</option>
+          <option value="approved">Approved!</option>
+          <option value="custom">Custom Message</option>
+        </select>
+        <button onclick="bulkSendEmail()" style="padding:6px 12px;background:white;color:var(--blue);border:none;border-radius:4px;font-weight:600;cursor:pointer;font-size:12px">Send Email</button>
+        <button onclick="clearSelection()" style="padding:6px 12px;background:rgba(255,255,255,0.2);color:white;border:none;border-radius:4px;cursor:pointer;font-size:12px">Clear</button>
+      </div>
       <div class="pipeline-container" id="pipelineBoard"></div>
     </div>
 
@@ -2174,6 +2188,80 @@ const PIPELINE_STAGES = [
   { id: 'nurture', label: 'Prospects', icon: '💼' },
   { id: 'declined', label: 'Declined', icon: '✕' }
 ];
+let _selectedCards = new Set();
+
+function toggleCardSelect(appId) {
+  if (_selectedCards.has(appId)) {
+    _selectedCards.delete(appId);
+  } else {
+    _selectedCards.add(appId);
+  }
+  updateBulkToolbar();
+  document.querySelectorAll('.kanban-card').forEach(c => {
+    if (c.dataset.applicantId === appId) {
+      c.classList.toggle('selected');
+    }
+  });
+}
+
+function updateBulkToolbar() {
+  const toolbar = document.getElementById('bulkToolbar');
+  if (!toolbar) return;
+  if (_selectedCards.size === 0) {
+    toolbar.style.display = 'none';
+  } else {
+    toolbar.style.display = 'flex';
+    toolbar.querySelector('.bulk-count').textContent = `${_selectedCards.size} selected`;
+  }
+}
+
+function clearSelection() {
+  _selectedCards.clear();
+  document.querySelectorAll('.kanban-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.kanban-card input[type="checkbox"]').forEach(cb => cb.checked = false);
+  updateBulkToolbar();
+}
+
+async function bulkSendEmail() {
+  if (_selectedCards.size === 0) return;
+  const template = document.getElementById('bulkTemplate').value;
+  if (!template) { alert('Select a template'); return; }
+
+  const TEMPLATES = {
+    followup: { subject: 'Following up on your application', body: 'Hi there,\n\nI wanted to follow up on your recent rental application. Do you have any questions?\n\nBest regards,\nOttawa Rental Plug' },
+    schedule: { subject: 'Schedule your viewing', body: 'Hi there,\n\nWe have a great unit available. Would you like to schedule a viewing?\n\nPlease let me know your availability.\n\nBest regards,\nOttawa Rental Plug' },
+    screening: { subject: 'Ready for screening', body: 'Hi there,\n\nYour application looks great! The next step is a background and credit screening.\n\nI\'ll be in touch with details.\n\nBest regards,\nOttawa Rental Plug' },
+    approved: { subject: 'Congratulations, you\'re approved!', body: 'Hi there,\n\nGreat news! Your application has been approved. Let\'s get the lease signed.\n\nI\'ll be in touch shortly.\n\nBest regards,\nOttawa Rental Plug' },
+    custom: { subject: 'Message from Ottawa Rental Plug', body: prompt('Enter your message:') || '' }
+  };
+
+  const tmpl = TEMPLATES[template];
+  if (!tmpl || !tmpl.body) return;
+
+  try {
+    let sent = 0;
+    for (const appId of _selectedCards) {
+      const cardEl = document.querySelector(`[data-applicant-id="${appId}"]`);
+      if (!cardEl) continue;
+
+      // Get applicant email from card or load from DB
+      const { data: [a] } = await sb.from('applicants').select('email').eq('id', appId);
+      if (!a?.email) continue;
+
+      // Send via formspree
+      await fetch('https://formspree.io/f/your-form-id', {
+        method: 'POST',
+        body: JSON.stringify({ email: a.email, subject: tmpl.subject, message: tmpl.body }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      sent++;
+    }
+    alert(`Sent to ${sent} applicants`);
+    clearSelection();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
 
 async function loadPipeline() {
   const board = document.getElementById('pipelineBoard');
@@ -2218,8 +2306,13 @@ async function loadPipeline() {
         card.dataset.applicantId = a.id;
         card.dataset.currentStage = stage.id;
         card.innerHTML = `
-          <div class="kanban-card-title">${escapeHtml(a.name || 'Anonymous')}</div>
-          <div class="kanban-card-meta">${unitInfo} · $${parseInt(a.budget||0).toLocaleString()}</div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input type="checkbox" onchange="toggleCardSelect('${a.id}')" style="cursor:pointer">
+            <div style="flex:1">
+              <div class="kanban-card-title">${escapeHtml(a.name || 'Anonymous')}</div>
+              <div class="kanban-card-meta">${unitInfo} · $${parseInt(a.budget||0).toLocaleString()}</div>
+            </div>
+          </div>
           <div class="kanban-card-actions">
             <button class="kanban-action-btn" onclick="openApplicantDrawer(${JSON.stringify(a).replace(/"/g, '&quot;')})">Open</button>
           </div>
