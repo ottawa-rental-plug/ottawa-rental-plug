@@ -103,7 +103,17 @@
       "Bash(cp tw-tools.css tw-main.css)",
       "Bash(cp tw-tools.css tw-mortgage.css)",
       "Bash(curl -s https://ottawarentalplug.com/tw-tools.css)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(git cherry-pick *)",
+      "Bash(git show *)",
+      "Bash(cp /tmp/client-portal.html \"C:/Users/cyril/OneDrive/Desktop/Website/client-portal.html\")",
+      "Bash(cp /tmp/landlord-portal-client.js \"C:/Users/cyril/OneDrive/Desktop/Website/js/landlord-portal-client.js\")",
+      "Bash(cp /tmp/landlord-invite.js \"C:/Users/cyril/OneDrive/Desktop/Website/netlify/functions/landlord-invite.js\")",
+      "Bash(cp /tmp/phase5.sql \"C:/Users/cyril/OneDrive/Desktop/Website/db/phase5-landlord-portal.sql\")",
+      "Bash(cp /tmp/phase5.md \"C:/Users/cyril/OneDrive/Desktop/Website/docs/phase5-landlord-portal.md\")",
+      "Bash(netlify env:list)",
+      "Bash(git pull *)",
+      "Bash(git merge *)"
     ]
   }
 }
