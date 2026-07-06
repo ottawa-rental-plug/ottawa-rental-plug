@@ -22,6 +22,9 @@ alter table documents enable row level security;
 create policy documents_admin_all on documents for all to authenticated using (
   (select auth.jwt() ->> 'email') = 'cyrilrentsottawa@gmail.com'
 );
+create policy documents_authenticated_insert on documents for insert to authenticated with check (true);
+create policy documents_authenticated_select on documents for select to authenticated using (true);
+create policy documents_authenticated_update on documents for update to authenticated using (true);
 
 grant select, insert, update, delete on documents to authenticated;
 
