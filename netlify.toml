@@ -39,8 +39,6 @@
 # Functions configuration
 [functions]
   node_bundler = "esbuild"
-  memory = 1024
-  timeout = 30
 
 # Development settings
 [dev]
