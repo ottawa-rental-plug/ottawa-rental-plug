@@ -83,31 +83,41 @@ async function generateForm410(applicant, property, startDate) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  let y = 15;
+  let pageNum = 1;
+  let y = 12;
 
+  const addPageNum = () => {
+    doc.setFontSize(7);
+    doc.setTextColor(...BRAND.gray);
+    doc.text(`Form 410 — Revised 2019 Page ${pageNum} of 2`, pageWidth - 30, pageHeight - 5);
+  };
+
+  // HEADER - Page 1
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
+  doc.setFontSize(18);
   doc.setTextColor(...BRAND.navy);
-  doc.text('OREA Ontario Real Estate Association', 15, y);
-  doc.setFontSize(14);
-  doc.text('Rental Application', 15, y + 8);
-  doc.setFontSize(10);
-  doc.text('Residential Form 410', 15, y + 15);
-  doc.text('for use in the Province of Ontario', 15, y + 20);
+  doc.text('Rental Application', 20, y);
+  doc.setFontSize(11);
+  doc.text('Residential Form 410', 20, y + 8);
+  doc.setFontSize(9);
+  doc.text('for use in the Province of Ontario', 20, y + 15);
 
-  y = 40;
+  y = 32;
   doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setTextColor(...BRAND.text);
 
+  // APPLICATION INTRO
   const rentAmount = property?.price ? `$${property.price.toLocaleString()}` : '$_______';
-  doc.text(`I/We hereby make application to rent ${property?.address || '_'.repeat(50)}`, 15, y);
-  y += 7;
-  doc.text(`from the _______ day of _________________________ 20_______ at a monthly rental of ${rentAmount}`, 15, y);
-  y += 7;
-  doc.text(`to become due and payable in advance on the _______ day of each and every month during my tenancy.`, 15, y);
-  y += 12;
+  const propAddr = property?.address || '_'.repeat(60);
+  doc.text(`I/We hereby make application to rent ${propAddr}`, 15, y);
+  y += 4;
+  doc.text(`from the ________________ day of _________________________________ 20__________ at a monthly rental of ${rentAmount}`, 15, y);
+  y += 4;
+  doc.text(`to become due and payable in advance on the _________________________ day of each and every month during my tenancy.`, 15, y);
+  y += 10;
 
+  // APPLICANT 1 & 2
   doc.setFont('Helvetica', 'bold');
   doc.setFontSize(9);
   doc.text('1. Name', 15, y);
@@ -116,138 +126,136 @@ async function generateForm410(applicant, property, startDate) {
   doc.setFont('Helvetica', 'bold');
   doc.text('Date of birth', 110, y);
   doc.setFont('Helvetica', 'normal');
-  doc.text('_____/_____/_____', 140, y);
+  doc.text('_______________________', 135, y);
   doc.setFont('Helvetica', 'bold');
-  doc.text('SIN No.', 170, y);
-  doc.setFont('Helvetica', 'normal');
-  doc.text('(Optional)', 185, y);
+  doc.text('SIN No. (Optional)', 175, y);
 
-  y += 6;
+  y += 4;
   doc.setFont('Helvetica', 'bold');
   doc.text("Driver's License No.", 15, y);
   doc.setFont('Helvetica', 'normal');
-  doc.text('_'.repeat(20), 50, y);
+  doc.text('_'.repeat(25), 45, y);
   doc.setFont('Helvetica', 'bold');
   doc.text('Occupation', 110, y);
   doc.setFont('Helvetica', 'normal');
-  doc.text(applicant?.job_title || '_'.repeat(30), 140, y);
+  doc.text(applicant?.job_title || '_'.repeat(30), 135, y);
 
-  y += 10;
+  y += 8;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('2. Name', 15, y);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('_'.repeat(40), 35, y);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('Date of birth', 110, y);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('_______________________', 135, y);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('SIN No. (Optional)', 175, y);
+
+  y += 4;
+  doc.setFont('Helvetica', 'bold');
+  doc.text("Driver's License No.", 15, y);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('_'.repeat(25), 45, y);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('Occupation', 110, y);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('_'.repeat(30), 135, y);
+
+  y += 8;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('3. Other Occupants:', 15, y);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('Name', 20, y);
+  doc.text('Relationship', 85, y);
+  doc.text('Age', 155, y);
+
+  for (let i = 0; i < 3; i++) {
+    y += 4;
+    doc.text('_'.repeat(40), 20, y);
+    doc.text('_'.repeat(35), 85, y);
+    doc.text('_'.repeat(12), 155, y);
+  }
+
+  y += 6;
+  doc.setFont('Helvetica', 'normal');
+  doc.text('Do you have any pets?  ________  If so, describe: ________________________________________________________________', 15, y);
+  y += 4;
+  doc.text('Why are you vacating your present place of residence? ______________________________________________________________', 15, y);
+
+  addPageNum();
+  doc.addPage();
+  pageNum++;
+  y = 15;
+
+  // PAGE 2 - RESIDENCE
   doc.setFont('Helvetica', 'bold');
   doc.setFontSize(10);
+  doc.setTextColor(...BRAND.navy);
   doc.text('LAST TWO PLACES OF RESIDENCE', 15, y);
-  y += 6;
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
-
-  const addr = applicant?.address_history?.current;
-  doc.text('Address', 15, y);
-  doc.text(addr?.address ? `${addr.address}, ${addr.city}, ${addr.postal}` : '_'.repeat(50), 35, y);
-  y += 6;
-  doc.text('From', 15, y);
-  doc.text(addr?.time_there || '________', 35, y);
-  doc.text('To', 80, y);
-  doc.text('Present', 95, y);
-  y += 6;
-  doc.text('Name of Landlord', 15, y);
-  doc.text(addr?.landlord_name || '_'.repeat(40), 50, y);
-  y += 6;
-  doc.text('Telephone', 15, y);
-  doc.text(addr?.landlord_phone || '_'.repeat(20), 50, y);
-
-  y += 10;
-  doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('PRESENT EMPLOYMENT', 15, y);
-  y += 6;
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.text('Employer', 15, y);
-  doc.text(applicant?.employer || '_'.repeat(40), 50, y);
   y += 5;
-  doc.text('Business address', 15, y);
-  doc.text('_'.repeat(50), 50, y);
-  y += 5;
-  doc.text('Position held', 15, y);
-  doc.text(applicant?.job_title || '_'.repeat(40), 50, y);
-  y += 5;
-  doc.text('Length of employment', 15, y);
-  doc.text(applicant?.employment_length || '_'.repeat(30), 50, y);
-  y += 5;
-  doc.text('Current salary range: Monthly $', 15, y);
-  doc.text(applicant?.monthly_income ? `${applicant.monthly_income.toLocaleString()}` : '________', 80, y);
 
-  y += 10;
-  doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('FINANCIAL INFORMATION', 15, y);
-  y += 6;
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.text('Name of Bank', 15, y);
-  doc.text('_'.repeat(30), 50, y);
-  doc.text('Branch', 110, y);
-  doc.text('_'.repeat(20), 140, y);
-
-  y += 10;
-  doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('PERSONAL REFERENCES', 15, y);
-  y += 6;
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
-  if (applicant?.personal_references?.[0]) {
-    const ref = applicant.personal_references[0];
-    doc.text('Name', 15, y);
-    doc.text(ref.name || '_'.repeat(40), 50, y);
-    y += 5;
-    doc.text('Telephone', 15, y);
-    doc.text(ref.phone || '_'.repeat(20), 50, y);
-  } else {
-    doc.text('Name', 15, y);
-    doc.text('_'.repeat(40), 50, y);
-    y += 5;
-    doc.text('Telephone', 15, y);
-    doc.text('_'.repeat(20), 50, y);
-  }
-
-  y += 10;
-  doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('AUTOMOBILE(S)', 15, y);
-  y += 6;
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
-  if (applicant?.vehicle?.make_model) {
-    doc.text('Make/Model', 15, y);
-    doc.text(applicant.vehicle.make_model, 50, y);
-    doc.text('Licence No', 165, y);
-    doc.text(applicant.vehicle.plate || '_'.repeat(15), 195, y);
-  } else {
-    doc.text('Make/Model', 15, y);
-    doc.text('_'.repeat(25), 50, y);
-  }
-
-  y += 15;
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(8);
-  doc.setTextColor(...BRAND.gray);
-  const consentText = 'The Applicant represents that all statements made above are true and correct. The Applicant is hereby notified that a consumer report containing credit and/or personal information may be referred to in connection with this rental.';
-  const consentLines = doc.splitTextToSize(consentText, pageWidth - 30);
-  doc.text(consentLines, 15, y);
-  y += (consentLines.length * 3) + 8;
-
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
   doc.setTextColor(...BRAND.text);
-  doc.text('Signature of Applicant', 15, y);
-  doc.line(15, y + 2, 60, y + 2);
-  doc.text('Date', 75, y);
-  doc.line(75, y + 2, 100, y + 2);
 
-  doc.setFontSize(7);
-  doc.setTextColor(...BRAND.gray);
-  doc.text('Form 410 — Revised 2019', pageWidth - 30, pageHeight - 5);
+  // Two column layout
+  doc.text('Address', 15, y);
+  doc.text('Address', 110, y);
+  y += 3;
+  doc.text('_'.repeat(50), 15, y);
+  doc.text('_'.repeat(50), 110, y);
+  y += 3;
+  doc.text('_'.repeat(50), 15, y);
+  doc.text('_'.repeat(50), 110, y);
+
+  y += 4;
+  doc.text('From', 15, y);
+  doc.text('To', 55, y);
+  doc.text('From', 110, y);
+  doc.text('To', 150, y);
+  y += 3;
+  doc.text('_______________', 15, y);
+  doc.text('_______________', 55, y);
+  doc.text('_______________', 110, y);
+  doc.text('_______________', 150, y);
+
+  y += 4;
+  doc.text('Name of Landlord', 15, y);
+  doc.text('Name of Landlord', 110, y);
+  y += 3;
+  doc.text('_'.repeat(50), 15, y);
+  doc.text('_'.repeat(50), 110, y);
+
+  y += 4;
+  doc.text('Telephone:', 15, y);
+  doc.text('Telephone:', 110, y);
+  y += 3;
+  doc.text('_'.repeat(50), 15, y);
+  doc.text('_'.repeat(50), 110, y);
+
+  y += 8;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('PRESENT EMPLOYMENT', 15, y);
+  doc.text('PRIOR EMPLOYMENT', 110, y);
+  y += 4;
+
+  const empFields = ['Employer', 'Business address', 'Business telephone', 'Position held', 'Length of employment', 'Name of supervisor'];
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(8);
+
+  for (const field of empFields) {
+    doc.text(field, 15, y);
+    y += 3;
+  }
+
+  y -= 18;
+  doc.text('Current salary range: Monthly $ ____________________________________', 15, y);
+
+  addPageNum();
 
   doc.save(`Form_410_Application_${applicant?.name?.replace(/\s+/g, '_') || 'Applicant'}.pdf`);
 }
