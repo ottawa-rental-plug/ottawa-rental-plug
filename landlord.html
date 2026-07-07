@@ -2836,6 +2836,8 @@ function openApplicantDrawer(applicant) {
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Alert</button>` : '',
     `<button class="qa-btn" onclick="downloadReport('summary')">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 18a4.6 4.6 0 0 1-1.3-.7l-4.4 2.6c-.6.3-1.2-.1-1.2-.8V8c0-.6.6-1.1 1.2-.8l4.4 2.6c.4-.4.8-.7 1.3-.7H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H7z"/></svg>Applicant Summary</button>`,
+    `<button class="qa-btn" onclick="downloadReport('form410')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2-5a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Form 410 Application</button>`,
     `<button class="qa-btn" onclick="downloadReport('lease')">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2-5a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Lease Agreement</button>`,
     `<button class="qa-btn" onclick="downloadReport('screening')">
@@ -3111,6 +3113,9 @@ async function downloadReport(type) {
 
     if (type === 'summary') {
       await generateApplicantSummary(applicant, applicant.applications || []);
+    } else if (type === 'form410') {
+      const startDate = applicant.move_in || new Date().toISOString();
+      await generateForm410(applicant, property, startDate);
     } else if (type === 'lease') {
       const startDate = applicant.move_in || new Date().toISOString();
       await generateLeaseAgreement(applicant, property, startDate);
