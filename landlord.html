@@ -637,6 +637,106 @@
       .drawer { width: 100vw; }
       .topbar-title { font-size: 18px; }
     }
+
+    /* ── Command Palette (Phase 4) ────────────────────────────────────────── */
+    .cmd-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; z-index: 9999; opacity: 0; transition: opacity .2s ease; }
+    .cmd-backdrop.open { display: flex; align-items: flex-start; justify-content: center; opacity: 1; padding-top: 100px; }
+    .cmd-palette {
+      background: var(--white);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 20px 60px rgba(15,23,42,.3);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      max-height: 500px;
+      animation: fadeInScale .2s ease-out;
+    }
+    .cmd-input-wrap {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cmd-icon { color: var(--brand); font-size: 18px; flex-shrink: 0; }
+    .cmd-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      font-family: inherit;
+      background: transparent;
+      color: var(--text-primary);
+    }
+    .cmd-input::placeholder { color: var(--text-secondary); }
+    .cmd-results {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .cmd-group {
+      border-bottom: 1px solid var(--border);
+    }
+    .cmd-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-secondary);
+      padding: 12px 16px 6px;
+    }
+    .cmd-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all .15s ease;
+      color: var(--text-primary);
+    }
+    .cmd-item:hover {
+      background: var(--bg-secondary);
+      padding-left: 18px;
+    }
+    .cmd-item.selected {
+      background: var(--brand-light);
+      color: var(--brand);
+      font-weight: 600;
+    }
+    .cmd-item-label { flex: 1; }
+    .cmd-item-hint {
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: var(--bg-secondary);
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .cmd-empty {
+      padding: 40px 16px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    .cmd-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+    .cmd-kbd {
+      background: var(--bg-secondary);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+      border: 1px solid var(--border);
+    }
+
     @keyframes spin { to { transform:rotate(360deg); } }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
     /* ── Applicant drawer (comms hub) ───────────────────────────────── */
@@ -886,6 +986,10 @@
     <div class="topbar-title" id="panelTitle">Overview</div>
     <div class="topbar-right">
       <span class="topbar-date" id="topDate"></span>
+      <button class="btn-top secondary" onclick="openCommandPalette()" title="Search & navigate (Cmd+K)">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <span style="display:none;font-size:11px;color:var(--text-muted)">⌘K</span>
+      </button>
       <button class="btn-top secondary" onclick="syncNetlify()" id="syncBtn">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
         Sync Applications
@@ -2701,6 +2805,147 @@ function showPanel(name) {
   if (name==='futurebuyers') loadFutureBuyers();
 }
 
+// ── COMMAND PALETTE (Phase 4) ─────────────────────────────────────────
+let _cmdSelectedIdx = -1;
+let _cmdAllItems = [];
+
+function openCommandPalette() {
+  document.getElementById('cmdBackdrop').classList.add('open');
+  const input = document.getElementById('cmdInput');
+  input.focus();
+  input.value = '';
+  updateCommandPaletteResults('');
+}
+
+function closeCommandPalette() {
+  document.getElementById('cmdBackdrop').classList.remove('open');
+  _cmdSelectedIdx = -1;
+}
+
+function updateCommandPaletteResults(query) {
+  const q = query.toLowerCase().trim();
+  const results = document.getElementById('cmdResults');
+  _cmdAllItems = [];
+  _cmdSelectedIdx = -1;
+
+  // Navigation commands
+  const navCommands = [
+    { label: 'Overview', hint: 'Dashboard', category: 'Navigate', action: () => switchTab('overview') },
+    { label: 'Applicants', hint: 'View leads', category: 'Navigate', action: () => switchTab('applicants') },
+    { label: 'Vacancies', hint: 'Manage units', category: 'Navigate', action: () => switchTab('vacancies') },
+    { label: 'Templates', hint: 'Messages', category: 'Navigate', action: () => switchTab('templates') },
+    { label: 'Settings', hint: 'Configuration', category: 'Navigate', action: () => switchTab('settings') }
+  ];
+
+  // Action commands
+  const actionCommands = [
+    { label: 'Sync Leads', hint: 'Pull from Supabase', category: 'Actions', action: () => syncLeads() },
+    { label: 'Sign Out', hint: 'Logout', category: 'Actions', action: () => orpSignOut() }
+  ];
+
+  // Applicant search
+  let applicantItems = [];
+  if (q && orpLeads && orpLeads.length) {
+    applicantItems = orpLeads
+      .filter(a => a.name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map(a => ({
+        label: a.name,
+        hint: a.email,
+        category: 'Applicants',
+        action: () => { closeCommandPalette(); openApplicantDrawer(a); }
+      }));
+  }
+
+  // Combine all items
+  _cmdAllItems = [...navCommands, ...actionCommands, ...applicantItems];
+
+  // Filter by query
+  const filtered = q ? _cmdAllItems.filter(i =>
+    i.label.toLowerCase().includes(q) ||
+    i.hint.toLowerCase().includes(q)
+  ) : _cmdAllItems;
+
+  if (!filtered.length) {
+    results.innerHTML = '<div class="cmd-empty">No results found</div>';
+    return;
+  }
+
+  // Group by category
+  const groups = {};
+  filtered.forEach(item => {
+    if (!groups[item.category]) groups[item.category] = [];
+    groups[item.category].push(item);
+  });
+
+  results.innerHTML = Object.entries(groups).map(([cat, items]) => `
+    <div class="cmd-group">
+      <div class="cmd-group-title">${cat}</div>
+      ${items.map((item, i) => `
+        <div class="cmd-item" data-index="${_cmdAllItems.indexOf(item)}" onclick="selectCommandItem(${_cmdAllItems.indexOf(item)})">
+          <span class="cmd-item-label">${item.label}</span>
+          <span class="cmd-item-hint">${item.hint}</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function selectCommandItem(idx) {
+  if (idx < 0 || idx >= _cmdAllItems.length) return;
+  _cmdAllItems[idx].action();
+  closeCommandPalette();
+}
+
+function highlightCommandItem(idx) {
+  document.querySelectorAll('.cmd-item').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  _cmdSelectedIdx = idx;
+  const selected = document.querySelectorAll('.cmd-item')[idx];
+  if (selected) selected.scrollIntoView({ block: 'nearest' });
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  const backdrop = document.getElementById('cmdBackdrop');
+  const input = document.getElementById('cmdInput');
+  const isOpen = backdrop.classList.contains('open');
+
+  // Cmd+K or Ctrl+K to open
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    if (!isOpen) openCommandPalette();
+    else closeCommandPalette();
+    return;
+  }
+
+  if (!isOpen) return;
+
+  // Inside command palette
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    closeCommandPalette();
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    const items = document.querySelectorAll('.cmd-item');
+    const next = Math.min(_cmdSelectedIdx + 1, items.length - 1);
+    highlightCommandItem(next);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    const next = Math.max(_cmdSelectedIdx - 1, 0);
+    highlightCommandItem(next);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (_cmdSelectedIdx >= 0) selectCommandItem(_cmdSelectedIdx);
+  }
+});
+
+document.getElementById('cmdInput').addEventListener('input', (e) => {
+  updateCommandPaletteResults(e.target.value);
+  highlightCommandItem(0);
+});
+
 // ── INIT ──────────────────────────────────────────────────────────────
 async function init() {
   const now = new Date();
@@ -3595,6 +3840,22 @@ async function downloadReport(type) {
 
 <!-- Print-only tenant summary sheet -->
 <div id="printSheet" class="print-only"></div>
+
+<!-- Command Palette (Phase 4) -->
+<div id="cmdBackdrop" class="cmd-backdrop" onclick="if(event.target===this)closeCommandPalette()">
+  <div class="cmd-palette">
+    <div class="cmd-input-wrap">
+      <span class="cmd-icon">⌘</span>
+      <input type="text" class="cmd-input" id="cmdInput" placeholder="Search applicants, navigate, or run commands..." autocomplete="off">
+    </div>
+    <div class="cmd-results" id="cmdResults"></div>
+    <div class="cmd-footer">
+      <span><span class="cmd-kbd">↑↓</span> Navigate</span>
+      <span><span class="cmd-kbd">Enter</span> Select</span>
+      <span><span class="cmd-kbd">Esc</span> Close</span>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
