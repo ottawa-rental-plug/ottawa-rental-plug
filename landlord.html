@@ -737,6 +737,85 @@
       border: 1px solid var(--border);
     }
 
+    /* ── Bulk Actions (Phase 5) ────────────────────────────────────────── */
+    .bulk-toolbar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 30px rgba(15,23,42,.2);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      z-index: 100;
+      transition: all .3s cubic-bezier(.4, 0, .2, 1);
+    }
+    .bulk-toolbar.open {
+      transform: translateX(-50%) translateY(0);
+    }
+    .bulk-count { font-weight: 600; color: var(--brand); font-size: 14px; }
+    .bulk-action-btn {
+      padding: 8px 14px;
+      background: var(--brand);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all .25s ease;
+    }
+    .bulk-action-btn:hover { background: var(--brand-dark); box-shadow: 0 2px 8px rgba(6,182,212,.3); }
+    .bulk-action-btn.secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
+    .bulk-action-btn.secondary:hover { background: var(--bg-secondary); border-color: var(--brand); }
+
+    /* ── Advanced Filters (Phase 5) ────────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-chip {
+      padding: 6px 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-chip:hover { background: var(--brand-light); border-color: var(--brand); }
+    .filter-chip.active { background: var(--brand); color: white; border-color: var(--brand); }
+    .filter-chip-close {
+      width: 14px;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    /* ── Quick Stats (Phase 5) ────────────────────────────────────────── */
+    .quick-stat {
+      padding: 8px 12px;
+      background: var(--bg-secondary);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .quick-stat-value { font-weight: 700; color: var(--text-primary); font-size: 14px; }
+
     @keyframes spin { to { transform:rotate(360deg); } }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
     /* ── Applicant drawer (comms hub) ───────────────────────────────── */
@@ -1136,6 +1215,20 @@
           <button class="btn-top secondary" onclick="loadApplicants()" style="padding:7px 12px">Refresh</button>
         </div>
         <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Tenants who applied at <strong>ottawarentalplug.com/apply</strong>, auto-matched to your published units. Publish your vacancies first (Vacancies &rarr; Publish to cloud) so matching has units to score against.</p>
+
+        <!-- Advanced Filters (Phase 5) -->
+        <div class="filter-bar" id="filterBar">
+          <span style="font-size:12px;color:var(--text-secondary);font-weight:500">Filter by:</span>
+          <button class="filter-chip active" onclick="filterApplicants(null)" data-filter="all">All Applicants</button>
+          <button class="filter-chip" onclick="filterApplicants('new')" data-filter="new">New</button>
+          <button class="filter-chip" onclick="filterApplicants('contacted')" data-filter="contacted">Contacted</button>
+          <button class="filter-chip" onclick="filterApplicants('viewing')" data-filter="viewing">Viewing</button>
+          <button class="filter-chip" onclick="filterApplicants('leased')" data-filter="leased">Leased</button>
+          <span style="margin-left:auto;font-size:12px;color:var(--text-secondary)">
+            <span class="quick-stat"><span class="quick-stat-value" id="filteredCount">0</span> shown</span>
+          </span>
+        </div>
+
         <div class="card" id="applicantsCard"><div class="scan-empty">Loading…</div></div>
       </div>
     </div>
@@ -2946,6 +3039,186 @@ document.getElementById('cmdInput').addEventListener('input', (e) => {
   highlightCommandItem(0);
 });
 
+// ── BULK ACTIONS (Phase 5) ────────────────────────────────────────────
+function toggleBulkSelection(appId) {
+  if (_selectedCards.has(appId)) {
+    _selectedCards.delete(appId);
+  } else {
+    _selectedCards.add(appId);
+  }
+  updateBulkToolbar();
+  document.querySelectorAll(`[data-applicant-id="${appId}"]`).forEach(el => {
+    el.classList.toggle('selected');
+  });
+}
+
+function updateBulkToolbar() {
+  const toolbar = document.getElementById('bulkToolbar');
+  const count = _selectedCards.size;
+  const countEl = document.getElementById('bulkCount');
+  countEl.textContent = `${count} selected`;
+  if (count > 0) {
+    toolbar.classList.add('open');
+  } else {
+    toolbar.classList.remove('open');
+  }
+}
+
+async function applyBulkStatus() {
+  const statusSelect = document.getElementById('bulkStatusSelect');
+  const status = statusSelect.value;
+  if (!status || _selectedCards.size === 0) {
+    alert('Select a status and at least one applicant');
+    return;
+  }
+
+  const selected = Array.from(_selectedCards);
+  let updated = 0;
+
+  for (const appId of selected) {
+    const app = orpLeads.find(a => a.id === appId);
+    if (app) {
+      app.status = status;
+      updated++;
+    }
+  }
+
+  if (updated > 0) {
+    saveLeads();
+    await loadApplicants();
+    clearBulkSelection();
+    alert(`Updated ${updated} applicant(s) to "${status}"`);
+  }
+}
+
+function clearBulkSelection() {
+  _selectedCards.clear();
+  updateBulkToolbar();
+  document.querySelectorAll('.kanban-card.selected').forEach(el => {
+    el.classList.remove('selected');
+  });
+}
+
+function exportSelected() {
+  if (_selectedCards.size === 0) {
+    alert('Select at least one applicant to export');
+    return;
+  }
+
+  const selected = Array.from(_selectedCards)
+    .map(id => orpLeads.find(a => a.id === id))
+    .filter(Boolean);
+
+  const headers = ['Name', 'Email', 'Phone', 'Status', 'Move-in', 'Budget'];
+  const rows = selected.map(a => [
+    a.name || '',
+    a.email || '',
+    a.phone || '',
+    a.status || 'new',
+    a.moveIn || '',
+    a.budget || ''
+  ]);
+
+  const csv = [
+    headers.join(','),
+    ...rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+  ].join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `applicants-export-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── ADVANCED FILTERS (Phase 5) ────────────────────────────────────────
+let _currentFilter = null;
+
+function filterApplicants(status) {
+  _currentFilter = status;
+  const filtered = status === null || status === undefined
+    ? orpLeads
+    : orpLeads.filter(a => a.status === status);
+
+  document.getElementById('filteredCount').textContent = filtered.length;
+  document.querySelectorAll('.filter-chip').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.filter === (status || 'all')) {
+      btn.classList.add('active');
+    }
+  });
+
+  const card = document.getElementById('applicantsCard');
+  if (!filtered.length) {
+    card.innerHTML = '<div class="scan-empty">No applicants match this filter</div>';
+    return;
+  }
+
+  card.innerHTML = renderApplicantsList(filtered);
+}
+
+function renderApplicantsList(applicants) {
+  if (!applicants || !applicants.length) {
+    return '<div class="scan-empty">No applicants</div>';
+  }
+
+  return `<table class="leads-table" style="width:100%">
+    <thead><tr>
+      <th><input type="checkbox" onchange="toggleSelectAll(this)" title="Select all visible"/></th>
+      <th>Applicant</th>
+      <th>Contact</th>
+      <th>Move-in</th>
+      <th>Budget</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr></thead>
+    <tbody>
+      ${applicants.map(a => `<tr data-applicant-id="${a.id}">
+        <td><input type="checkbox" onchange="toggleBulkSelection('${a.id}')" title="Select applicant"/></td>
+        <td><div style="font-weight:600;color:var(--text-primary)">${escapeHtml(a.name)}</div></td>
+        <td><div style="font-size:12px;color:var(--text-secondary)">${escapeHtml(a.email)}</div></td>
+        <td style="font-size:12px">${a.moveIn || '—'}</td>
+        <td style="font-size:12px">${a.budget || '—'}</td>
+        <td><select class="status-select status-${a.status}" onchange="updateApplicantStatus('${a.id}',this.value)">
+          <option value="new">New</option>
+          <option value="contacted">Contacted</option>
+          <option value="viewing">Viewing</option>
+          <option value="leased">Leased</option>
+          <option value="passed">Passed</option>
+        </select></td>
+        <td><button class="contact-btn" onclick="openApplicantDrawer(${JSON.stringify(a)})">Open</button></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function toggleSelectAll(checkbox) {
+  const rows = document.querySelectorAll('#applicantsCard tbody tr');
+  rows.forEach(row => {
+    const appId = row.dataset.applicantId;
+    const cb = row.querySelector('input[type="checkbox"]');
+    cb.checked = checkbox.checked;
+    if (checkbox.checked && !_selectedCards.has(appId)) {
+      _selectedCards.add(appId);
+    } else if (!checkbox.checked && _selectedCards.has(appId)) {
+      _selectedCards.delete(appId);
+    }
+  });
+  updateBulkToolbar();
+}
+
+async function updateApplicantStatus(appId, status) {
+  const app = orpLeads.find(a => a.id === appId);
+  if (app) {
+    app.status = status;
+    saveLeads();
+    await loadApplicants();
+    if (_currentFilter) filterApplicants(_currentFilter);
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────
 async function init() {
   const now = new Date();
@@ -3855,6 +4128,22 @@ async function downloadReport(type) {
       <span><span class="cmd-kbd">Esc</span> Close</span>
     </div>
   </div>
+</div>
+
+<!-- Bulk Actions Toolbar (Phase 5) -->
+<div id="bulkToolbar" class="bulk-toolbar">
+  <span class="bulk-count" id="bulkCount">0 selected</span>
+  <select id="bulkStatusSelect" class="field-input" style="max-width:150px;font-size:12px;padding:6px 10px">
+    <option value="">Change status...</option>
+    <option value="new">New</option>
+    <option value="contacted">Contacted</option>
+    <option value="viewing">Viewing</option>
+    <option value="leased">Leased</option>
+    <option value="passed">Passed</option>
+  </select>
+  <button class="bulk-action-btn" onclick="applyBulkStatus()">Apply</button>
+  <button class="bulk-action-btn secondary" onclick="clearBulkSelection()">Clear</button>
+  <button class="bulk-action-btn secondary" onclick="exportSelected()">Export CSV</button>
 </div>
 
 </body>
