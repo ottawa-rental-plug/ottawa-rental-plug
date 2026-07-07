@@ -1,45 +1,61 @@
-# Ottawa Rental Plug — Netlify config
+# Netlify Configuration for ORP Platform with Form 410 Serverless Backend
+
 [build]
+  # Build command (CSS generation)
+  command = "npm run build:css"
+  # Output directory
   publish = "."
+  # Functions directory for serverless functions
   functions = "netlify/functions"
 
-# Node 20 runtime so the function has global fetch available.
-[build.environment]
-  NODE_VERSION = "20"
+# Redirect all /api requests to serverless functions
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
 
-# Keep the private landlord dashboard and owner portal out of search engines.
+# Cache rules
 [[headers]]
-  for = "/landlord.html"
+  for = "/*"
   [headers.values]
-    X-Robots-Tag = "noindex, nofollow"
-
-[[headers]]
-  for = "/landlord-portal.html"
-  [headers.values]
-    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "public, max-age=3600"
 
 [[headers]]
-  for = "/client-portal.html"
+  for = "/*.html"
   [headers.values]
-    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "public, max-age=600"
 
-# Long-cache static assets (filenames change when content changes)
 [[headers]]
-  for = "/js/*.js"
+  for = "/*.js"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "public, max-age=86400"
 
 [[headers]]
   for = "/*.css"
   [headers.values]
     Cache-Control = "public, max-age=86400"
 
-[[headers]]
-  for = "/*.webp"
-  [headers.values]
-    Cache-Control = "public, max-age=604800"
+# Functions configuration
+[functions]
+  node_bundler = "esbuild"
+  memory = 1024
+  timeout = 30
 
-[[headers]]
-  for = "/*.mp4"
-  [headers.values]
-    Cache-Control = "public, max-age=604800"
+# Development settings
+[dev]
+  port = 3000
+  publish = "."
+  functions = "netlify/functions"
+  autoLaunch = false
+
+# Redirects for SPA routing
+[[redirects]]
+  from = "/rental-application"
+  to = "/rental-application.html"
+  status = 200
+
+[[redirects]]
+  from = "/apply"
+  to = "/apply.html"
+  status = 200
