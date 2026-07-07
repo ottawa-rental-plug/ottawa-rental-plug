@@ -83,31 +83,41 @@ async function generateForm410(applicant, property, startDate) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  let y = 15;
+  let pageNum = 1;
+  let y = 12;
 
+  const addPageNum = () => {
+    doc.setFontSize(7);
+    doc.setTextColor(...BRAND.gray);
+    doc.text(`Form 410 — Revised 2019 Page ${pageNum} of 2`, pageWidth - 30, pageHeight - 5);
+  };
+
+  // HEADER - Page 1
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
+  doc.setFontSize(18);
   doc.setTextColor(...BRAND.navy);
-  doc.text('OREA Ontario Real Estate Association', 15, y);
-  doc.setFontSize(14);
-  doc.text('Rental Application', 15, y + 8);
-  doc.setFontSize(10);
-  doc.text('Residential Form 410', 15, y + 15);
-  doc.text('for use in the Province of Ontario', 15, y + 20);
+  doc.text('Rental Application', 20, y);
+  doc.setFontSize(11);
+  doc.text('Residential Form 410', 20, y + 8);
+  doc.setFontSize(9);
+  doc.text('for use in the Province of Ontario', 20, y + 15);
 
-  y = 40;
+  y = 32;
   doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setTextColor(...BRAND.text);
 
+  // APPLICATION INTRO
   const rentAmount = property?.price ? `$${property.price.toLocaleString()}` : '$_______';
-  doc.text(`I/We hereby make application to rent ${property?.address || '_'.repeat(50)}`, 15, y);
-  y += 7;
-  doc.text(`from the _______ day of _________________________ 20_______ at a monthly rental of ${rentAmount}`, 15, y);
-  y += 7;
-  doc.text(`to become due and payable in advance on the _______ day of each and every month during my tenancy.`, 15, y);
-  y += 12;
+  const propAddr = property?.address || '_'.repeat(60);
+  doc.text(`I/We hereby make application to rent ${propAddr}`, 15, y);
+  y += 4;
+  doc.text(`from the ________________ day of _________________________________ 20__________ at a monthly rental of ${rentAmount}`, 15, y);
+  y += 4;
+  doc.text(`to become due and payable in advance on the _________________________ day of each and every month during my tenancy.`, 15, y);
+  y += 10;
 
+  // APPLICANT 1 & 2
   doc.setFont('Helvetica', 'bold');
   doc.setFontSize(9);
   doc.text('1. Name', 15, y);
@@ -116,138 +126,136 @@ async function generateForm410(applicant, property, startDate) {
   doc.setFont('Helvetica', 'bold');
   doc.text('Date of birth', 110, y);
   doc.setFont('Helvetica', 'normal');
-  doc.text('_____/_____/_____', 140, y);
+  doc.text('_______________________', 135, y);
   doc.setFont('Helvetica', 'bold');
-  doc.text('SIN No.', 170, y);
-  doc.setFont('Helvetica', 'normal');
-  doc.text('(Optional)', 185, y);
+  doc.text('SIN No. (Optional)', 175, y);
 
-  y += 6;
+  y += 4;
   doc.setFont('Helvetica', 'bold');
   doc.text("Driver's License No.", 15, y);
   doc.setFont('Helvetica', 'normal');
-  doc.text('_'.repeat(20), 50, y);
+  doc.text('_'.repeat(25), 45, y);
   doc.setFont('Helvetica', 'bold');
   doc.text('Occupation', 110, y);
   doc.setFont('Helvetica', 'normal');
-  doc.text(applicant?.job_title || '_'.repeat(30), 140, y);
+  doc.text(applicant?.job_title || '_'.repeat(30), 135, y);
 
-  y += 10;
+  y += 8;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('2. Name', 15, y);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('_'.repeat(40), 35, y);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('Date of birth', 110, y);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('_______________________', 135, y);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('SIN No. (Optional)', 175, y);
+
+  y += 4;
+  doc.setFont('Helvetica', 'bold');
+  doc.text("Driver's License No.", 15, y);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('_'.repeat(25), 45, y);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('Occupation', 110, y);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('_'.repeat(30), 135, y);
+
+  y += 8;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('3. Other Occupants:', 15, y);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('Name', 20, y);
+  doc.text('Relationship', 85, y);
+  doc.text('Age', 155, y);
+
+  for (let i = 0; i < 3; i++) {
+    y += 4;
+    doc.text('_'.repeat(40), 20, y);
+    doc.text('_'.repeat(35), 85, y);
+    doc.text('_'.repeat(12), 155, y);
+  }
+
+  y += 6;
+  doc.setFont('Helvetica', 'normal');
+  doc.text('Do you have any pets?  ________  If so, describe: ________________________________________________________________', 15, y);
+  y += 4;
+  doc.text('Why are you vacating your present place of residence? ______________________________________________________________', 15, y);
+
+  addPageNum();
+  doc.addPage();
+  pageNum++;
+  y = 15;
+
+  // PAGE 2 - RESIDENCE
   doc.setFont('Helvetica', 'bold');
   doc.setFontSize(10);
+  doc.setTextColor(...BRAND.navy);
   doc.text('LAST TWO PLACES OF RESIDENCE', 15, y);
-  y += 6;
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
-
-  const addr = applicant?.address_history?.current;
-  doc.text('Address', 15, y);
-  doc.text(addr?.address ? `${addr.address}, ${addr.city}, ${addr.postal}` : '_'.repeat(50), 35, y);
-  y += 6;
-  doc.text('From', 15, y);
-  doc.text(addr?.time_there || '________', 35, y);
-  doc.text('To', 80, y);
-  doc.text('Present', 95, y);
-  y += 6;
-  doc.text('Name of Landlord', 15, y);
-  doc.text(addr?.landlord_name || '_'.repeat(40), 50, y);
-  y += 6;
-  doc.text('Telephone', 15, y);
-  doc.text(addr?.landlord_phone || '_'.repeat(20), 50, y);
-
-  y += 10;
-  doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('PRESENT EMPLOYMENT', 15, y);
-  y += 6;
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.text('Employer', 15, y);
-  doc.text(applicant?.employer || '_'.repeat(40), 50, y);
   y += 5;
-  doc.text('Business address', 15, y);
-  doc.text('_'.repeat(50), 50, y);
-  y += 5;
-  doc.text('Position held', 15, y);
-  doc.text(applicant?.job_title || '_'.repeat(40), 50, y);
-  y += 5;
-  doc.text('Length of employment', 15, y);
-  doc.text(applicant?.employment_length || '_'.repeat(30), 50, y);
-  y += 5;
-  doc.text('Current salary range: Monthly $', 15, y);
-  doc.text(applicant?.monthly_income ? `${applicant.monthly_income.toLocaleString()}` : '________', 80, y);
 
-  y += 10;
-  doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('FINANCIAL INFORMATION', 15, y);
-  y += 6;
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.text('Name of Bank', 15, y);
-  doc.text('_'.repeat(30), 50, y);
-  doc.text('Branch', 110, y);
-  doc.text('_'.repeat(20), 140, y);
-
-  y += 10;
-  doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('PERSONAL REFERENCES', 15, y);
-  y += 6;
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
-  if (applicant?.personal_references?.[0]) {
-    const ref = applicant.personal_references[0];
-    doc.text('Name', 15, y);
-    doc.text(ref.name || '_'.repeat(40), 50, y);
-    y += 5;
-    doc.text('Telephone', 15, y);
-    doc.text(ref.phone || '_'.repeat(20), 50, y);
-  } else {
-    doc.text('Name', 15, y);
-    doc.text('_'.repeat(40), 50, y);
-    y += 5;
-    doc.text('Telephone', 15, y);
-    doc.text('_'.repeat(20), 50, y);
-  }
-
-  y += 10;
-  doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('AUTOMOBILE(S)', 15, y);
-  y += 6;
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
-  if (applicant?.vehicle?.make_model) {
-    doc.text('Make/Model', 15, y);
-    doc.text(applicant.vehicle.make_model, 50, y);
-    doc.text('Licence No', 165, y);
-    doc.text(applicant.vehicle.plate || '_'.repeat(15), 195, y);
-  } else {
-    doc.text('Make/Model', 15, y);
-    doc.text('_'.repeat(25), 50, y);
-  }
-
-  y += 15;
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(8);
-  doc.setTextColor(...BRAND.gray);
-  const consentText = 'The Applicant represents that all statements made above are true and correct. The Applicant is hereby notified that a consumer report containing credit and/or personal information may be referred to in connection with this rental.';
-  const consentLines = doc.splitTextToSize(consentText, pageWidth - 30);
-  doc.text(consentLines, 15, y);
-  y += (consentLines.length * 3) + 8;
-
-  doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
   doc.setTextColor(...BRAND.text);
-  doc.text('Signature of Applicant', 15, y);
-  doc.line(15, y + 2, 60, y + 2);
-  doc.text('Date', 75, y);
-  doc.line(75, y + 2, 100, y + 2);
 
-  doc.setFontSize(7);
-  doc.setTextColor(...BRAND.gray);
-  doc.text('Form 410 — Revised 2019', pageWidth - 30, pageHeight - 5);
+  // Two column layout
+  doc.text('Address', 15, y);
+  doc.text('Address', 110, y);
+  y += 3;
+  doc.text('_'.repeat(50), 15, y);
+  doc.text('_'.repeat(50), 110, y);
+  y += 3;
+  doc.text('_'.repeat(50), 15, y);
+  doc.text('_'.repeat(50), 110, y);
+
+  y += 4;
+  doc.text('From', 15, y);
+  doc.text('To', 55, y);
+  doc.text('From', 110, y);
+  doc.text('To', 150, y);
+  y += 3;
+  doc.text('_______________', 15, y);
+  doc.text('_______________', 55, y);
+  doc.text('_______________', 110, y);
+  doc.text('_______________', 150, y);
+
+  y += 4;
+  doc.text('Name of Landlord', 15, y);
+  doc.text('Name of Landlord', 110, y);
+  y += 3;
+  doc.text('_'.repeat(50), 15, y);
+  doc.text('_'.repeat(50), 110, y);
+
+  y += 4;
+  doc.text('Telephone:', 15, y);
+  doc.text('Telephone:', 110, y);
+  y += 3;
+  doc.text('_'.repeat(50), 15, y);
+  doc.text('_'.repeat(50), 110, y);
+
+  y += 8;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('PRESENT EMPLOYMENT', 15, y);
+  doc.text('PRIOR EMPLOYMENT', 110, y);
+  y += 4;
+
+  const empFields = ['Employer', 'Business address', 'Business telephone', 'Position held', 'Length of employment', 'Name of supervisor'];
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(8);
+
+  for (const field of empFields) {
+    doc.text(field, 15, y);
+    y += 3;
+  }
+
+  y -= 18;
+  doc.text('Current salary range: Monthly $ ____________________________________', 15, y);
+
+  addPageNum();
 
   doc.save(`Form_410_Application_${applicant?.name?.replace(/\s+/g, '_') || 'Applicant'}.pdf`);
 }
@@ -258,42 +266,89 @@ async function generateLeaseAgreement(applicant, property, startDate) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  let y = 40;
+  let y = 12;
 
-  addHeader(doc, 'RESIDENTIAL TENANCY AGREEMENT');
+  // HEADER - Form 410 style
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(...BRAND.navy);
+  doc.text('RESIDENTIAL TENANCY AGREEMENT', 20, y);
+  doc.setFontSize(9);
+  doc.setTextColor(...BRAND.gray);
+  doc.text(`Date: ${new Date().toLocaleDateString('en-CA')}`, pageWidth - 40, y);
 
-  y = addSection(doc, y, '1. PARTIES AND PROPERTY');
-  y = addField(doc, y, 'Landlord/Agent:', 'Ottawa Rental Plug');
-  y = addField(doc, y, 'Tenant:', applicant?.name || 'To be determined');
-  y = addField(doc, y, 'Rental Unit Address:', property?.address || 'To be determined');
-  y = addField(doc, y, 'Unit Type:', `${property?.beds || '—'} BR / ${property?.baths || '—'} BA ${property?.type || 'Unit'}`);
-  y += 5;
+  y = 22;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('1. PARTIES AND PROPERTY', 15, y);
+  y += 6;
 
-  y = addSection(doc, y, '2. RENT AND PAYMENT TERMS');
-  y = addField(doc, y, 'Monthly Rent:', `$${property?.price?.toLocaleString() || 'TBD'}`);
-  y = addField(doc, y, 'Payment Due Date:', '1st day of each month');
-  y = addField(doc, y, 'Payment Method:', 'As directed by Landlord');
-  y = addField(doc, y, 'Security Deposit:', `$${property?.price?.toLocaleString() || 'TBD'}`);
-  y += 5;
-
-  y = addSection(doc, y, '3. LEASE TERM');
-  const endDate = startDate ? new Date(new Date(startDate).getTime() + 365 * 24 * 60 * 60 * 1000) : null;
-  y = addField(doc, y, 'Commencement Date:', startDate ? new Date(startDate).toLocaleDateString('en-CA') : 'To be determined');
-  y = addField(doc, y, 'End Date:', endDate ? endDate.toLocaleDateString('en-CA') : 'One year from commencement');
-  y += 5;
-
-  if (y > pageHeight - 40) {
-    addFooter(doc, doc.internal.pages.length - 1);
-    doc.addPage();
-    y = 20;
-    addHeader(doc, 'RESIDENTIAL TENANCY AGREEMENT (continued)');
-    y = 40;
-  }
-
-  y = addSection(doc, y, '4. TENANT OBLIGATIONS');
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...BRAND.text);
+  doc.text('Landlord/Agent:', 15, y);
+  doc.text('Ottawa Rental Plug', 50, y);
+  y += 5;
+  doc.text('Tenant:', 15, y);
+  doc.text(applicant?.name || '_'.repeat(50), 50, y);
+  y += 5;
+  doc.text('Rental Unit Address:', 15, y);
+  doc.text(property?.address || '_'.repeat(50), 50, y);
+  y += 5;
+  doc.text('Unit Type:', 15, y);
+  const unitType = `${property?.beds || '—'} BR / ${property?.baths || '—'} BA ${property?.type || ''}`.trim();
+  doc.text(unitType, 50, y);
+
+  y += 10;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('2. RENT AND PAYMENT TERMS', 15, y);
+  y += 6;
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('Monthly Rent:', 15, y);
+  doc.text(`$${property?.price?.toLocaleString() || '_______'}`, 50, y);
+  y += 5;
+  doc.text('Payment Due Date:', 15, y);
+  doc.text('1st day of each month', 50, y);
+  y += 5;
+  doc.text('Payment Method:', 15, y);
+  doc.text('_'.repeat(40), 50, y);
+  y += 5;
+  doc.text('Security Deposit:', 15, y);
+  doc.text(`$${property?.price?.toLocaleString() || '_______'}`, 50, y);
+  y += 5;
+  doc.text('Last Month\'s Rent:', 15, y);
+  doc.text(`$${property?.price?.toLocaleString() || '_______'}`, 50, y);
+
+  y += 10;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('3. LEASE TERM', 15, y);
+  y += 6;
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('Commencement Date:', 15, y);
+  const comDate = startDate ? new Date(startDate).toLocaleDateString('en-CA') : '_'.repeat(20);
+  doc.text(comDate, 50, y);
+  y += 5;
+  doc.text('End Date:', 15, y);
+  const endDate = startDate ? new Date(new Date(startDate).getTime() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA') : '_'.repeat(20);
+  doc.text(endDate, 50, y);
+  y += 5;
+  doc.text('Lease Duration:', 15, y);
+  doc.text('12 months (fixed term)', 50, y);
+
+  y += 10;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('4. TENANT OBLIGATIONS', 15, y);
+  y += 5;
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
   const obligations = [
     'Pay rent in full and on time each month',
     'Keep the rental unit clean and in good repair',
@@ -305,21 +360,18 @@ async function generateLeaseAgreement(applicant, property, startDate) {
     'Do not sublet or assign without written consent',
   ];
   for (const obl of obligations) {
-    const lines = doc.splitTextToSize(`• ${obl}`, pageWidth - 40);
-    doc.text(lines, 20, y);
-    y += (lines.length * 3.5) + 1;
+    doc.text(`• ${obl}`, 20, y);
+    y += 4;
   }
+
+  y += 5;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('5. LANDLORD OBLIGATIONS', 15, y);
   y += 5;
 
-  if (y > pageHeight - 40) {
-    addFooter(doc, doc.internal.pages.length - 1);
-    doc.addPage();
-    y = 20;
-    addHeader(doc, 'RESIDENTIAL TENANCY AGREEMENT (continued)');
-    y = 40;
-  }
-
-  y = addSection(doc, y, '5. LANDLORD OBLIGATIONS');
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
   const landlordObl = [
     'Maintain the rental unit in safe, habitable condition',
     'Keep common areas clean and in good repair',
@@ -329,56 +381,75 @@ async function generateLeaseAgreement(applicant, property, startDate) {
     'Provide written notice before entering (except emergency)',
   ];
   for (const obl of landlordObl) {
-    const lines = doc.splitTextToSize(`• ${obl}`, pageWidth - 40);
-    doc.text(lines, 20, y);
-    y += (lines.length * 3.5) + 1;
-  }
-  y += 5;
-
-  y = addSection(doc, y, '6. UTILITIES & SERVICES');
-  y = addField(doc, y, 'Hydro/Electricity:', 'Tenant responsibility');
-  y = addField(doc, y, 'Water & Sewer:', 'Included in rent');
-  y = addField(doc, y, 'Heat:', 'Included in rent');
-  y += 5;
-
-  if (y > pageHeight - 40) {
-    addFooter(doc, doc.internal.pages.length - 1);
-    doc.addPage();
-    y = 20;
-    addHeader(doc, 'RESIDENTIAL TENANCY AGREEMENT (continued)');
-    y = 40;
+    doc.text(`• ${obl}`, 20, y);
+    y += 4;
   }
 
-  y = addSection(doc, y, '7. HOUSE RULES');
-  y = addField(doc, y, 'Pets:', 'No pets without written consent');
-  y = addField(doc, y, 'Smoking:', 'Prohibited on premises');
+  y += 5;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('6. UTILITIES & SERVICES', 15, y);
   y += 5;
 
-  y = addSection(doc, y, '8. TERMINATION');
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(9);
-  const termText = 'Either party may terminate this agreement with 60 days\' written notice in accordance with the Residential Tenancies Act, 2006 (Ontario). Security deposit will be returned within 30 days of move-out, less any legitimate deductions.';
-  const termLines = doc.splitTextToSize(termText, pageWidth - 40);
-  doc.text(termLines, 20, y);
-  y += (termLines.length * 3.5) + 8;
+  doc.text('Hydro/Electricity: ________________    Water & Sewer: ________________    Heat: ________________', 15, y);
+  y += 5;
+  doc.text('Gas: ________________    Internet/Cable: ________________', 15, y);
 
-  y = addSection(doc, y, '9. SIGNATURES');
+  y += 8;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('7. HOUSE RULES & CONDITIONS', 15, y);
+  y += 5;
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('Pets: ________________________________________________________', 15, y);
+  y += 4;
+  doc.text('Smoking: ________________________________________________________', 15, y);
+  y += 4;
+  doc.text('Guests/Occupants: ________________________________________________________', 15, y);
+  y += 4;
+  doc.text('Noise/Quiet Hours: ________________________________________________________', 15, y);
+
+  y += 8;
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('8. TERMINATION & RENEWAL', 15, y);
+  y += 5;
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
+  const termText = 'Either party may terminate this agreement with 60 days\' written notice in accordance with the Residential Tenancies Act, 2006 (Ontario). Security deposit will be returned within 30 days of move-out, less any legitimate deductions for damages or unpaid rent.';
+  const termLines = doc.splitTextToSize(termText, pageWidth - 30);
+  doc.text(termLines, 15, y);
+  y += (termLines.length * 4) + 5;
+
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('9. SIGNATURES', 15, y);
+  y += 5;
+
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(...BRAND.gray);
-  doc.text('By signing below, both parties agree to the terms of this Residential Tenancy Agreement.', 20, y);
+  doc.text('By signing below, both parties agree to the terms of this Residential Tenancy Agreement and confirm they have read and understood all provisions.', 15, y);
   y += 8;
 
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...BRAND.text);
-  doc.text('Landlord/Agent: ___________________________    Signature: ___________________________    Date: __________', 20, y);
-  y += 10;
-  doc.text('Tenant: ___________________________    Signature: ___________________________    Date: __________', 20, y);
-  y += 10;
-  doc.text('Tenant (if co-tenant): ___________________________    Signature: ___________________________    Date: __________', 20, y);
+  doc.text('Landlord/Agent: _____________________________    Signature: _____________________________    Date: __________', 15, y);
+  y += 8;
+  doc.text('Tenant: _____________________________    Signature: _____________________________    Date: __________', 15, y);
+  y += 8;
+  doc.text('Tenant (if co-tenant): _____________________________    Signature: _____________________________    Date: __________', 15, y);
 
-  addFooter(doc, doc.internal.pages.length - 1);
+  doc.setFontSize(7);
+  doc.setTextColor(...BRAND.gray);
+  doc.text('This agreement is prepared in compliance with the Residential Tenancies Act, 2006 (Ontario).', 15, pageHeight - 8);
+
   doc.save(`Residential_Tenancy_Agreement_${applicant?.name?.replace(/\s+/g, '_') || 'Applicant'}.pdf`);
 }
 
