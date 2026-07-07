@@ -174,12 +174,23 @@ exports.handler = async (event) => {
     });
     if (!appRes.ok) {
       const detail = await appRes.text();
-      return json(502, { error: 'Application saved but could not be linked to the unit', detail });
+      // Rollback: delete the orphaned applicant record
+      try {
+        await sbFetch(`applicants?id=eq.${saved.id}`, { method: 'DELETE' });
+      } catch (rollbackErr) {
+        console.error('Rollback failed after application insert error:', rollbackErr);
+      }
+      return json(502, { error: 'Application could not be linked to unit', detail });
     }
     await sbFetch(`applicants?id=eq.${saved.id}`, { method: 'PATCH', body: JSON.stringify({ stage: 'matched' }) });
 
     // 4) Phone alert to Cyril (best-effort; keyless ntfy.sh, same topic as the dashboard).
-    await notify(applicant, unit);
+    try {
+      await notify(applicant, unit);
+    } catch (notifyErr) {
+      console.error('Notification failed (non-blocking):', notifyErr);
+      // Don't fail the entire request; the application was successfully created
+    }
 
     return json(200, { ok: true });
   } catch (e) {

@@ -80,9 +80,11 @@ async function orpMirrorUnits(vacancies) {
     if (error) throw error;
   }
   const keepIds = list.map(v => String(v.id));
-  const del = keepIds.length
-    ? await sb.from('units').delete().not('client_id', 'is', null).not('client_id', 'in', `(${keepIds.map(id => `"${id}"`).join(',')})`)
-    : await sb.from('units').delete().not('client_id', 'is', null);
+  let deleteQuery = sb.from('units').delete().not('client_id', 'is', null);
+  if (keepIds.length > 0) {
+    deleteQuery = deleteQuery.not('client_id', 'in', `(${keepIds.map(id => id).join(',')})`);
+  }
+  const del = await deleteQuery;
   if (del.error) throw del.error;
 }
 

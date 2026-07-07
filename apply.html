@@ -527,6 +527,11 @@
       if (n === 4) renderReview();
       document.getElementById('stepForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+
+    // Generate CSRF token for form submission
+    const csrfToken = 'orpcsrf_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    sessionStorage.setItem('orpCSRFToken', csrfToken);
+
     // Enter key on an early step advances instead of submitting the form.
     document.getElementById('applyForm').addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && currentStep < 4 && e.target.tagName !== 'TEXTAREA') {

@@ -19,12 +19,42 @@ create index if not exists documents_type_idx on documents(type);
 create index if not exists documents_uploaded_at_idx on documents(uploaded_at);
 
 alter table documents enable row level security;
+
+-- Admin can access all documents
 create policy documents_admin_all on documents for all to authenticated using (
   (select auth.jwt() ->> 'email') = 'cyrilrentsottawa@gmail.com'
 );
-create policy documents_authenticated_insert on documents for insert to authenticated with check (true);
-create policy documents_authenticated_select on documents for select to authenticated using (true);
-create policy documents_authenticated_update on documents for update to authenticated using (true);
+
+-- Users can only access documents for applicants they can see (via units they landlord)
+create policy documents_owner_insert on documents for insert to authenticated with check (
+  applicant_id in (
+    select app.applicant_id
+    from applications app
+    join units u on u.id = app.unit_id
+    where u.landlord_id = auth.uid()
+  )
+);
+
+create policy documents_owner_select on documents for select to authenticated using (
+  applicant_id in (
+    select app.applicant_id
+    from applications app
+    join units u on u.id = app.unit_id
+    where u.landlord_id = auth.uid()
+  )
+  or applicant_id in (
+    select id from applicants where id = auth.uid()  -- applicants can view own docs
+  )
+);
+
+create policy documents_owner_update on documents for update to authenticated using (
+  applicant_id in (
+    select app.applicant_id
+    from applications app
+    join units u on u.id = app.unit_id
+    where u.landlord_id = auth.uid()
+  )
+);
 
 grant select, insert, update, delete on documents to authenticated;
 
