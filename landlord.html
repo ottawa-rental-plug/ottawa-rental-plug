@@ -1243,7 +1243,6 @@
             </select></div>
             <div class="form-field"><label>Address <span style="font-weight:400;color:var(--gray)">(shown to applicants only after they open this unit's apply link)</span></label><input id="vc-address" type="text" placeholder="123 Bank St, Unit 4"></div>
             <div class="form-field" style="grid-column:1/-1"><label>Public description <span style="font-weight:400;color:var(--gray)">(optional, shown on the listings page)</span></label><textarea id="vc-description" rows="2" style="width:100%;font-family:inherit" placeholder="Bright 2BR near the canal, in-unit laundry, parking included."></textarea></div>
-            <div class="form-field"><label>Owner (portal access)</label><select id="vc-landlord"><option value="">— Unassigned —</option></select></div>
           </div>
 
           <!-- PHOTO UPLOADER SECTION -->
@@ -1273,7 +1272,8 @@
           </div>
 
           <div style="display:flex;gap:8px">
-            <button onclick="saveVacancy()" style="padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save Vacancy</button>
+            <button onclick="saveVacancy()" style="padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save & Publish</button>
+            <button onclick="syndicateVacancy()" style="padding:9px 20px;background:var(--green,#10b981);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Post to Platforms</button>
             <button onclick="closeVacancyForm()" style="padding:9px 16px;background:var(--border);color:var(--navy);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
           </div>
         </div>
@@ -1946,7 +1946,6 @@ async function openVacancyForm(id) {
     document.getElementById('vc-neighbourhood').value = v.neighbourhood || '';
     document.getElementById('vc-address').value = v.address || '';
     document.getElementById('vc-description').value = v.description || '';
-    populateLandlordSelect(document.getElementById('vc-landlord'), v.landlordId || '');
   } else {
     title.textContent = 'Add Vacancy';
     document.getElementById('vc-id').value = '';
@@ -1954,7 +1953,6 @@ async function openVacancyForm(id) {
     document.getElementById('vc-type').value = 'Apartment';
     document.getElementById('vc-neighbourhood').value = '';
     document.getElementById('vc-listed').value = new Date().toISOString().slice(0,10);
-    populateLandlordSelect(document.getElementById('vc-landlord'), '');
   }
 
   // Initialize Photo Uploader and Syndication Manager
@@ -1993,21 +1991,75 @@ function saveVacancy() {
   const neighbourhood = document.getElementById('vc-neighbourhood').value || '';
   const address       = document.getElementById('vc-address').value.trim();
   const description   = document.getElementById('vc-description').value.trim();
-  const landlordId    = document.getElementById('vc-landlord').value || null;
   if (!(beds >= 0) || !(price > 0) || !listed) { alert('Enter bedrooms, a price, and a listed date.'); return; }
   const idVal = document.getElementById('vc-id').value;
   const vacancies = getVacancies();
   if (idVal) {
     const v = vacancies.find(x => x.id === Number(idVal));
-    if (v) Object.assign(v, { beds, baths: baths || 0, type, price, listed, neighbourhood, address, description, landlordId });
+    if (v) Object.assign(v, { beds, baths: baths || 0, type, price, listed, neighbourhood, address, description });
   } else {
-    vacancies.push({ id: nextVacancyId(), beds, baths: baths || 0, type, price, listed, neighbourhood, address, description, landlordId });
+    vacancies.push({ id: nextVacancyId(), beds, baths: baths || 0, type, price, listed, neighbourhood, address, description });
   }
   saveVacancyList(vacancies);
+
+  // Auto-publish to cloud
+  publishUnits();
+
   closeVacancyForm();
   renderVacanciesPanel();
   renderOverview();
 }
+async function syndicateVacancy() {
+  const unitId = document.getElementById('vc-id').value;
+  if (!unitId) {
+    alert('Save the vacancy first before posting to platforms.');
+    return;
+  }
+
+  const platforms = [];
+  if (document.getElementById('vc-platform-realtor')?.checked) platforms.push('realtor_ca');
+  if (document.getElementById('vc-platform-kijiji')?.checked) platforms.push('kijiji');
+  if (document.getElementById('vc-platform-airbnb')?.checked) platforms.push('airbnb');
+
+  if (platforms.length === 0) {
+    alert('Select at least one platform to post to.');
+    return;
+  }
+
+  const btn = event.target;
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Posting...';
+
+  try {
+    const session = await orpSession();
+    if (!session) throw new Error('Not signed in');
+
+    const response = await fetch('/.netlify/functions/syndicate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ unitId, platforms })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || `Request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    alert(`Posted successfully to: ${platforms.join(', ')}`);
+    await new SyndicationManager('syndicationStatusContainer', unitId).init();
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
+}
+
 function deleteVacancy(id) {
   const v = getVacancies().find(x => x.id === id);
   if (!v) return;
