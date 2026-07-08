@@ -1254,6 +1254,33 @@
             <div class="form-field" style="grid-column:1/-1"><label>Public description <span style="font-weight:400;color:var(--gray)">(optional, shown on the listings page)</span></label><textarea id="vc-description" rows="2" style="width:100%;font-family:inherit" placeholder="Bright 2BR near the canal, in-unit laundry, parking included."></textarea></div>
             <div class="form-field"><label>Owner (portal access)</label><select id="vc-landlord"><option value="">— Unassigned —</option></select></div>
           </div>
+
+          <!-- PHOTO UPLOADER SECTION -->
+          <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+            <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:12px">Property Photos</div>
+            <div id="photoUploaderContainer"></div>
+          </div>
+
+          <!-- PLATFORM SYNDICATION SECTION -->
+          <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+            <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:12px">Post This Listing To</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="vc-platform-realtor" value="realtor_ca">
+                <span>Realtor.ca</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="vc-platform-kijiji" value="kijiji">
+                <span>Kijiji</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="vc-platform-airbnb" value="airbnb">
+                <span>Airbnb</span>
+              </label>
+            </div>
+            <div id="syndicationStatusContainer"></div>
+          </div>
+
           <div style="display:flex;gap:8px">
             <button onclick="saveVacancy()" style="padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save Vacancy</button>
             <button onclick="closeVacancyForm()" style="padding:9px 16px;background:var(--border);color:var(--navy);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
@@ -1980,6 +2007,31 @@ async function openVacancyForm(id) {
     document.getElementById('vc-listed').value = new Date().toISOString().slice(0,10);
     populateLandlordSelect(document.getElementById('vc-landlord'), '');
   }
+
+  // Initialize Photo Uploader and Syndication Manager
+  setTimeout(() => {
+    const unitId = id || document.getElementById('vc-id').value;
+    if (unitId) {
+      if (typeof PhotoUploader !== 'undefined') {
+        try {
+          const uploader = new PhotoUploader('photoUploaderContainer', sb, unitId);
+          uploader.init().catch(err => console.warn('PhotoUploader init error:', err));
+        } catch (e) {
+          console.warn('PhotoUploader error:', e);
+        }
+      }
+
+      if (typeof SyndicationManager !== 'undefined') {
+        try {
+          const syndication = new SyndicationManager('syndicationStatusContainer', unitId);
+          syndication.init().catch(err => console.warn('SyndicationManager init error:', err));
+        } catch (e) {
+          console.warn('SyndicationManager error:', e);
+        }
+      }
+    }
+  }, 100);
+
   form.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 function closeVacancyForm() { document.getElementById('vacancyForm').style.display = 'none'; }
@@ -3920,33 +3972,6 @@ function openApplicantDrawer(applicant) {
   loadTaskList();
   loadDocumentList();
 
-  // Initialize Photo Uploader and Syndication Manager if unit available
-  setTimeout(() => {
-    try {
-      const apps = applicant.applications || [];
-      const app = apps.length > 0 ? apps[0] : null;
-      const unitId = app?.units?.id || app?.unit_snapshot?.id;
-
-      if (unitId && typeof PhotoUploader !== 'undefined' && typeof SyndicationManager !== 'undefined') {
-        try {
-          const uploader = new PhotoUploader('photoUploaderContainer', sb, unitId);
-          uploader.init();
-        } catch (e) {
-          console.warn('PhotoUploader init failed:', e);
-        }
-
-        try {
-          const syndication = new SyndicationManager('syndicationStatusContainer', unitId);
-          syndication.init();
-        } catch (e) {
-          console.warn('SyndicationManager init failed:', e);
-        }
-      }
-    } catch (error) {
-      console.warn('Error initializing syndication components:', error);
-    }
-  }, 100);
-
   // Quick-action email links
   const firstName = encodeURIComponent((applicant.name||'').split(' ')[0] || 'there');
   const best = (applicant.applications||[]).slice().sort((a,b)=>(b.match_score||0)-(a.match_score||0))[0];
@@ -4321,16 +4346,6 @@ async function downloadReport(type) {
     <div>
       <div class="drawer-section-title">Activity Timeline</div>
       <div id="actTimeline"></div>
-    </div>
-    <!-- PHOTO UPLOADER SECTION -->
-    <div>
-      <div class="drawer-section-title">Property Photos</div>
-      <div id="photoUploaderContainer"></div>
-    </div>
-    <!-- SYNDICATION STATUS SECTION -->
-    <div>
-      <div class="drawer-section-title">Listing Syndication</div>
-      <div id="syndicationStatusContainer"></div>
     </div>
   </div>
 </div>
