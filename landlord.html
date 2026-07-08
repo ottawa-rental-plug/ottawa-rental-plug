@@ -3086,7 +3086,7 @@ async function loadAnalytics() {
   }
 }
 
-const PANELS = ['overview','today','analytics','pipeline','vacancies','leads','applicants','scanner','landlords','futurebuyers','templates','workflows','documents','admin','shortcuts','settings'];
+const PANELS = ['overview','today','analytics','vacancies','applicants','workflows','documents','admin','shortcuts','settings'];
 const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', vacancies:'Vacancies', applicants:'Applicants', workflows:'Automation', documents:'Documents', admin:'Admin', shortcuts:'Quick Scan Links', settings:'Settings' };
 function showPanel(name) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.remove('active'));
@@ -3097,17 +3097,12 @@ function showPanel(name) {
   document.getElementById('panelTitle').textContent = TITLES[name]||name;
   if (name==='today')     loadToday();
   if (name==='analytics') loadAnalytics();
-  if (name==='pipeline')  loadPipeline();
-  if (name==='leads')     renderLeads(currentFilter);
-  if (name==='templates') buildTemplates();
   if (name==='workflows') loadWorkflows();
   if (name==='documents') loadDocumentsPanel();
   if (name==='admin')     loadAdminPanel();
   if (name==='shortcuts') buildShortcuts();
   if (name==='vacancies') { closeVacancyForm(); renderVacanciesPanel(); }
-  if (name==='landlords') loadLandlordLeads();
   if (name==='applicants') loadApplicants();
-  if (name==='futurebuyers') loadFutureBuyers();
 }
 
 // ── COMMAND PALETTE (Phase 4) ─────────────────────────────────────────
