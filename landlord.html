@@ -3934,23 +3934,31 @@ function openApplicantDrawer(applicant) {
   loadDocumentList();
 
   // Initialize Photo Uploader and Syndication Manager if unit available
-  try {
-    const apps = applicant.applications || [];
-    const app = apps.length > 0 ? apps[0] : null;
-    const unitId = app?.units?.id || app?.unit_snapshot?.id;
+  setTimeout(() => {
+    try {
+      const apps = applicant.applications || [];
+      const app = apps.length > 0 ? apps[0] : null;
+      const unitId = app?.units?.id || app?.unit_snapshot?.id;
 
-    if (unitId) {
-      // Initialize Photo Uploader
-      const uploader = new PhotoUploader('photoUploaderContainer', sb, unitId);
-      uploader.init().catch(err => console.warn('Photo uploader init error:', err));
+      if (unitId && typeof PhotoUploader !== 'undefined' && typeof SyndicationManager !== 'undefined') {
+        try {
+          const uploader = new PhotoUploader('photoUploaderContainer', sb, unitId);
+          uploader.init();
+        } catch (e) {
+          console.warn('PhotoUploader init failed:', e);
+        }
 
-      // Initialize Syndication Manager
-      const syndication = new SyndicationManager('syndicationStatusContainer', unitId);
-      syndication.init().catch(err => console.warn('Syndication manager init error:', err));
+        try {
+          const syndication = new SyndicationManager('syndicationStatusContainer', unitId);
+          syndication.init();
+        } catch (e) {
+          console.warn('SyndicationManager init failed:', e);
+        }
+      }
+    } catch (error) {
+      console.warn('Error initializing syndication components:', error);
     }
-  } catch (error) {
-    console.warn('Error initializing syndication components:', error);
-  }
+  }, 100);
 
   // Quick-action email links
   const firstName = encodeURIComponent((applicant.name||'').split(' ')[0] || 'there');
