@@ -1221,7 +1221,7 @@
         <div class="section-header">
           <div class="section-title" id="vacancyCount">Active Vacancies</div>
           <div style="display:flex;gap:8px">
-            <button class="section-action" onclick="publishUnits()" style="font-weight:600" title="Sync these vacancies to the cloud so new applicants get matched against them">Publish to cloud</button>
+            <button class="section-action" onclick="publishUnits()" style="font-weight:600" title="Sync these vacancies to the cloud so new applicants get matched against them">Publish & Syndicate</button>
             <button class="section-action" onclick="openVacancyForm()" style="font-weight:600">+ Add Vacancy</button>
           </div>
         </div>
@@ -1277,10 +1277,10 @@
             <div id="syndicationStatusContainer"></div>
           </div>
 
-          <div style="display:flex;gap:8px">
-            <button onclick="saveVacancy()" style="padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save & Publish</button>
-            <button onclick="syndicateVacancy()" style="padding:9px 20px;background:var(--green,#10b981);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Post to Platforms</button>
-            <button onclick="closeVacancyForm()" style="padding:9px 16px;background:var(--border);color:var(--navy);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+          <div style="display:flex;gap:16px;margin-top:20px;padding-top:20px;border-top:1px solid var(--border);flex-wrap:wrap">
+            <button onclick="saveVacancy()" style="padding:12px 24px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;flex:1;min-width:140px">Save & Publish</button>
+            <button onclick="syndicateVacancy()" style="padding:12px 24px;background:var(--green,#10b981);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;flex:1;min-width:140px">Post to Platforms</button>
+            <button onclick="closeVacancyForm()" style="padding:12px 24px;background:var(--border);color:var(--navy);border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;flex:1;min-width:100px">Cancel</button>
           </div>
         </div>
         <div class="vacancy-grid" id="allVacancies"></div>
