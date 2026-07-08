@@ -2732,7 +2732,7 @@ async function loadApplicants() {
         <td>${applied}</td>
         <td>${screenCell}</td>
         <td style="white-space:nowrap">
-          <button class="contact-btn" onclick='openApplicantDrawer(${JSON.stringify(a)})'>Open</button>
+          <button class="contact-btn" data-applicant='${JSON.stringify(a).replace(/'/g, "&apos;")}' onclick="openApplicantDrawer(JSON.parse(this.dataset.applicant))">Open</button>
           ${actionExtra}
         </td>
       </tr>`;
