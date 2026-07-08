@@ -8,6 +8,8 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Syndication Components -->
+  <link rel="stylesheet" href="/js/components/photo-uploader.css">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -3931,6 +3933,25 @@ function openApplicantDrawer(applicant) {
   loadTaskList();
   loadDocumentList();
 
+  // Initialize Photo Uploader and Syndication Manager if unit available
+  try {
+    const apps = applicant.applications || [];
+    const app = apps.length > 0 ? apps[0] : null;
+    const unitId = app?.units?.id || app?.unit_snapshot?.id;
+
+    if (unitId) {
+      // Initialize Photo Uploader
+      const uploader = new PhotoUploader('photoUploaderContainer', sb, unitId);
+      uploader.init().catch(err => console.warn('Photo uploader init error:', err));
+
+      // Initialize Syndication Manager
+      const syndication = new SyndicationManager('syndicationStatusContainer', unitId);
+      syndication.init().catch(err => console.warn('Syndication manager init error:', err));
+    }
+  } catch (error) {
+    console.warn('Error initializing syndication components:', error);
+  }
+
   // Quick-action email links
   const firstName = encodeURIComponent((applicant.name||'').split(' ')[0] || 'there');
   const best = (applicant.applications||[]).slice().sort((a,b)=>(b.match_score||0)-(a.match_score||0))[0];
@@ -4306,6 +4327,16 @@ async function downloadReport(type) {
       <div class="drawer-section-title">Activity Timeline</div>
       <div id="actTimeline"></div>
     </div>
+    <!-- PHOTO UPLOADER SECTION -->
+    <div>
+      <div class="drawer-section-title">Property Photos</div>
+      <div id="photoUploaderContainer"></div>
+    </div>
+    <!-- SYNDICATION STATUS SECTION -->
+    <div>
+      <div class="drawer-section-title">Listing Syndication</div>
+      <div id="syndicationStatusContainer"></div>
+    </div>
   </div>
 </div>
 
@@ -4364,6 +4395,10 @@ async function downloadReport(type) {
   <button class="bulk-action-btn secondary" onclick="clearBulkSelection()">Clear</button>
   <button class="bulk-action-btn secondary" onclick="exportSelected()">Export CSV</button>
 </div>
+
+<!-- Syndication Components -->
+<script src="/js/components/PhotoUploader.js"></script>
+<script src="/js/components/SyndicationManager.js"></script>
 
 </body>
 </html>
