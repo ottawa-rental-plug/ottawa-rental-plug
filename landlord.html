@@ -1067,7 +1067,7 @@
     </button>
     <button class="nav-item" onclick="showPanel('vacancies')">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      Vacancies
+      Listings
     </button>
     <div class="nav-section-label" style="margin-top:8px">Tenant Pipeline</div>
     <button class="nav-item" onclick="showPanel('applicants')" id="nav-applicants">
@@ -1219,14 +1219,14 @@
       <div id="agingAlerts2"></div>
       <div class="section">
         <div class="section-header">
-          <div class="section-title" id="vacancyCount">Active Vacancies</div>
+          <div class="section-title" id="vacancyCount">Active Listings</div>
           <div style="display:flex;gap:8px">
             <button class="section-action" onclick="publishUnits()" style="font-weight:600" title="Sync these vacancies to the cloud so new applicants get matched against them">Publish & Syndicate</button>
-            <button class="section-action" onclick="openVacancyForm()" style="font-weight:600">+ Add Vacancy</button>
+            <button class="section-action" onclick="openVacancyForm()" style="font-weight:600">+ Add Listing</button>
           </div>
         </div>
         <div class="add-lead-form" id="vacancyForm">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px" id="vacancyFormTitle">Add Vacancy</div>
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px" id="vacancyFormTitle">Add Listing</div>
           <input type="hidden" id="vc-id">
           <div class="form-grid-2">
             <div class="form-field"><label>Bedrooms</label><input id="vc-beds" type="number" min="0" placeholder="2"></div>
@@ -1306,7 +1306,7 @@
           <div class="section-title">Applicants — Apply + Auto-Match</div>
           <button class="btn-top secondary" onclick="loadApplicants()" style="padding:7px 12px">Refresh</button>
         </div>
-        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Tenants who applied at <strong>ottawarentalplug.com/apply</strong>, auto-matched to your published units. Publish your vacancies first (Vacancies &rarr; Publish to cloud) so matching has units to score against.</p>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Tenants who applied at <strong>ottawarentalplug.com/apply</strong>, auto-matched to your published units. Publish your listings first (Listings &rarr; Publish & Syndicate) so matching has units to score against.</p>
 
         <!-- Advanced Filters (Phase 5) -->
         <div class="filter-bar" id="filterBar">
@@ -1359,7 +1359,7 @@
           <div class="section-title">Client Portal Accounts</div>
           <button class="section-action" onclick="openLandlordAccountForm()" style="font-weight:600">+ Add Landlord</button>
         </div>
-        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Give a landlord their own login to see their units and applicant status — never raw contact info, so you stay the single point of contact. Assign a landlord to a vacancy in the <a href="#" onclick="showPanel('vacancies');return false" style="color:var(--blue)">Vacancies</a> tab, then invite them here.</p>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Give a landlord their own login to see their units and applicant status — never raw contact info, so you stay the single point of contact. Assign a landlord to a listing in the <a href="#" onclick="showPanel('vacancies');return false" style="color:var(--blue)">Listings</a> tab, then invite them here.</p>
         <div class="add-lead-form" id="landlordAccountForm" style="display:none">
           <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px" id="landlordAccountFormTitle">Add Landlord</div>
           <input type="hidden" id="la-id">
@@ -1930,7 +1930,7 @@ function renderVacanciesPanel() {
   document.getElementById('vacancyCount').textContent = `Active Vacancies (${vacancies.length})`;
   document.getElementById('allVacancies').innerHTML = vacancies.length
     ? vacancies.map(v => renderVacancy(v, leads, true)).join('')
-    : `<div class="scan-empty" style="grid-column:1/-1">No vacancies yet. Click "+ Add Vacancy" to add one.</div>`;
+    : `<div class="scan-empty" style="grid-column:1/-1">No listings yet. Click "+ Add Listing" to add one.</div>`;
   renderAgingAlerts('agingAlerts2');
 }
 // Landlord accounts (Phase 5), cached for the vacancy-owner dropdown + the
@@ -1965,7 +1965,7 @@ async function openVacancyForm(id) {
     document.getElementById('vc-address').value = v.address || '';
     document.getElementById('vc-description').value = v.description || '';
   } else {
-    title.textContent = 'Add Vacancy';
+    title.textContent = 'Add Listing';
     document.getElementById('vc-id').value = '';
     ['vc-beds','vc-baths','vc-price','vc-address','vc-description'].forEach(i => document.getElementById(i).value = '');
     document.getElementById('vc-type').value = 'Apartment';
