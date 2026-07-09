@@ -1087,10 +1087,6 @@
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H3.75A2.25 2.25 0 001.5 3.75v16.5A2.25 2.25 0 003.75 22.5h16.5a2.25 2.25 0 002.25-2.25V13.5M6.75 6.75h10.5M6.75 11.25h10.5M15 17.25l6-6m0 0l-1.5-1.5m1.5 1.5l1.5-1.5"/></svg>
       Admin
     </button>
-    <button class="nav-item" onclick="showPanel('shortcuts')">
-      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-      Quick Scan Links
-    </button>
     <button class="nav-item" onclick="showPanel('settings')">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       Settings
@@ -1296,49 +1292,6 @@
 
     <!-- SCANNER -->
     <!-- LANDLORD LEADS -->
-    <div id="panel-landlords" class="panel">
-      <div class="section">
-        <div class="section-header">
-          <div class="section-title">Landlord Leads — Rent Valuation Requests</div>
-          <button class="btn-top secondary" onclick="loadLandlordLeads()" style="padding:7px 12px">Refresh</button>
-        </div>
-        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Landlords who requested a free rent analysis at <strong>ottawarentalplug.com/rental-estimate</strong>. Each one is a potential placement — or a managed door. Reply fast.</p>
-        <div class="card" id="landlordCard"><div class="scan-empty">Loading…</div></div>
-      </div>
-
-      <!-- Client portal accounts (Phase 5) -->
-      <div class="section">
-        <div class="section-header">
-          <div class="section-title">Client Portal Accounts</div>
-          <button class="section-action" onclick="openLandlordAccountForm()" style="font-weight:600">+ Add Landlord</button>
-        </div>
-        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Give a landlord their own login to see their units and applicant status — never raw contact info, so you stay the single point of contact. Assign a landlord to a listing in the <a href="#" onclick="showPanel('vacancies');return false" style="color:var(--blue)">Listings</a> tab, then invite them here.</p>
-        <div class="add-lead-form" id="landlordAccountForm" style="display:none">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px" id="landlordAccountFormTitle">Add Landlord</div>
-          <input type="hidden" id="la-id">
-          <div class="form-grid-2">
-            <div class="form-field"><label>Name</label><input id="la-name" placeholder="Jane Smith"></div>
-            <div class="form-field"><label>Email</label><input id="la-email" type="email" placeholder="jane@email.com"></div>
-            <div class="form-field"><label>Phone</label><input id="la-phone" placeholder="(613) 000-0000"></div>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button onclick="saveLandlordAccount()" style="padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save</button>
-            <button onclick="closeLandlordAccountForm()" style="padding:9px 16px;background:var(--border);color:var(--navy);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
-          </div>
-        </div>
-        <div class="card" id="landlordAccountsCard"><div class="scan-empty">Loading…</div></div>
-      </div>
-    </div>
-
-    <!-- TEMPLATES -->
-    <div id="panel-templates" class="panel">
-      <div class="section">
-        <div class="section-header"><div class="section-title">Post Templates — One-Click Copy</div></div>
-        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Ready-to-post copy for Facebook Groups, Kijiji, and Reddit. Click copy, paste directly into the platform.</p>
-        <div class="template-grid" id="templateGrid"></div>
-      </div>
-    </div>
-
     <!-- WORKFLOWS -->
     <div id="panel-workflows" class="panel">
       <div class="section">
@@ -1383,15 +1336,6 @@
             <div><strong>Notifications:</strong> ntfy (orp-alerts)</div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- SHORTCUTS -->
-    <div id="panel-shortcuts" class="panel">
-      <div class="section">
-        <div class="section-header"><div class="section-title">Quick Scan Links</div></div>
-        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Pre-filtered searches for each vacancy. Click to open — results are pre-sorted by newest.</p>
-        <div class="shortcut-grid" id="shortcutGrid"></div>
       </div>
     </div>
 
@@ -2966,8 +2910,8 @@ async function loadAnalytics() {
   }
 }
 
-const PANELS = ['overview','today','analytics','vacancies','workflows','documents','admin','shortcuts','settings'];
-const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', vacancies:'Vacancies', workflows:'Automation', documents:'Documents', admin:'Admin', shortcuts:'Quick Scan Links', settings:'Settings' };
+const PANELS = ['overview','today','analytics','vacancies','workflows','documents','admin','settings'];
+const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', vacancies:'Listings', workflows:'Automation', documents:'Documents', admin:'Admin', settings:'Settings' };
 function showPanel(name) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2980,7 +2924,6 @@ function showPanel(name) {
   if (name==='workflows') loadWorkflows();
   if (name==='documents') loadDocumentsPanel();
   if (name==='admin')     loadAdminPanel();
-  if (name==='shortcuts') buildShortcuts();
   if (name==='vacancies') { closeVacancyForm(); renderVacanciesPanel(); }
 }
 
