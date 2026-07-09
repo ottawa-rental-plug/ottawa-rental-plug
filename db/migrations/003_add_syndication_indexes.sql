@@ -3,10 +3,6 @@
 -- Created: 2026-07-07
 -- Status: Ready for Production
 
--- Indexes on units table (for syndication queries)
-CREATE INDEX idx_units_status_updated ON units(status, updated_at DESC)
-  WHERE status = 'available';  -- For fetching active listings to syndicate
-
 -- Composite index for syndication status checks
 CREATE INDEX idx_syndication_platforms_unit_status ON syndication_platforms(unit_id, status)
   WHERE status != 'paused';  -- Quickly find units needing sync
