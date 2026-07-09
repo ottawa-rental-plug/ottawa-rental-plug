@@ -1326,22 +1326,6 @@
     </div>
 
     <!-- SCANNER -->
-    <div id="panel-scanner" class="panel">
-      <div class="section">
-        <div class="section-header">
-          <div class="section-title">Lead Scanner</div>
-          <div style="font-size:12px;color:var(--gray)" id="scanTime">Not yet scanned</div>
-        </div>
-        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Pulls live "housing wanted" posts from Reddit Ottawa (and Kijiji, if Bright Data is connected), scored against your vacancies. Click <strong>Scan Now</strong> in the top bar to run.</p>
-        <div class="scan-card" id="scanResults">
-          <div class="scan-empty">
-            <svg width="36" height="36" fill="none" stroke="var(--border)" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 10px;display:block"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <p>No scan yet. Click "Scan Now" to search for matched tenants.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- LANDLORD LEADS -->
     <div id="panel-landlords" class="panel">
       <div class="section">
@@ -2270,91 +2254,6 @@ function buildShortcuts() {
       <div class="shortcut-label">${s.label}</div>
       <div class="shortcut-desc">${s.desc}</div>
     </a>`).join('');
-}
-
-// ── LIVE LEAD SCANNER (via secure function) ─────────────────────────
-const SCAN_ENDPOINT = '/.netlify/functions/scan';
-
-function scoreScanResult(r, vacancies) {
-  let best = 0, bestV = null;
-  for (const v of vacancies) {
-    let s = 30; // budget assumed flexible for an active seeker
-    if (r.beds == null)                            s += 20; // unknown beds — partial credit
-    else if (r.beds === v.beds)                    s += 60;
-    else if (Math.abs(r.beds - v.beds) === 1)      s += 25;
-    if (s > best) { best = s; bestV = v; }
-  }
-  return { score: Math.min(best, 100), matchedVacancy: bestV };
-}
-
-function renderScanSources(sources) {
-  const label = (key, name) => {
-    const s = sources[key] || {};
-    if (s.status === 'ok')      return `<span style="color:var(--green)">● ${name}: ${s.count} found</span>`;
-    if (s.status === 'skipped') return `<span style="color:var(--gray)">○ ${name}: not configured</span>`;
-    return `<span style="color:var(--red)">● ${name}: ${s.reason || 'error'}</span>`;
-  };
-  return `<div style="padding:10px 18px;border-bottom:1px solid var(--border);font-size:11px;display:flex;gap:16px;flex-wrap:wrap">${label('reddit','Reddit')} ${label('kijiji','Kijiji')}</div>`;
-}
-
-async function runScan() {
-  const btn = document.getElementById('scanBtn');
-  btn.disabled = true;
-  btn.innerHTML = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0"/></svg> Scanning...`;
-  showPanel('scanner');
-  document.getElementById('scanResults').innerHTML = `<div class="scan-empty" style="animation:pulse 1.5s infinite">Scanning Ottawa rental boards for tenant leads…</div>`;
-
-  try {
-    const res = await fetch(SCAN_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: getPass() }),
-    });
-    if (res.status === 401) throw new Error('Session expired — reload and log in again.');
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      throw new Error(d.error || `Scanner error (${res.status})`);
-    }
-    const { results, sources, scannedAt } = await res.json();
-    const vacancies = getVacancies();
-    const scored = (results || [])
-      .map(r => ({ ...r, ...scoreScanResult(r, vacancies) }))
-      .sort((a, b) => b.score - a.score);
-
-    const now = new Date(scannedAt || Date.now());
-    document.getElementById('scanTime').textContent =
-      `Last scan: ${now.toLocaleDateString('en-CA',{month:'short',day:'numeric'})} ${now.toLocaleTimeString('en-CA',{hour:'2-digit',minute:'2-digit'})}`;
-
-    const sourcesBar = renderScanSources(sources || {});
-    if (!scored.length) {
-      document.getElementById('scanResults').innerHTML = sourcesBar +
-        `<div class="scan-empty"><p>No new housing-wanted posts matched right now. Try again later, or use Quick Scan Links to search manually.</p></div>`;
-    } else {
-      document.getElementById('scanResults').innerHTML = sourcesBar + scored.map(r => {
-        const cls = scoreClass(r.score);
-        const when = r.created ? new Date(r.created).toLocaleDateString('en-CA',{month:'short',day:'numeric'}) : '';
-        const srcName = r.sub ? 'r/' + r.sub : r.source;
-        return `<div class="scan-item">
-          <span class="scan-source source-${r.source==='reddit'?'reddit':'kijiji'}">${srcName}</span>
-          <div style="flex:1">
-            <div class="scan-title">${escapeHtml(r.title)}</div>
-            <div class="scan-meta">${escapeHtml(r.desc||'')}${when?` · ${when}`:''}</div>
-            ${r.matchedVacancy ? `<div style="font-size:11px;margin-top:5px;color:var(--blue);font-weight:600">Matches your ${r.matchedVacancy.beds}BR ${r.matchedVacancy.type}${r.matchedVacancy.price != null ? ' — $'+r.matchedVacancy.price.toLocaleString()+'/mo' : ''}</div>` : ''}
-          </div>
-          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
-            <div class="score-bar-wrap"><div class="score-bar"><div class="score-fill ${cls}" style="width:${r.score}%"></div></div><span class="score-num ${cls}">${r.score}</span></div>
-            ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="contact-btn">View Post</a>` : ''}
-          </div>
-        </div>`;
-      }).join('');
-    }
-  } catch (e) {
-    document.getElementById('scanResults').innerHTML =
-      `<div class="scan-empty"><p style="color:var(--red)">Scan failed: ${escapeHtml(e.message)}</p><p style="margin-top:6px">Use Quick Scan Links to search manually in the meantime.</p></div>`;
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> Scan Now`;
 }
 
 // ── ADD LEAD ─────────────────────────────────────────────────────────
