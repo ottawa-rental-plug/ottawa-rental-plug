@@ -1070,11 +1070,6 @@
       Listings
     </button>
     <div class="nav-section-label" style="margin-top:8px">Tenant Pipeline</div>
-    <button class="nav-item" onclick="showPanel('applicants')" id="nav-applicants">
-      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l2 2 4-4"/></svg>
-      Applicants
-      <span class="nav-badge" id="applicantBadge" style="display:none">0</span>
-    </button>
     <button class="nav-item" onclick="showPanel('scanner')" style="display:none">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
       Lead Scanner
@@ -1296,32 +1291,6 @@
           </div>
         </div>
         <div class="vacancy-grid" id="allVacancies"></div>
-      </div>
-    </div>
-
-    <!-- APPLICANTS -->
-    <div id="panel-applicants" class="panel">
-      <div class="section">
-        <div class="section-header">
-          <div class="section-title">Applicants — Apply + Auto-Match</div>
-          <button class="btn-top secondary" onclick="loadApplicants()" style="padding:7px 12px">Refresh</button>
-        </div>
-        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Tenants who applied at <strong>ottawarentalplug.com/apply</strong>, auto-matched to your published units. Publish your listings first (Listings &rarr; Publish & Syndicate) so matching has units to score against.</p>
-
-        <!-- Advanced Filters (Phase 5) -->
-        <div class="filter-bar" id="filterBar">
-          <span style="font-size:12px;color:var(--text-secondary);font-weight:500">Filter by:</span>
-          <button class="filter-chip active" onclick="filterApplicants(null)" data-filter="all">All Applicants</button>
-          <button class="filter-chip" onclick="filterApplicants('new')" data-filter="new">New</button>
-          <button class="filter-chip" onclick="filterApplicants('contacted')" data-filter="contacted">Contacted</button>
-          <button class="filter-chip" onclick="filterApplicants('viewing')" data-filter="viewing">Viewing</button>
-          <button class="filter-chip" onclick="filterApplicants('leased')" data-filter="leased">Leased</button>
-          <span style="margin-left:auto;font-size:12px;color:var(--text-secondary)">
-            <span class="quick-stat"><span class="quick-stat-value" id="filteredCount">0</span> shown</span>
-          </span>
-        </div>
-
-        <div class="card" id="applicantsCard"><div class="scan-empty">Loading…</div></div>
       </div>
     </div>
 
@@ -2997,8 +2966,8 @@ async function loadAnalytics() {
   }
 }
 
-const PANELS = ['overview','today','analytics','vacancies','applicants','workflows','documents','admin','shortcuts','settings'];
-const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', vacancies:'Vacancies', applicants:'Applicants', workflows:'Automation', documents:'Documents', admin:'Admin', shortcuts:'Quick Scan Links', settings:'Settings' };
+const PANELS = ['overview','today','analytics','vacancies','workflows','documents','admin','shortcuts','settings'];
+const TITLES  = { overview:'Overview', today:'Today', analytics:'Analytics', vacancies:'Vacancies', workflows:'Automation', documents:'Documents', admin:'Admin', shortcuts:'Quick Scan Links', settings:'Settings' };
 function showPanel(name) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -3013,7 +2982,6 @@ function showPanel(name) {
   if (name==='admin')     loadAdminPanel();
   if (name==='shortcuts') buildShortcuts();
   if (name==='vacancies') { closeVacancyForm(); renderVacanciesPanel(); }
-  if (name==='applicants') loadApplicants();
 }
 
 // ── COMMAND PALETTE (Phase 4) ─────────────────────────────────────────
