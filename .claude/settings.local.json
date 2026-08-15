@@ -128,7 +128,8 @@
       "Bash(curl -s \"https://www.ontario.ca/search?search=form+410\")",
       "Bash(curl -sI \"https://www.ontario.ca/files/2023-05/o-form-410-e.pdf\")",
       "mcp__bf7c680d-5fdc-5ef4-b4a0-abadb619bf0a__list_repos",
-      "mcp__bf7c680d-5fdc-5ef4-b4a0-abadb619bf0a__add_repo"
+      "mcp__bf7c680d-5fdc-5ef4-b4a0-abadb619bf0a__add_repo",
+      "mcp__Claude_Code_Remote__add_repo"
     ]
   }
 }
